@@ -8,7 +8,7 @@
       desc: `Humans are the long descendant of hominid monkeys from planet Terra, otherwise called Sol-3.
 These biologic beings have DNA recombinated so much that it is way more adapted to space travel, with ability to switch off consciousness for seemingly lightning fast space travel, slowing time with andrenaline and need much less food and water to make maintaining costs negligible.
 Human retain taste toward art, big space vessel and an inexhaustible curiosity for exploration.`,
-      specialties: { Armor:2, Shields:4, Regen:1, Damage:4, Firerate:1, Tactics:1 }
+      specialties: { Armor:2, Shields:4, Regen:1, Damage:4, Firerate:1, Tactics:3 }
     },
     {
       id: 'Jared',
@@ -17,7 +17,7 @@ Human retain taste toward art, big space vessel and an inexhaustible curiosity f
       desc: `Jared evolved from a moon of their gas giant home world. More accustomed to the harshness of space, jared are obsessed with space from the beginning of their civilization.
 They are wolf head mammals which make eggs and have a wolf pack society style.
 Speed and reliability are the most prized values that reflects on their ships.`,
-      specialties: { Armor:3, Shields:2, Regen:4, Damage:1, Firerate:4, Tactics:2 }
+      specialties: { Armor:1, Shields:3, Regen:4, Damage:1, Firerate:4, Tactics:2 }
     },
     {
       id: 'Technicians',
