@@ -1,0 +1,1 @@
+each star system has a map of planets, stations and points of interest.
