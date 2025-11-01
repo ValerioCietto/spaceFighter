@@ -1,0 +1,1 @@
+shop categories that don't fit the races, generic items
