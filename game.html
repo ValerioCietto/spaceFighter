@@ -6,9 +6,26 @@
   <title>Starfighter — Game</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/hud.css">
+  <link rel="stylesheet" href="css/station.css"><!-- riuso gli stili dei tab -->
+  <style>
+    /* Overlay wrapper */
+    .dock-overlay{position:fixed; inset:0; z-index:50; display:none; }
+    .dock-overlay.show{display:block}
+    .dock-backdrop{
+      position:absolute; inset:0; background:rgba(3,7,18,.65); backdrop-filter: blur(6px) saturate(120%);
+    }
+    .dock-sheet{
+      position:absolute; inset: clamp(8px,4vw,22px); 
+      background: transparent; /* i pannelli hanno già i propri sfondi */
+      display:flex; flex-direction:column; min-height:0;
+    }
+    .dock-sheet .bar{ border-radius:12px 12px 0 0 }
+    .dock-sheet .hero{ padding-top:10px }
+    .dock-sheet .panels{ overflow:auto; }
+  </style>
 </head>
 <body>
-  <!-- Main game canvas (placeholder background) -->
+  <!-- Main game canvas -->
   <canvas id="game"></canvas>
 
   <!-- HUD -->
@@ -18,13 +35,9 @@
         <span>Navigation:</span>
         <strong id="nav-dest">no destination</strong>
       </header>
-
       <canvas id="hexmap" width="240" height="240" aria-label="Navigation hex map"></canvas>
-
       <footer class="nav-foot">
-        <div class="coords">
-          <span id="nav-pos">—</span>
-        </div>
+        <div class="coords"><span id="nav-pos">—</span></div>
         <div class="controls">
           <button id="nav-zoom-out" class="mini" title="Zoom out">−</button>
           <button id="nav-zoom-in" class="mini" title="Zoom in">+</button>
@@ -33,9 +46,32 @@
     </div>
   </section>
 
+  <!-- STATION OVERLAY -->
+  <div id="dock" class="dock-overlay" aria-hidden="true">
+    <div class="dock-backdrop"></div>
+    <div class="dock-sheet" role="dialog" aria-label="Station Services" aria-modal="true">
+      <!-- Station DOM viene iniettato da JS (station-overlay.js) -->
+      <section id="station-root"></section>
+    </div>
+  </div>
+
+  <!-- Scripts -->
   <script src="js/config.js"></script>
   <script src="js/save.js"></script>
+  <script src="js/config-loader.js"></script>
   <script src="js/game-loop.js"></script>
   <script src="js/hud.js"></script>
+  <script src="js/station-overlay.js"></script>
+  <script>
+    // DEMO: premi F per aprire la stazione (usa un id reale quando atterri)
+    window.addEventListener('keydown', (e)=>{
+      if (e.code === 'KeyF') {
+        StationOverlay.open({ id: 'athena_prime' }); // sostituisci con il place id rilevato in game
+      }
+      if (e.code === 'Escape') {
+        StationOverlay.close();
+      }
+    });
+  </script>
 </body>
 </html>
