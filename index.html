@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Starfighter — Start</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Animated background -->
+  <canvas id="bg"></canvas>
+
+  <!-- Start Menu -->
+  <main class="start-wrap" role="main">
+    <h1 class="game-title">STARFIGHTER</h1>
+    <div class="menu">
+      <button id="btnContinue" class="btn big" disabled>Continue</button>
+      <button id="btnNew" class="btn big accent">New Game</button>
+      <button id="btnLoad" class="btn big">Load Game</button>
+    </div>
+
+    <p class="hint">
+      Press <b>Enter</b> to Continue, <b>N</b> for New, <b>L</b> for Load
+    </p>
+    <footer class="foot">
+      <span>v0.1.0</span>
+    </footer>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/save.js"></script>
+  <script src="js/start.js"></script>
+</body>
+</html>
