@@ -4,7 +4,7 @@
     {
       id: 'Humans',
       name: 'Human',
-      img: 'assets/advanced-human.png',
+      img: 'spaceFighter/assets/advanced-human.png',
       desc: `Humans are the long descendant of hominid monkeys from planet Terra, otherwise called Sol-3.
 These biologic beings have DNA recombinated so much that it is way more adapted to space travel, with ability to switch off consciousness for seemingly lightning fast space travel, slowing time with andrenaline and need much less food and water to make maintaining costs negligible.
 Human retain taste toward art, big space vessel and an inexhaustible curiosity for exploration.`,
@@ -13,7 +13,7 @@ Human retain taste toward art, big space vessel and an inexhaustible curiosity f
     {
       id: 'Jared',
       name: 'Jared',
-      img: 'assets/advanced-jared.png',
+      img: 'spaceFighter/assets/advanced-jared.png',
       desc: `Jared evolved from a moon of their gas giant home world. More accustomed to the harshness of space, jared are obsessed with space from the beginning of their civilization.
 They are wolf head mammals which make eggs and have a wolf pack society style.
 Speed and reliability are the most prized values that reflects on their ships.`,
@@ -22,7 +22,7 @@ Speed and reliability are the most prized values that reflects on their ships.`,
     {
       id: 'Technicians',
       name: 'Technicians',
-      img: 'assets/advanced-technician.png',
+      img: 'spaceFighter/assets/advanced-technician.png',
       desc: `Technicians are squid like creatures which either live in a protective suit that allows to walk on land or purely virtual entities with avatar robotic bodies. Virtual entities are the most courageous and pilot most of the fighter ships, organic ones are more cunning and prefer the thick shells of Capital, Dreadnoughts or cargo ships.
 In Squid society, only the smartest idea is the one worth of fighting for and with this principle, the ships are designed.`,
       specialties: { Armor:4, Shields:1, Regen:2, Damage:3, Firerate:2, Tactics:4 }
