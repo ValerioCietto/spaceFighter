@@ -1,0 +1,1 @@
+human weapons have high damage, slow recharge, medium range
