@@ -1,4 +1,4 @@
-(function(){
+ies(function(){
   const P = SF.STORAGE_PREFIX;
   const safe = (fn, fallback=null)=>{ try{ return fn(); }catch(e){ return fallback; } };
 
@@ -28,7 +28,7 @@
   function go(to){
     // Stub routes (use actual pages when ready)
     if (to === 'continue')       window.location.href = 'game.html?resume=1';
-    else if (to === 'new')       window.location.href = 'game.html?new=1';
+    else if (to === 'new')       window.location.href = 'species-choose.html';
     else if (to === 'load')      window.location.href = 'load.html';
   }
 
