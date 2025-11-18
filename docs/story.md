@@ -17,10 +17,15 @@ Tactics, best tech
 
 
 freighter
+
 -small
+
 --human stealth
+
 --jared expedited courier can jump in less than one hour
+
 --technician 
+
 -medium 
 --human, big cargo, turret
 --jared, fast jump, fast mining
