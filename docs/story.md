@@ -18,15 +18,15 @@ Tactics, best tech
 
 freighter
 
--small
+- small
 
---human stealth
+-- human stealth
 
---jared expedited courier can jump in less than one hour
+-- jared expedited courier can jump in less than one hour
 
---technician 
+-- technician 
 
--medium 
+- medium 
 --human, big cargo, turret
 --jared, fast jump, fast mining
 --technician, stealth, tactic teleport, auto-route
