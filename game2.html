@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>Space Sector Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg-color: #05060a;
+      --ui-bg: rgba(0, 0, 0, 0.5);
+      --ui-border: rgba(255, 255, 255, 0.2);
+      --accent: #4fc3f7;
+      --text: #f5f5f5;
+      --danger: #ff5252;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(circle at top, #10131f 0, #05060a 50%, #000 100%);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      touch-action: none;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .hud {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      padding: 6px 10px;
+      background: var(--ui-bg);
+      border: 1px solid var(--ui-border);
+      border-radius: 8px;
+      font-size: 12px;
+      z-index: 10;
+      backdrop-filter: blur(4px);
+    }
+
+    .hud span.label {
+      opacity: 0.7;
+    }
+
+    .hud span.value {
+      font-weight: 600;
+      margin-left: 4px;
+      color: var(--accent);
+    }
+
+    #game-container {
+      position: relative;
+      flex: 1 1 auto;
+      width: 100%;
+      height: 100%;
+    }
+
+    #game-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    #minimap {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 140px;
+      height: 140px;
+      background: var(--ui-bg);
+      border-radius: 12px;
+      border: 1px solid var(--ui-border);
+      padding: 4px;
+      z-index: 10;
+      backdrop-filter: blur(4px);
+    }
+
+    #minimap canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border-radius: 8px;
+      background: radial-gradient(circle at center, #202436 0, #05060a 70%);
+    }
+
+    #touch-controls {
+      position: absolute;
+      bottom: 10px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 10px;
+      z-index: 10;
+      pointer-events: none; /* buttons will enable themselves */
+    }
+
+    .touch-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .touch-btn {
+      pointer-events: auto;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: 1px solid var(--ui-border);
+      background: var(--ui-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      color: var(--text);
+      backdrop-filter: blur(4px);
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+
+    .touch-btn:active {
+      border-color: var(--accent);
+      box-shadow: 0 0 10px rgba(79, 195, 247, 0.7);
+    }
+
+    .touch-btn.primary {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    @media (min-width: 768px) {
+      #touch-controls {
+        opacity: 0.4;
+      }
+      #touch-controls:hover {
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="game-canvas"></canvas>
+
+    <div class="hud" id="hud">
+      <div>
+        <span class="label">Velocità:</span>
+        <span class="value" id="speed-value">0.0</span>
+        <span class="label">px/s</span>
+      </div>
+      <div>
+        <span class="label">Pos:</span>
+        <span class="value" id="pos-value">0, 0</span>
+      </div>
+    </div>
+
+    <div id="minimap">
+      <canvas id="minimap-canvas"></canvas>
+    </div>
+
+    <div id="touch-controls">
+      <div class="touch-group">
+        <div class="touch-btn" data-action="left">⟵</div>
+        <div class="touch-btn" data-action="right">⟶</div>
+      </div>
+      <div class="touch-group">
+        <div class="touch-btn primary" data-action="thrust">▲</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Command to launch: `npx serve .` then open http://localhost:3000/index.html in a browser
+
+    (function () {
+      const SECTOR_SIZE = 6000;        // lato/diametro ideale del settore in px (mondo quadrato per semplicità)
+      const STAR_DIAMETER = 300;       // diametro stella in mondo
+      const MAX_SPEED = 5;             // px / second
+      const ACCELERATION = 2.5;        // px / s^2
+      const FRICTION = 0.5;            // px / s^2
+      const ROTATION_SPEED = Math.PI;  // rad/s (~180°/s)
+      const STORAGE_KEY = "spaceSectorState_v1";
+
+      const canvas = document.getElementById("game-canvas");
+      const ctx = canvas.getContext("2d");
+
+      const minimapCanvas = document.getElementById("minimap-canvas");
+      const minimapCtx = minimapCanvas.getContext("2d");
+
+      const speedValueEl = document.getElementById("speed-value");
+      const posValueEl = document.getElementById("pos-value");
+
+      const touchControlsEl = document.getElementById("touch-controls");
+      const touchButtons = document.querySelectorAll(".touch-btn");
+
+      let width = 0;
+      let height = 0;
+
+      let minimapSize = 0;
+      let minimapScale = 0;
+
+      const state = {
+        x: SECTOR_SIZE / 2,
+        y: SECTOR_SIZE / 2,
+        vx: 0,
+        vy: 0,
+        angle: -Math.PI / 2 // punta verso l'alto
+      };
+
+      const input = {
+        left: false,
+        right: false,
+        thrust: false,
+        brake: false
+      };
+
+      // STARFIELD
+      const starLayers = [];
+      const NUM_LAYERS = 3;
+      const STARS_PER_LAYER = 80;
+
+      function initStarfield() {
+        starLayers.length = 0;
+        for (let i = 0; i < NUM_LAYERS; i++) {
+          const factor = 0.2 + i * 0.3; // parallax factor
+          const stars = [];
+          for (let s = 0; s < STARS_PER_LAYER; s++) {
+            stars.push({
+              x: Math.random() * SECTOR_SIZE * 2 - SECTOR_SIZE,
+              y: Math.random() * SECTOR_SIZE * 2 - SECTOR_SIZE
+            });
+          }
+          starLayers.push({ factor, stars });
+        }
+      }
+
+      function resize() {
+        width = canvas.clientWidth;
+        height = canvas.clientHeight;
+
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        minimapSize = Math.min(
+          document.getElementById("minimap").clientWidth,
+          document.getElementById("minimap").clientHeight
+        );
+
+        minimapCanvas.width = minimapSize * dpr;
+        minimapCanvas.height = minimapSize * dpr;
+        minimapCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        minimapScale = (minimapSize * 0.8) / SECTOR_SIZE;
+      }
+
+      window.addEventListener("resize", resize);
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return;
+          const saved = JSON.parse(raw);
+          ["x", "y", "vx", "vy", "angle"].forEach((k) => {
+            if (typeof saved[k] === "number") state[k] = saved[k];
+          });
+        } catch (e) {
+          console.warn("Impossibile caricare lo stato:", e);
+        }
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (e) {
+          console.warn("Impossibile salvare lo stato:", e);
+        }
+      }
+
+      // INPUT TASTIERA
+      window.addEventListener("keydown", (e) => {
+        switch (e.key) {
+          case "ArrowLeft":
+            input.left = true;
+            break;
+          case "ArrowRight":
+            input.right = true;
+            break;
+          case "ArrowUp":
+            input.thrust = true;
+            break;
+          case "ArrowDown":
+            input.brake = true; // freno extra
+            break;
+        }
+      });
+
+      window.addEventListener("keyup", (e) => {
+        switch (e.key) {
+          case "ArrowLeft":
+            input.left = false;
+            break;
+          case "ArrowRight":
+            input.right = false;
+            break;
+          case "ArrowUp":
+            input.thrust = false;
+            break;
+          case "ArrowDown":
+            input.brake = false;
+            break;
+        }
+      });
+
+      // INPUT TOUCH
+      function bindTouchButton(btn) {
+        const action = btn.getAttribute("data-action");
+        const setFlag = (value) => {
+          if (action === "left") input.left = value;
+          if (action === "right") input.right = value;
+          if (action === "thrust") input.thrust = value;
+        };
+
+        const start = (e) => {
+          e.preventDefault();
+          setFlag(true);
+        };
+        const end = (e) => {
+          e.preventDefault();
+          setFlag(false);
+        };
+
+        btn.addEventListener("touchstart", start, { passive: false });
+        btn.addEventListener("touchend", end, { passive: false });
+        btn.addEventListener("touchcancel", end, { passive: false });
+
+        btn.addEventListener("mousedown", start);
+        window.addEventListener("mouseup", end);
+      }
+
+      touchButtons.forEach(bindTouchButton);
+
+      // LOGICA DI MOVIMENTO
+      function update(dt) {
+        if (input.left) {
+          state.angle -= ROTATION_SPEED * dt;
+        }
+        if (input.right) {
+          state.angle += ROTATION_SPEED * dt;
+        }
+
+        let speed = Math.hypot(state.vx, state.vy);
+
+        if (input.thrust) {
+          const ax = Math.cos(state.angle) * ACCELERATION;
+          const ay = Math.sin(state.angle) * ACCELERATION;
+          state.vx += ax * dt;
+          state.vy += ay * dt;
+        }
+
+        if (!input.thrust) {
+          if (speed > 0) {
+            const decel = FRICTION * dt;
+            speed = Math.max(0, speed - decel);
+            if (speed === 0) {
+              state.vx = 0;
+              state.vy = 0;
+            } else {
+              const factor = speed / Math.hypot(state.vx, state.vy);
+              state.vx *= factor;
+              state.vy *= factor;
+            }
+          }
+        }
+
+        if (input.brake && speed > 0) {
+          // freno attivo: decelerazione più forte nella direzione opposta
+          const decel = ACCELERATION * dt;
+          speed = Math.max(0, speed - decel);
+          if (speed === 0) {
+            state.vx = 0;
+            state.vy = 0;
+          } else {
+            const factor = speed / Math.hypot(state.vx, state.vy);
+            state.vx *= factor;
+            state.vy *= factor;
+          }
+        }
+
+        const newSpeed = Math.hypot(state.vx, state.vy);
+        if (newSpeed > MAX_SPEED) {
+          const factor = MAX_SPEED / newSpeed;
+          state.vx *= factor;
+          state.vy *= factor;
+        }
+
+        state.x += state.vx * dt;
+        state.y += state.vy * dt;
+
+        state.x = Math.max(0, Math.min(SECTOR_SIZE, state.x));
+        state.y = Math.max(0, Math.min(SECTOR_SIZE, state.y));
+
+        speedValueEl.textContent = newSpeed.toFixed(2);
+        posValueEl.textContent = `${state.x.toFixed(0)}, ${state.y.toFixed(0)}`;
+      }
+
+      // DRAWING
+      function drawStarfield() {
+        ctx.save();
+        ctx.fillStyle = "#020309";
+        ctx.fillRect(0, 0, width, height);
+
+        const camX = state.x;
+        const camY = state.y;
+
+        starLayers.forEach((layer, idx) => {
+          const { factor, stars } = layer;
+          const size = 2 + idx; // 2,3,4
+
+          stars.forEach((star) => {
+            const sx = (star.x - camX * factor) % (SECTOR_SIZE * 2);
+            const sy = (star.y - camY * factor) % (SECTOR_SIZE * 2);
+            let x = sx;
+            let y = sy;
+            if (x < -SECTOR_SIZE) x += SECTOR_SIZE * 2;
+            if (y < -SECTOR_SIZE) y += SECTOR_SIZE * 2;
+
+            const screenX = width / 2 + x * 0.1;
+            const screenY = height / 2 + y * 0.1;
+
+            if (screenX < -20 || screenX > width + 20 || screenY < -20 || screenY > height + 20) return;
+
+            const alpha = 0.3 + factor * 0.5;
+            ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, size * 0.4, 0, Math.PI * 2);
+            ctx.fill();
+          });
+        });
+
+        ctx.restore();
+      }
+
+      function drawShip() {
+        ctx.save();
+        ctx.translate(width / 2, height / 2);
+        ctx.rotate(state.angle);
+
+        ctx.beginPath();
+        ctx.moveTo(14, 0);
+        ctx.lineTo(-10, -8);
+        ctx.lineTo(-3, 0);
+        ctx.lineTo(-10, 8);
+        ctx.closePath();
+        ctx.fillStyle = "#ffffff";
+        ctx.fill();
+
+        ctx.strokeStyle = "#4fc3f7";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        const speed = Math.hypot(state.vx, state.vy);
+        if (speed > 0.1 && !input.thrust) {
+          ctx.save();
+          ctx.rotate(Math.PI);
+          ctx.beginPath();
+          ctx.moveTo(10, -3);
+          ctx.lineTo(18, 0);
+          ctx.lineTo(10, 3);
+          ctx.closePath();
+          ctx.fillStyle = "#ff9800";
+          ctx.fill();
+          ctx.restore();
+        }
+
+        if (input.thrust && speed > 0.1) {
+          ctx.save();
+          ctx.rotate(Math.PI);
+          ctx.beginPath();
+          ctx.moveTo(12, -4);
+          ctx.lineTo(22, 0);
+          ctx.lineTo(12, 4);
+          ctx.closePath();
+          ctx.fillStyle = "#ffeb3b";
+          ctx.fill();
+          ctx.restore();
+        }
+
+        ctx.restore();
+      }
+
+      function drawMinimap() {
+        const w = minimapSize;
+        const h = minimapSize;
+
+        minimapCtx.clearRect(0, 0, w, h);
+
+        minimapCtx.save();
+        minimapCtx.translate(w / 2, h / 2);
+
+        const hexRadius = (SECTOR_SIZE / 2) * minimapScale;
+        minimapCtx.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const a = (Math.PI / 3) * i - Math.PI / 2;
+          const x = hexRadius * Math.cos(a);
+          const y = hexRadius * Math.sin(a);
+          if (i === 0) minimapCtx.moveTo(x, y);
+          else minimapCtx.lineTo(x, y);
+        }
+        minimapCtx.closePath();
+        minimapCtx.strokeStyle = "rgba(255,255,255,0.4)";
+        minimapCtx.lineWidth = 1;
+        minimapCtx.stroke();
+
+        const starRadius = (STAR_DIAMETER / 2) * minimapScale;
+        minimapCtx.beginPath();
+        minimapCtx.arc(0, 0, starRadius, 0, Math.PI * 2);
+        const grd = minimapCtx.createRadialGradient(0, 0, 0, 0, 0, starRadius);
+        grd.addColorStop(0, "#ffffff");
+        grd.addColorStop(1, "rgba(255,255,255,0.1)");
+        minimapCtx.fillStyle = grd;
+        minimapCtx.fill();
+
+        const sx = (state.x - SECTOR_SIZE / 2) * minimapScale;
+        const sy = (state.y - SECTOR_SIZE / 2) * minimapScale;
+
+        minimapCtx.save();
+        minimapCtx.translate(sx, sy);
+        minimapCtx.rotate(state.angle);
+
+        minimapCtx.beginPath();
+        minimapCtx.moveTo(6, 0);
+        minimapCtx.lineTo(-4, -3);
+        minimapCtx.lineTo(-4, 3);
+        minimapCtx.closePath();
+        minimapCtx.fillStyle = "#4fc3f7";
+        minimapCtx.fill();
+
+        minimapCtx.restore();
+        minimapCtx.restore();
+      }
+
+      let lastTime = performance.now();
+
+      function loop(now) {
+        const dt = Math.min(0.05, (now - lastTime) / 1000);
+        lastTime = now;
+
+        update(dt);
+        drawStarfield();
+        drawShip();
+        drawMinimap();
+
+        requestAnimationFrame(loop);
+      }
+
+      function init() {
+        resize();
+        initStarfield();
+        loadState();
+
+        setInterval(saveState, 2000);
+        lastTime = performance.now();
+        requestAnimationFrame(loop);
+      }
+
+      window.addEventListener("load", init);
+    })();
+  </script>
+</body>
+</html>
