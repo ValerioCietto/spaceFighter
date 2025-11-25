@@ -44,6 +44,7 @@
   // run with: npx http-server .
 
   (function(){
+    let stars = [];
     const game = document.getElementById('game');
     const gctx = game.getContext('2d', { alpha:false, desynchronized:true });
     const minimap = document.getElementById('minimap');
@@ -98,7 +99,7 @@
     });
 
     // ---------- Stelle con parallax ----------
-    let stars = [];
+
     function buildStars(){
       stars = [];
       const layers = [
