@@ -197,19 +197,19 @@
     (function () {
       const SECTOR_SIZE = 6000;         // world size (square for simplicity)
       const STAR_DIAMETER = 300;        // minimap star diameter in world units
-      const STAR_RADIUS_WORLD = 150;    // main canvas star radius in px
+      const STAR_RADIUS_WORLD = 100;    // main canvas star radius in px
       const STAR_X = 3000;              // star world X
       const STAR_Y = 3000;              // star world Y
 
-      const MAX_SPEED = 250;            // px / second
+      const MAX_SPEED = 150;            // px / second
       const ACCELERATION = 100;          // px / s^2
-      const FRICTION = 50;             // px / s^2
+      const FRICTION = 70;             // px / s^2
       const ROTATION_SPEED = Math.PI;   // rad/s (~180°/s)
       const STORAGE_KEY = "spaceSectorState_v2";
 
-      const PROJECTILE_BASE_SPEED = 200; // px / s (added on top of ship velocity)
-      const PROJECTILE_LIFESPAN = 2.5;   // seconds
-      const PROJECTILE_SPREAD = 0.1; // degree, random
+      const PROJECTILE_BASE_SPEED = 250; // px / s (added on top of ship velocity)
+      const PROJECTILE_LIFESPAN = 3.0;   // seconds
+      const PROJECTILE_SPREAD = 0.15; // degree, random
 
       const canvas = document.getElementById("game-canvas");
       const ctx = canvas.getContext("2d");
