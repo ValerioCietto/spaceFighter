@@ -372,15 +372,6 @@
           case "Spacebar":
             shootProjectile();
             break;
-          case "Q":
-            shootProjectile();
-            shootProjectile();
-            shootProjectile();
-            shootProjectile();
-            shootProjectile();
-            shootProjectile();
-            shootProjectile();
-            break;
         }
       });
 
@@ -516,7 +507,6 @@
               target.hp -= 1;
               remove = true;
               if (target.hp <= 0) {
-                spawnTarget();
                 spawnTarget();
               }
             }
