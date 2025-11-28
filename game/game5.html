@@ -195,20 +195,21 @@
     // Command to launch: `npx serve .` then open http://localhost:3000/index.html in a browser
 
     (function () {
-      const SECTOR_SIZE = 6000;         // world size (square for simplicity)
+      const SECTOR_SIZE = 4000;         // world size (square for simplicity)
       const STAR_DIAMETER = 300;        // minimap star diameter in world units
       const STAR_RADIUS_WORLD = 150;    // main canvas star radius in px
-      const STAR_X = 3000;              // star world X
-      const STAR_Y = 3000;              // star world Y
+      const STAR_X = 2000;              // star world X
+      const STAR_Y = 2000;              // star world Y
 
-      const MAX_SPEED = 900;            // px / second
-      const ACCELERATION = 50;          // px / s^2
-      const FRICTION = 0.5;             // px / s^2
+      const MAX_SPEED = 300;            // px / second
+      const ACCELERATION = 100;          // px / s^2
+      const FRICTION = 50;             // px / s^2
       const ROTATION_SPEED = Math.PI;   // rad/s (~180°/s)
       const STORAGE_KEY = "spaceSectorState_v2";
 
       const PROJECTILE_BASE_SPEED = 200; // px / s (added on top of ship velocity)
       const PROJECTILE_LIFESPAN = 2.5;   // seconds
+      const PROJECTILE_SPREAD = 0.1; // degree, random
 
       const canvas = document.getElementById("game-canvas");
       const ctx = canvas.getContext("2d");
@@ -249,22 +250,24 @@
       function spawnTarget() {
         const centerX = SECTOR_SIZE / 2;
         const centerY = SECTOR_SIZE / 2;
-        const maxR = 1000;
+        const maxR = 500;
         const angle = Math.random() * Math.PI * 2;
         const r = Math.random() * maxR;
-        const radius = 40;
+        const radius = 10 + Math.random() * 30;
+        const targetHp = 1 + Math.random() * 9;
 
         target = {
           x: centerX + Math.cos(angle) * r,
           y: centerY + Math.sin(angle) * r,
           radius,
-          hp: 10
+          hp: targetHp
         };
       }
 
       function shootProjectile() {
-        const dirX = Math.cos(state.angle);
-        const dirY = Math.sin(state.angle);
+        const spreadAngle = - PROJECTILE_SPREAD + Math.random() * PROJECTILE_SPREAD;
+        const dirX = Math.cos(state.angle + spreadAngle);
+        const dirY = Math.sin(state.angle + spreadAngle);
 
         const shipSpeedX = state.vx;
         const shipSpeedY = state.vy;
