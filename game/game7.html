@@ -235,6 +235,20 @@
       const PROJECTILE_LIFESPAN = 3.0;   // seconds
       const PROJECTILE_SPREAD = 0.15;    // radians
 
+      const WeaponSpaceBullet = {
+        "damage":1,
+        "base_speed":250,
+        "life_span":3.0,
+        "spread":0.15,
+        "projectiles":1,
+        "aspect":"round_bullet",
+      }
+
+      const WeaponSniper = {
+        "damage": 10,
+        "base_speed": 1000,
+      }
+
       const MONEY_PER_TARGET = 10;
 
       const canvas = document.getElementById("game-canvas");
