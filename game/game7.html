@@ -224,11 +224,24 @@
       const STAR_RADIUS_WORLD = 100;    // main canvas star radius in px
       const STAR_X = 3000;              // star world X
       const STAR_Y = 3000;              // star world Y
+      const SystemInfo = {
+         "stars":[{
+             "name":"Sun",
+             "position_x": 3000,
+             "position_y": 3000,
+         }
+         ],
+         "planets":[
+         ],
+         "stations":[
+         ],
+      }
 
       const MAX_SPEED = 150;            // px / second
       const ACCELERATION = 100;         // px / s^2
       const FRICTION = 70;              // px / s^2
       const ROTATION_SPEED = Math.PI;   // rad/s (~180°/s)
+      
       const STORAGE_KEY = "spaceSectorState_v2";
 
       const PROJECTILE_BASE_SPEED = 250; // px / s (added on top of ship velocity)
