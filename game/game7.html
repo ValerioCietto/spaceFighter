@@ -242,8 +242,10 @@
         "spread":0.15,
         "projectiles":1,
         "aspect":"round_bullet",
-      }
-
+        "delay_ms":50,
+      };
+      // auto_aim: if the nearest enemy is within ±1.0 degrees it fires exactly aimed at the enemy
+// delay_ms: wait n milliseconds after refire
       const WeaponSniper = {
         "damage": 10,
         "base_speed": 1000,
@@ -251,7 +253,19 @@
         "spread": 0.0,
         "projectiles":1,
         "aspect":"line",
-      }
+        "auto_aim":1.0,
+        "delay_ms":500,
+      };
+
+      const WeaponShotgun = {
+        "damage":2,
+        "base_speed": 150,
+        "life_span": 2.0,
+        "spread": 5.0,
+        "projectiles": 5,
+        "aspect":"bullet",
+        "delay_ms":200,
+      };
 
       const MONEY_PER_TARGET = 10;
 
