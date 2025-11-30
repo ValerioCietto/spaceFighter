@@ -110,7 +110,8 @@
       const WeaponShotgun = {
         name: "Shotgun",
         damage: 2,
-        base_speed: 150,
+        base_speed: 350,
+        acceleration: -75,
         life_span: 2.0,
         spread: 5.0,           // degrees
         projectiles: 5,
@@ -122,14 +123,14 @@
         name: "Homing missiles",
         damage: 5,
         base_speed: 100,
-        acceleration: 50,
-        max_speed: 900,
-        turning_speed_deg: 90,      // deg/sec
-        life_span: 60.0,
+        acceleration: 10,
+        max_speed: 200,
+        turning_speed_deg: 120,      // deg/sec
+        life_span: 20.0,
         spread: 3.0,                // degrees
         projectiles: 1,
         aspect: "missile",
-        delay_ms: 400,
+        delay_ms: 1000,
         homing: true
       };
       WeaponHomingMissiles.turn_speed_rad =
