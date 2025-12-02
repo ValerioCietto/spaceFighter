@@ -38,22 +38,21 @@
     </div>
 
     <!-- Station dialog overlay -->
-    <div id="station-overlay" class="station-overlay">
-      <div class="station-dialog">
+    <div class="station-overlay" id="station-overlay" aria-hidden="true">
+      <div class="station-dialog" role="dialog" aria-modal="true">
         <div class="station-dialog-header">
-          <h2 class="station-title">Space Station</h2>
-          <button id="station-exit-btn" class="station-exit-btn">Exit Station</button>
+          <h2 class="station-title" id="station-title">Station</h2>
+          <button class="station-exit-btn" id="station-exit-btn" type="button">Exit Station</button>
         </div>
         <div class="station-dialog-body">
-          <div class="station-dialog-content" id="station-tab-content">
-            <h3>Info</h3>
-            <p>Welcome to the station. Here you can refit your ship, manage finances and browse ships.</p>
+          <div class="station-dialog-content" id="station-content">
+            <!-- Populated by station-manager.js -->
           </div>
           <div class="station-tabs">
-            <button class="station-tab-btn active" data-tab="info">Info</button>
-            <button class="station-tab-btn" data-tab="outfitter">Outfitter</button>
-            <button class="station-tab-btn" data-tab="finance">Finance</button>
-            <button class="station-tab-btn" data-tab="spaceships">Spaceships</button>
+            <button class="station-tab-btn active" data-tab="info" type="button">Info</button>
+            <button class="station-tab-btn" data-tab="outfitter" type="button">Outfitter</button>
+            <button class="station-tab-btn" data-tab="finance" type="button">Finance</button>
+            <button class="station-tab-btn" data-tab="spaceships" type="button">Spaceships</button>
           </div>
         </div>
       </div>
@@ -75,7 +74,7 @@
       </div>
     </div>
   </div>
-
+<script src="station-manager.js"></script>
   <script src="input.js"></script>
 
   <script>
@@ -990,7 +989,11 @@
         loadState();
         spawnTarget();
         updateLockButtonVisual();
-        initStationUI();
+        // Station manager: gli passo info di sistema e un getter dello state giocatore
+     StationManager.init({
+       systemInfo: SystemInfo,
+       getPlayerState: () => state
+     });
 
         setupInput(
           input,
