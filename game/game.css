@@ -1,169 +1,100 @@
-:root {
-  color-scheme: dark;
-  --bg-color: #05060a;
-  --ui-bg: rgba(0, 0, 0, 0.5);
-  --ui-border: rgba(255, 255, 255, 0.2);
-  --accent: #4fc3f7;
-  --text: #f5f5f5;
-  --danger: #ff5252;
-}
-
-* {
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-}
-
-html,
-body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background: radial-gradient(circle at top, #10131f 0, #05060a 50%, #000 100%);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: var(--text);
-  touch-action: none;
-}
-
-body {
-  display: flex;
-  flex-direction: column;
-}
-
-.hud {
+.docking-message {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  padding: 6px 10px;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 10px;
   background: var(--ui-bg);
   border: 1px solid var(--ui-border);
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 12px;
-  z-index: 10;
-  backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
 }
 
-.hud-row {
-  margin-bottom: 2px;
+.docking-message.visible {
+  opacity: 1;
 }
 
-.hud-row:last-child {
-  margin-bottom: 0;
-}
-
-.hud span.label {
-  opacity: 0.7;
-}
-
-.hud span.value {
-  font-weight: 600;
-  margin-left: 4px;
-  color: var(--accent);
-}
-
-.hud span.money-value {
-  color: #ffd54f;
-}
-
-#game-container {
-  position: relative;
-  flex: 1 1 auto;
-  width: 100%;
-  height: 100%;
-}
-
-#game-canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-#minimap {
+.station-overlay {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 140px;
-  height: 140px;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 20;
+}
+
+.station-overlay.open {
+  display: flex;
+}
+
+.station-dialog {
+  width: 90%;
+  max-width: 800px;
+  max-height: 90%;
   background: var(--ui-bg);
   border-radius: 12px;
   border: 1px solid var(--ui-border);
-  padding: 4px;
-  z-index: 10;
-  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  backdrop-filter: blur(6px);
 }
 
-#minimap canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
-  border-radius: 8px;
-  background: radial-gradient(circle at center, #202436 0, #05060a 70%);
-}
-
-#touch-controls {
-  position: absolute;
-  bottom: 10px;
-  left: 0;
-  right: 0;
+.station-dialog-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
-  padding: 0 10px;
-  z-index: 10;
-  pointer-events: none;
-}
-
-.touch-group {
-  display: flex;
-  gap: 8px;
-  pointer-events: auto;
-}
-
-.touch-column {
-  flex-direction: column;
-  gap: 6px;
-}
-
-.touch-btn {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  border: 1px solid var(--ui-border);
-  background: var(--ui-bg);
-  display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 22px;
+  margin-bottom: 8px;
+}
+
+.station-title {
+  font-size: 16px;
+  margin: 0;
+}
+
+.station-exit-btn {
+  border: 1px solid var(--ui-border);
+  background: transparent;
   color: var(--text);
-  backdrop-filter: blur(4px);
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: none;
-  transition: border-color 0.15s, box-shadow 0.15s, color 0.15s, background-color 0.15s;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
-.touch-btn:active {
+.station-dialog-body {
+  flex: 1;
+  display: flex;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.station-dialog-content {
+  flex: 1;
+  font-size: 14px;
+  overflow-y: auto;
+}
+
+.station-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.station-tab-btn {
+  border: 1px solid var(--ui-border);
+  background: rgba(0, 0, 0, 0.4);
+  color: var(--text);
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.station-tab-btn.active {
   border-color: var(--accent);
-  box-shadow: 0 0 10px rgba(79, 195, 247, 0.7);
-}
-
-.touch-btn.primary {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.touch-btn.toggled {
-  border-color: var(--danger);
-  color: var(--danger);
-  box-shadow: 0 0 10px rgba(255, 82, 82, 0.6);
-}
-
-@media (min-width: 768px) {
-  #touch-controls {
-    opacity: 0.4;
-  }
-  #touch-controls:hover {
-    opacity: 1;
-  }
+  background: rgba(79, 195, 247, 0.2);
 }
