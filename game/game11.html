@@ -335,6 +335,13 @@
         }
       }
 
+      if (dockButtonEl) {
+       dockButtonEl.addEventListener("click", (e) => {
+         e.preventDefault();
+         startDocking();
+       });
+     }
+
       function startDocking() {
         if (stationDialogOpen) return;
         dockingActive = true;
