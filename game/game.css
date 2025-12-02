@@ -1,3 +1,178 @@
+/* Command to launch: `npx serve .` then open http://localhost:3000/game.html */
+
+:root {
+  color-scheme: dark;
+  --bg-color: #05060a;
+  --ui-bg: rgba(0, 0, 0, 0.5);
+  --ui-border: rgba(255, 255, 255, 0.2);
+  --accent: #4fc3f7;
+  --text: #f5f5f5;
+  --danger: #ff5252;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: radial-gradient(circle at top, #10131f 0, #05060a 50%, #000 100%);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--text);
+  touch-action: none;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* GAME LAYOUT */
+
+#game-container {
+  position: relative;
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+}
+
+#game-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* HUD */
+
+.hud {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 6px 10px;
+  background: var(--ui-bg);
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  font-size: 12px;
+  z-index: 10;
+  backdrop-filter: blur(4px);
+}
+
+.hud-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 2px;
+}
+
+.hud-row:last-child {
+  margin-bottom: 0;
+}
+
+.label {
+  opacity: 0.7;
+}
+
+.value {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.money-value {
+  color: #ffd54f;
+}
+
+/* MINIMAP */
+
+#minimap {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 140px;
+  height: 140px;
+  background: var(--ui-bg);
+  border-radius: 12px;
+  border: 1px solid var(--ui-border);
+  padding: 4px;
+  z-index: 10;
+  backdrop-filter: blur(4px);
+}
+
+#minimap canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 8px;
+  background: radial-gradient(circle at center, #202436 0, #05060a 70%);
+}
+
+/* TOUCH CONTROLS */
+
+#touch-controls {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0 10px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.touch-group {
+  display: flex;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.touch-column {
+  flex-direction: column;
+  gap: 6px;
+}
+
+.touch-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid var(--ui-border);
+  background: var(--ui-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: var(--text);
+  backdrop-filter: blur(4px);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+.touch-btn:active {
+  border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(79, 195, 247, 0.7);
+}
+
+.touch-btn.primary {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Lock / special button toggled state */
+.touch-btn.toggled {
+  border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(79, 195, 247, 0.9);
+  background: rgba(79, 195, 247, 0.12);
+}
+
+/* DOCKING MESSAGE */
+
 .docking-message {
   position: absolute;
   top: 10px;
@@ -11,11 +186,14 @@
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s;
+  z-index: 12;
 }
 
 .docking-message.visible {
   opacity: 1;
 }
+
+/* STATION OVERLAY & DIALOG */
 
 .station-overlay {
   position: absolute;
@@ -32,8 +210,8 @@
 }
 
 .station-dialog {
-  width: 90%;
-  max-width: 800px;
+  width: 92%;
+  max-width: 860px;
   max-height: 90%;
   background: var(--ui-bg);
   border-radius: 12px;
@@ -41,7 +219,7 @@
   display: flex;
   flex-direction: column;
   padding: 10px;
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(8px);
 }
 
 .station-dialog-header {
@@ -58,12 +236,19 @@
 
 .station-exit-btn {
   border: 1px solid var(--ui-border);
-  background: transparent;
+  background: rgba(0, 0, 0, 0.4);
   color: var(--text);
   padding: 4px 10px;
   border-radius: 6px;
   cursor: pointer;
+  font-size: 12px;
 }
+
+.station-exit-btn:hover {
+  border-color: var(--accent);
+}
+
+/* Dialog content + vertical tabs */
 
 .station-dialog-body {
   flex: 1;
@@ -76,12 +261,19 @@
   flex: 1;
   font-size: 14px;
   overflow-y: auto;
+  padding-right: 6px;
 }
 
+.station-dialog-content h3 {
+  margin-top: 0;
+}
+
+/* Vertical tabs on the right */
 .station-tabs {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 90px;
 }
 
 .station-tab-btn {
@@ -92,9 +284,47 @@
   font-size: 12px;
   border-radius: 8px;
   cursor: pointer;
+  text-align: left;
 }
 
 .station-tab-btn.active {
   border-color: var(--accent);
   background: rgba(79, 195, 247, 0.2);
+}
+
+/* RESPONSIVE TWEAKS */
+
+@media (min-width: 768px) {
+  #touch-controls {
+    opacity: 0.4;
+  }
+
+  #touch-controls:hover {
+    opacity: 1;
+  }
+
+  .station-dialog {
+    width: 80%;
+  }
+}
+
+@media (max-width: 480px) {
+  .station-dialog {
+    width: 96%;
+    padding: 8px;
+  }
+
+  .station-dialog-body {
+    gap: 6px;
+  }
+
+  .station-tabs {
+    min-width: 80px;
+  }
+
+  .touch-btn {
+    width: 52px;
+    height: 52px;
+    font-size: 20px;
+  }
 }
