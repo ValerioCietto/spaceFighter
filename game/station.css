@@ -1,1 +1,144 @@
-asd
+/* Station UI styles for SpaceFighter */
+
+.docking-message {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 10px;
+  background: var(--ui-bg);
+  border: 1px solid var(--ui-border);
+  border-radius: 6px;
+  font-size: 12px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 12;
+}
+
+.docking-message.visible {
+  opacity: 1;
+}
+
+/* STATION OVERLAY & DIALOG */
+
+.station-overlay {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 20;
+}
+
+.station-overlay.open {
+  display: flex;
+}
+
+.station-dialog {
+  width: 92%;
+  max-width: 860px;
+  max-height: 90%;
+  background: var(--ui-bg);
+  border-radius: 12px;
+  border: 1px solid var(--ui-border);
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  backdrop-filter: blur(8px);
+}
+
+.station-dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.station-title {
+  font-size: 16px;
+  margin: 0;
+}
+
+.station-exit-btn {
+  border: 1px solid var(--ui-border);
+  background: rgba(0, 0, 0, 0.4);
+  color: var(--text);
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.station-exit-btn:hover {
+  border-color: var(--accent);
+}
+
+/* Dialog content + vertical tabs */
+
+.station-dialog-body {
+  flex: 1;
+  display: flex;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.station-dialog-content {
+  flex: 1;
+  font-size: 14px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.station-dialog-content h3 {
+  margin-top: 0;
+}
+
+/* Vertical tabs on the right */
+.station-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 90px;
+}
+
+.station-tab-btn {
+  border: 1px solid var(--ui-border);
+  background: rgba(0, 0, 0, 0.4);
+  color: var(--text);
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.station-tab-btn.active {
+  border-color: var(--accent);
+  background: rgba(79, 195, 247, 0.2);
+}
+
+/* RESPONSIVE TWEAKS (station dialog) */
+
+@media (min-width: 768px) {
+  .station-dialog {
+    width: 80%;
+  }
+}
+
+@media (max-width: 480px) {
+  .station-dialog {
+    width: 96%;
+    padding: 8px;
+  }
+
+  .station-dialog-body {
+    gap: 6px;
+  }
+
+  .station-tabs {
+    min-width: 80px;
+  }
+}
+
