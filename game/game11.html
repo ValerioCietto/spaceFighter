@@ -191,6 +191,7 @@
 
       const touchButtons = document.querySelectorAll(".touch-btn");
       const lockButton = document.querySelector('.touch-btn[data-action="lock"]');
+      const dockButtonEl = document.getElementById("dock-button");
 
       const dockingMessageEl = document.getElementById("docking-message");
       const stationOverlayEl = document.getElementById("station-overlay");
@@ -694,37 +695,6 @@
         ctx.strokeStyle = "#bbbbbb";
         ctx.lineWidth = 2;
         ctx.stroke();
-
-        // Decorazione a semicerchio sopra
-        const decoRadius = r * 0.7;
-        const decoY = -r * 0.4;
-        ctx.beginPath();
-        ctx.arc(0, decoY, decoRadius, Math.PI, 2 * Math.PI);
-        ctx.fillStyle = "#aaaaaa";
-        ctx.fill();
-        ctx.strokeStyle = "#dddddd";
-        ctx.stroke();
-
-        // 5 spikes triangolari sul bordo del semicerchio
-        const spikes = 5;
-        for (let i = 0; i < spikes; i++) {
-          const t = -Math.PI + (Math.PI * (i + 0.5)) / spikes;
-          const bx = Math.cos(t) * decoRadius;
-          const by = decoY + Math.sin(t) * decoRadius;
-
-          const nx = Math.cos(t);
-          const ny = Math.sin(t);
-          const len = 10;
-
-          ctx.beginPath();
-          ctx.moveTo(bx - 3, by);
-          ctx.lineTo(bx + 3, by);
-          ctx.lineTo(bx + nx * len, by + ny * len);
-          ctx.closePath();
-          ctx.fillStyle = "#eeeeee";
-          ctx.fill();
-        }
-
         ctx.restore();
       }
 
