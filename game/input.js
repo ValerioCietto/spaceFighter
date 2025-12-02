@@ -1,6 +1,20 @@
 // Command to launch: `npx serve .` then open http://localhost:3000/game.html in a browser
 
-function setupInput(input, attemptFireWeapon, toggleLock, cycleWeapon, setWeaponIndex, touchButtons) {
+function setupInput(
+  input,
+  attemptFireWeapon,
+  toggleLock,
+  cycleWeapon,
+  setWeaponIndex,
+  touchButtons,
+  requestDocking
+) {
+  function safeDocking() {
+    if (typeof requestDocking === "function") {
+      requestDocking();
+    }
+  }
+
   // Keyboard input
   window.addEventListener("keydown", (e) => {
     switch (e.key) {
@@ -22,7 +36,7 @@ function setupInput(input, attemptFireWeapon, toggleLock, cycleWeapon, setWeapon
         break;
       case "Tab":
         e.preventDefault();
-        toggleLock(); // toggle linea verso il target + update UI
+        toggleLock();
         break;
       case "1":
         setWeaponIndex(0);
@@ -35,6 +49,10 @@ function setupInput(input, attemptFireWeapon, toggleLock, cycleWeapon, setWeapon
         break;
       case "4":
         setWeaponIndex(3);
+        break;
+      case "l":
+      case "L":
+        safeDocking();
         break;
     }
   });
@@ -55,7 +73,6 @@ function setupInput(input, attemptFireWeapon, toggleLock, cycleWeapon, setWeapon
         break;
       case "Tab":
         e.preventDefault();
-        // niente: il toggle è gestito solo in keydown
         break;
     }
   });
