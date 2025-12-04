@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hyperjump Map Prototype</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #050817;
+      color: #ddd;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #ui {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      padding: 8px 12px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 4px;
+      font-size: 12px;
+      max-width: 280px;
+      line-height: 1.4;
+    }
+    #map {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="map"></canvas>
+  <div id="ui">
+    <strong>Hyperjump Map Prototype</strong><br />
+    Controls:<br />
+    • Zoom: mouse wheel<br />
+    • Pan: drag with left mouse button<br />
+    • Rotate: A / D keys<br />
+  </div>
+
+  <script>
+    // Run in terminal (optional static server): npx serve .  (then open this HTML in your browser)
+
+    const canvas = document.getElementById('map');
+    const ctx = canvas.getContext('2d');
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Configuration
+    const NUM_NODES = 350;
+    const MAX_X = 1000;
+    const MAX_Y = 600;
+    const NEIGHBORS = 3;
+
+    // World data
+    const nodes = [];
+    const edges = [];
+
+    function generateNodes() {
+      nodes.length = 0;
+      for (let i = 0; i < NUM_NODES; i++) {
+        const theta = Math.random() * Math.PI * 2;
+        // Bias radius toward center: rFactor = u^p with p > 1
+        const u = Math.random();
+        const rFactor = Math.pow(u, 1.8); // higher exponent -> more dense in center
+        const x = Math.cos(theta) * MAX_X * rFactor;
+        const y = Math.sin(theta) * MAX_Y * rFactor;
+        nodes.push({ x, y });
+      }
+    }
+
+    function buildEdges() {
+      edges.length = 0;
+      for (let i = 0; i < nodes.length; i++) {
+        const distances = [];
+        for (let j = 0; j < nodes.length; j++) {
+          if (i === j) continue;
+          const dx = nodes[i].x - nodes[j].x;
+          const dy = nodes[i].y - nodes[j].y;
+          distances.push({ j, d2: dx*dx + dy*dy });
+        }
+        distances.sort((a,b) => a.d2 - b.d2);
+        for (let k = 0; k < NEIGHBORS && k < distances.length; k++) {
+          const j = distances[k].j;
+          // Avoid duplicates: only add if i < j
+          if (i < j) {
+            edges.push({ a: i, b: j });
+          }
+        }
+      }
+    }
+
+    generateNodes();
+    buildEdges();
+
+    // View transform state
+    let scale = 0.3;
+    let rotation = 0;
+    let panX = 0; // in screen pixels
+    let panY = 0;
+
+    // Interaction state
+    let isPanning = false;
+    let lastMouseX = 0;
+    let lastMouseY = 0;
+
+    canvas.addEventListener('mousedown', (e) => {
+      if (e.button === 0) { // left button
+        isPanning = true;
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      isPanning = false;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isPanning) return;
+      const dx = e.clientX - lastMouseX;
+      const dy = e.clientY - lastMouseY;
+      lastMouseX = e.clientX;
+      lastMouseY = e.clientY;
+      panX += dx;
+      panY += dy;
+    });
+
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const zoomFactor = 1.05;
+      if (e.deltaY < 0) {
+        scale *= zoomFactor;
+      } else {
+        scale /= zoomFactor;
+      }
+      // Clamp scale
+      scale = Math.max(0.05, Math.min(scale, 2.5));
+    }, { passive: false });
+
+    window.addEventListener('keydown', (e) => {
+      const step = 0.05;
+      if (e.key === 'a' || e.key === 'A') {
+        rotation -= step;
+      } else if (e.key === 'd' || e.key === 'D') {
+        rotation += step;
+      }
+    });
+
+    function draw() {
+      const w = canvas.width;
+      const h = canvas.height;
+
+      // Reset transform and clear
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+
+      // Background gradient
+      const g = ctx.createRadialGradient(
+        w / 2, h / 2, 0,
+        w / 2, h / 2, Math.max(w, h) * 0.8
+      );
+      g.addColorStop(0, '#050817');
+      g.addColorStop(1, '#02040a');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, w, h);
+
+      // Apply view transform: pan (screen), center, scale, rotate
+      ctx.translate(w / 2 + panX, h / 2 + panY);
+      ctx.scale(scale, scale);
+      ctx.rotate(rotation);
+
+      // Draw edges
+      ctx.lineWidth = 1.5 / scale;
+      ctx.strokeStyle = 'rgba(120, 180, 255, 0.35)';
+      ctx.beginPath();
+      for (const e of edges) {
+        const a = nodes[e.a];
+        const b = nodes[e.b];
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+      }
+      ctx.stroke();
+
+      // Draw nodes
+      const baseRadius = 4;
+      ctx.fillStyle = '#88ddff';
+      for (const node of nodes) {
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, baseRadius / Math.sqrt(scale), 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Small glow in center to hint core
+      ctx.beginPath();
+      ctx.fillStyle = 'rgba(180, 220, 255, 0.08)';
+      ctx.arc(0, 0, 200, 0, Math.PI * 2);
+      ctx.fill();
+
+      requestAnimationFrame(draw);
+    }
+
+    draw();
+  </script>
+</body>
+</html>
