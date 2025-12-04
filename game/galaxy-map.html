@@ -1,0 +1,223 @@
+<!-- hyperjump-map.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hyperjump Map Prototype</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #02030a;
+      color: #ccc;
+      font-family: system-ui, sans-serif;
+    }
+    #overlay {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      padding: 6px 10px;
+      font-size: 12px;
+      background: rgba(0, 0, 0, 0.45);
+      border-radius: 4px;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="overlay">
+    Hyperjump Map Prototype<br/>
+    Mouse: rotate · Wheel: zoom · Right-drag: pan
+  </div>
+  <canvas id="scene"></canvas>
+
+  <script type="module">
+    // Run with: npx serve .   (or any static HTTP server, then open /hyperjump-map.html)
+
+    import * as THREE from 'https://unpkg.com/three@0.164.0/build/three.module.js';
+    import { OrbitControls } from 'https://unpkg.com/three@0.164.0/examples/jsm/controls/OrbitControls.js';
+
+    // CONFIG -----------------------------------------------------------------
+    const NODE_COUNT = 280;         // number of star systems
+    const X_MAX = 1000;             // x in [-1000, +1000]
+    const Y_MAX = 600;              // y in [-600, +600]
+    const Z_MAX = 25;               // z in [-25, +25]
+    const NEIGHBORS_PER_NODE = 3;   // graph connectivity
+
+    // CORE THREE.JS SETUP ----------------------------------------------------
+    const canvas = document.getElementById('scene');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio || 1);
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x02030a);
+
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
+    camera.position.set(0, 0, 2200);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.minDistance = 300;
+    controls.maxDistance = 5000;
+    controls.enablePan = true;
+
+    // Subtle 3D lighting hint
+    const light = new THREE.PointLight(0x88aaff, 1.3, 8000);
+    light.position.set(0, 0, 2000);
+    scene.add(light);
+    scene.add(new THREE.AmbientLight(0x222244));
+
+    // STARFIELD BACKGROUND (very subtle) -------------------------------------
+    {
+      const starGeom = new THREE.BufferGeometry();
+      const starCount = 600;
+      const starPositions = new Float32Array(starCount * 3);
+      for (let i = 0; i < starCount; i++) {
+        const r = 6000 * Math.random();
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(2 * Math.random() - 1);
+        starPositions[3 * i + 0] = r * Math.sin(phi) * Math.cos(theta);
+        starPositions[3 * i + 1] = r * Math.sin(phi) * Math.sin(theta);
+        starPositions[3 * i + 2] = r * Math.cos(phi);
+      }
+      starGeom.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+      const starMat = new THREE.PointsMaterial({
+        size: 4,
+        sizeAttenuation: true,
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.3
+      });
+      const stars = new THREE.Points(starGeom, starMat);
+      scene.add(stars);
+    }
+
+    // HYPERJUMP NODES (SYSTEMS) ---------------------------------------------
+    const nodes = [];
+
+    function generateNodes() {
+      // Elliptical distribution, denser at center
+      // rFactor in [0,1], but biased to 0 (center) by exponent > 1
+      for (let i = 0; i < NODE_COUNT; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const rFactor = Math.pow(Math.random(), 2.1);  // >2 → center-dense
+        const x = rFactor * X_MAX * Math.cos(angle);
+        const y = rFactor * Y_MAX * Math.sin(angle);
+        const z = (Math.random() * 2 - 1) * Z_MAX;
+        nodes.push(new THREE.Vector3(x, y, z));
+      }
+    }
+
+    generateNodes();
+
+    // POINTS GEOMETRY FOR NODES ---------------------------------------------
+    function createNodePoints() {
+      const positions = new Float32Array(NODE_COUNT * 3);
+      const colors = new Float32Array(NODE_COUNT * 3);
+
+      for (let i = 0; i < NODE_COUNT; i++) {
+        const v = nodes[i];
+        positions[3 * i + 0] = v.x;
+        positions[3 * i + 1] = v.y;
+        positions[3 * i + 2] = v.z;
+
+        // Color & brightness based on distance from center (subtle 3D feel)
+        const normRadius = Math.min(1, v.length() / (Math.max(X_MAX, Y_MAX)));
+        const intensity = 1.0 - 0.6 * normRadius; // brighter near center
+        const r = 0.5 + 0.5 * intensity;
+        const g = 0.7 + 0.3 * intensity;
+        const b = 1.0;
+        colors[3 * i + 0] = r;
+        colors[3 * i + 1] = g;
+        colors[3 * i + 2] = b;
+      }
+
+      const geom = new THREE.BufferGeometry();
+      geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+      const mat = new THREE.PointsMaterial({
+        size: 14,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.95,
+        sizeAttenuation: true
+      });
+
+      const points = new THREE.Points(geom, mat);
+      scene.add(points);
+    }
+
+    createNodePoints();
+
+    // EDGES / HYPERJUMP LINKS -----------------------------------------------
+    function createEdges() {
+      const edgePositions = [];
+      const edgeSet = new Set();
+
+      for (let i = 0; i < NODE_COUNT; i++) {
+        // naive nearest-neighbor search (fine for this scale)
+        const distances = [];
+        for (let j = 0; j < NODE_COUNT; j++) {
+          if (i === j) continue;
+          const d2 = nodes[i].distanceToSquared(nodes[j]);
+          distances.push({ j, d2 });
+        }
+        distances.sort((a, b) => a.d2 - b.d2);
+
+        const neighbors = distances.slice(0, NEIGHBORS_PER_NODE);
+        for (const { j } of neighbors) {
+          const a = Math.min(i, j);
+          const b = Math.max(i, j);
+          const key = `${a}-${b}`;
+          if (edgeSet.has(key)) continue;
+          edgeSet.add(key);
+
+          const v1 = nodes[a];
+          const v2 = nodes[b];
+          edgePositions.push(v1.x, v1.y, v1.z, v2.x, v2.y, v2.z);
+        }
+      }
+
+      const geom = new THREE.BufferGeometry();
+      geom.setAttribute(
+        'position',
+        new THREE.Float32BufferAttribute(edgePositions, 3)
+      );
+
+      const mat = new THREE.LineBasicMaterial({
+        color: 0x4ba7ff,
+        transparent: true,
+        opacity: 0.35
+      });
+
+      const lines = new THREE.LineSegments(geom, mat);
+      scene.add(lines);
+    }
+
+    createEdges();
+
+    // RENDER LOOP & RESIZE ---------------------------------------------------
+    function onResize() {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+
+    window.addEventListener('resize', onResize);
+    onResize();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    animate();
+  </script>
+</body>
+</html>
