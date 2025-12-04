@@ -33,19 +33,18 @@
   <canvas id="scene"></canvas>
 
   <script type="module">
-    // Run with: npx serve .   (or any static HTTP server, then open /hyperjump-map.html)
+    // Run with: npx serve .   (from the folder containing this file)
 
     import * as THREE from 'https://unpkg.com/three@0.164.0/build/three.module.js';
     import { OrbitControls } from 'https://unpkg.com/three@0.164.0/examples/jsm/controls/OrbitControls.js';
 
-    // CONFIG -----------------------------------------------------------------
-    const NODE_COUNT = 280;         // number of star systems
-    const X_MAX = 1000;             // x in [-1000, +1000]
-    const Y_MAX = 600;              // y in [-600, +600]
-    const Z_MAX = 25;               // z in [-25, +25]
-    const NEIGHBORS_PER_NODE = 3;   // graph connectivity
+    // --- CONFIG ---------------------------------------------------------
+    const NODE_COUNT = 280;
+    const X_MAX = 1000;
+    const Y_MAX = 600;
+    const Z_MAX = 25;
+    const NEIGHBORS_PER_NODE = 3;
 
-    // CORE THREE.JS SETUP ----------------------------------------------------
     const canvas = document.getElementById('scene');
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio || 1);
@@ -63,13 +62,12 @@
     controls.maxDistance = 5000;
     controls.enablePan = true;
 
-    // Subtle 3D lighting hint
     const light = new THREE.PointLight(0x88aaff, 1.3, 8000);
     light.position.set(0, 0, 2000);
     scene.add(light);
     scene.add(new THREE.AmbientLight(0x222244));
 
-    // STARFIELD BACKGROUND (very subtle) -------------------------------------
+    // Background stars
     {
       const starGeom = new THREE.BufferGeometry();
       const starCount = 600;
@@ -94,26 +92,22 @@
       scene.add(stars);
     }
 
-    // HYPERJUMP NODES (SYSTEMS) ---------------------------------------------
+    // Generate elliptical, center-dense nodes
     const nodes = [];
-
     function generateNodes() {
-      // Elliptical distribution, denser at center
-      // rFactor in [0,1], but biased to 0 (center) by exponent > 1
       for (let i = 0; i < NODE_COUNT; i++) {
         const angle = Math.random() * Math.PI * 2;
-        const rFactor = Math.pow(Math.random(), 2.1);  // >2 → center-dense
+        const rFactor = Math.pow(Math.random(), 2.1); // center-dense
         const x = rFactor * X_MAX * Math.cos(angle);
         const y = rFactor * Y_MAX * Math.sin(angle);
         const z = (Math.random() * 2 - 1) * Z_MAX;
         nodes.push(new THREE.Vector3(x, y, z));
       }
     }
-
     generateNodes();
 
-    // POINTS GEOMETRY FOR NODES ---------------------------------------------
-    function createNodePoints() {
+    // Node points
+    (function createNodePoints() {
       const positions = new Float32Array(NODE_COUNT * 3);
       const colors = new Float32Array(NODE_COUNT * 3);
 
@@ -123,9 +117,8 @@
         positions[3 * i + 1] = v.y;
         positions[3 * i + 2] = v.z;
 
-        // Color & brightness based on distance from center (subtle 3D feel)
         const normRadius = Math.min(1, v.length() / (Math.max(X_MAX, Y_MAX)));
-        const intensity = 1.0 - 0.6 * normRadius; // brighter near center
+        const intensity = 1.0 - 0.6 * normRadius;
         const r = 0.5 + 0.5 * intensity;
         const g = 0.7 + 0.3 * intensity;
         const b = 1.0;
@@ -148,17 +141,14 @@
 
       const points = new THREE.Points(geom, mat);
       scene.add(points);
-    }
+    })();
 
-    createNodePoints();
-
-    // EDGES / HYPERJUMP LINKS -----------------------------------------------
-    function createEdges() {
+    // Edges
+    (function createEdges() {
       const edgePositions = [];
       const edgeSet = new Set();
 
       for (let i = 0; i < NODE_COUNT; i++) {
-        // naive nearest-neighbor search (fine for this scale)
         const distances = [];
         for (let j = 0; j < NODE_COUNT; j++) {
           if (i === j) continue;
@@ -167,7 +157,7 @@
         }
         distances.sort((a, b) => a.d2 - b.d2);
 
-        const neighbors = distances.slice(0, NEIGHBORS_PER_NODE);
+        const neighbors = distances.slice(0, 3);
         for (const { j } of neighbors) {
           const a = Math.min(i, j);
           const b = Math.max(i, j);
@@ -182,10 +172,7 @@
       }
 
       const geom = new THREE.BufferGeometry();
-      geom.setAttribute(
-        'position',
-        new THREE.Float32BufferAttribute(edgePositions, 3)
-      );
+      geom.setAttribute('position', new THREE.Float32BufferAttribute(edgePositions, 3));
 
       const mat = new THREE.LineBasicMaterial({
         color: 0x4ba7ff,
@@ -195,11 +182,9 @@
 
       const lines = new THREE.LineSegments(geom, mat);
       scene.add(lines);
-    }
+    })();
 
-    createEdges();
-
-    // RENDER LOOP & RESIZE ---------------------------------------------------
+    // Resize + render loop
     function onResize() {
       const w = window.innerWidth;
       const h = window.innerHeight;
@@ -207,7 +192,6 @@
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
     }
-
     window.addEventListener('resize', onResize);
     onResize();
 
@@ -216,7 +200,6 @@
       controls.update();
       renderer.render(scene, camera);
     }
-
     animate();
   </script>
 </body>
