@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hyperjump Map Prototype</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #050817;
+      color: #ddd;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #map {
+      display: block;
+    }
+    #ui {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      padding: 8px 12px;
+      background: rgba(0,0,0,0.6);
+      border-radius: 6px;
+      font-size: 12px;
+      max-width: 320px;
+      line-height: 1.4;
+      backdrop-filter: blur(4px);
+    }
+    #ui h1 {
+      margin: 0 0 4px 0;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .row {
+      margin-top: 6px;
+    }
+    .row label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      margin-bottom: 2px;
+    }
+    .row input[type="range"] {
+      width: 100%;
+    }
+    button {
+      margin-top: 8px;
+      padding: 4px 10px;
+      background: #1b4b8f;
+      color: #eee;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+    button:hover {
+      background: #2462bd;
+    }
+    .info-line {
+      margin-top: 6px;
+      font-size: 11px;
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="map"></canvas>
+
+  <div id="ui">
+    <h1>Hyperjump Map Prototype</h1>
+    <div class="row">
+      <label>
+        <span>Nodes</span>
+        <span id="nodesValue"></span>
+      </label>
+      <input type="range" id="nodesSlider" min="50" max="1000" step="10" value="350">
+    </div>
+    <div class="row">
+      <label>
+        <span>Neighbors per node</span>
+        <span id="neighborsValue"></span>
+      </label>
+      <input type="range" id="neighborsSlider" min="1" max="8" step="1" value="3">
+    </div>
+    <button id="regenBtn">Regenerate map</button>
+
+    <div class="info-line">
+      Zoom factor: <span id="zoomValue"></span>
+    </div>
+    <div class="info-line">
+      Controls: Zoom = wheel, Pan = drag (LMB), Rotate = A / D
+    </div>
+  </div>
+
+  <script>
+    // Command to launch (serve this file): npx serve .
+
+    const canvas = document.getElementById('map');
+    const ctx = canvas.getContext('2d');
+
+    const nodesSlider = document.getElementById('nodesSlider');
+    const nodesValue  = document.getElementById('nodesValue');
+    const neighborsSlider = document.getElementById('neighborsSlider');
+    const neighborsValue  = document.getElementById('neighborsValue');
+    const regenBtn   = document.getElementById('regenBtn');
+    const zoomValue  = document.getElementById('zoomValue');
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    const MAX_X = 1000;
+    const MAX_Y = 600;
+
+    let numNodes = parseInt(nodesSlider.value, 10);
+    let neighborsCount = parseInt(neighborsSlider.value, 10);
+
+    // World data
+    const nodes = [];
+    const edges = [];
+
+    function generateNodes() {
+      nodes.length = 0;
+      for (let i = 0; i < numNodes; i++) {
+        const theta = Math.random() * Math.PI * 2;
+        const u = Math.random();
+        const rFactor = Math.pow(u, 1.8); // bias toward center
+        const x = Math.cos(theta) * MAX_X * rFactor;
+        const y = Math.sin(theta) * MAX_Y * rFactor;
+        nodes.push({ x, y });
+      }
+    }
+
+    function buildEdges() {
+      edges.length = 0;
+      for (let i = 0; i < nodes.length; i++) {
+        const distances = [];
+        for (let j = 0; j < nodes.length; j++) {
+          if (i === j) continue;
+          const dx = nodes[i].x - nodes[j].x;
+          const dy = nodes[i].y - nodes[j].y;
+          distances.push({ j, d2: dx*dx + dy*dy });
+        }
+        distances.sort((a,b) => a.d2 - b.d2);
+        for (let k = 0; k < neighborsCount && k < distances.length; k++) {
+          const j = distances[k].j;
+          if (i < j) edges.push({ a: i, b: j });
+        }
+      }
+    }
+
+    function regenerateMap() {
+      generateNodes();
+      buildEdges();
+    }
+
+    function updateUiLabels() {
+      nodesValue.textContent = numNodes;
+      neighborsValue.textContent = neighborsCount;
+    }
+    updateUiLabels();
+
+    nodesSlider.addEventListener('input', () => {
+      numNodes = parseInt(nodesSlider.value, 10);
+      updateUiLabels();
+    });
+
+    neighborsSlider.addEventListener('input', () => {
+      neighborsCount = parseInt(neighborsSlider.value, 10);
+      updateUiLabels();
+    });
+
+    regenBtn.addEventListener('click', () => {
+      regenerateMap();
+    });
+
+    regenerateMap();
+
+    // View transform state
+    let scale = 1.0; // initial zoom
+    let rotation = 0;
+    let panX = 0;
+    let panY = 0;
+
+    // Interaction state
+    let isPanning = false;
+    let lastMouseX = 0;
+    let lastMouseY = 0;
+
+    canvas.addEventListener('mousedown', (e) => {
+      if (e.button === 0) {
+        isPanning = true;
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      isPanning = false;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isPanning) return;
+      const dx = e.clientX - lastMouseX;
+      const dy = e.clientY - lastMouseY;
+      lastMouseX = e.clientX;
+      lastMouseY = e.clientY;
+      panX += dx;
+      panY += dy;
+    });
+
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const zoomFactor = 1.05;
+      if (e.deltaY < 0) {
+        scale *= zoomFactor;
+      } else {
+        scale /= zoomFactor;
+      }
+      // Clamp scale between 0.4 and 2.5
+      scale = Math.max(0.4, Math.min(scale, 2.5));
+    }, { passive: false });
+
+    window.addEventListener('keydown', (e) => {
+      const step = 0.05;
+      if (e.key === 'a' || e.key === 'A') {
+        rotation -= step;
+      } else if (e.key === 'd' || e.key === 'D') {
+        rotation += step;
+      }
+    });
+
+    // ---------- Starfield with parallax ----------
+    const NUM_STARS = 400;
+    const stars = [];
+
+    function generateStars() {
+      stars.length = 0;
+      for (let i = 0; i < NUM_STARS; i++) {
+        // u,v in [0,1], depth in [0.2,1]
+        const u = Math.random();
+        const v = Math.random();
+        const depth = 0.2 + Math.random() * 0.8;
+        stars.push({ u, v, depth });
+      }
+    }
+
+    generateStars();
+
+    // ---------- Animated haze ----------
+    let time = 0;
+
+    function drawBackground(w, h) {
+      // Base radial gradient
+      const g = ctx.createRadialGradient(
+        w / 2, h / 2, 0,
+        w / 2, h / 2, Math.max(w, h) * 0.8
+      );
+      g.addColorStop(0, '#050817');
+      g.addColorStop(1, '#02040a');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, w, h);
+
+      // Starfield (no transform)
+      const baseStarSize = 1.1;
+      ctx.save();
+      for (const s of stars) {
+        // Parallax on pan (farther stars move less)
+        const px = s.u * w + panX * s.depth * 0.15;
+        const py = s.v * h + panY * s.depth * 0.15;
+
+        const size = baseStarSize + s.depth * 1.2;
+        const alpha = 0.3 + s.depth * 0.7;
+
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+        ctx.arc(px, py, size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+
+      // Soft animated haze layer
+      const hazeRadius = Math.max(w, h) * 0.7;
+      const cx = w / 2 + Math.cos(time * 0.2) * 80;
+      const cy = h / 2 + Math.sin(time * 0.17) * 60;
+
+      const haze = ctx.createRadialGradient(
+        cx, cy, 0,
+        cx, cy, hazeRadius
+      );
+      haze.addColorStop(0.0, 'rgba(120,160,255,0.12)');
+      haze.addColorStop(0.4, 'rgba(80,120,220,0.08)');
+      haze.addColorStop(1.0, 'rgba(0,0,0,0)');
+
+      ctx.fillStyle = haze;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    function draw() {
+      const w = canvas.width;
+      const h = canvas.height;
+
+      time += 0.01;
+
+      // Update zoom display
+      zoomValue.textContent = scale.toFixed(2);
+
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+
+      // Background + stars + haze
+      drawBackground(w, h);
+
+      // Map transform
+      ctx.save();
+      ctx.translate(w / 2 + panX, h / 2 + panY);
+      ctx.scale(scale, scale);
+      ctx.rotate(rotation);
+
+      // edges
+      ctx.lineWidth = 1.5 / scale;
+      ctx.strokeStyle = 'rgba(120, 180, 255, 0.35)';
+      ctx.beginPath();
+      for (const e of edges) {
+        const a = nodes[e.a];
+        const b = nodes[e.b];
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+      }
+      ctx.stroke();
+
+      // nodes
+      const baseRadius = 4;
+      ctx.fillStyle = '#88ddff';
+      for (const node of nodes) {
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, baseRadius / Math.sqrt(scale), 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // center glow
+      ctx.beginPath();
+      ctx.fillStyle = 'rgba(180, 220, 255, 0.08)';
+      ctx.arc(0, 0, 200, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+
+      requestAnimationFrame(draw);
+    }
+
+    draw();
+  </script>
+</body>
+</html>
