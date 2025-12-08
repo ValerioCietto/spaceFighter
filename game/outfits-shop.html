@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Outfit Shop</title>
+<style>
+    body { font-family: Arial, sans-serif; background:#111; color:#eee; margin:0; padding:20px; }
+    h1 { text-align:center; }
+    .filters { display:flex; gap:10px; justify-content:center; margin-bottom:20px; }
+    button { padding:8px 14px; background:#333; color:#eee; border:1px solid #444; cursor:pointer; }
+    button:hover { background:#555; }
+    .shop { display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:15px; }
+    .card { background:#222; border:1px solid #444; padding:15px; border-radius:8px; }
+    .tier-standard { border-left:5px solid #4aa3ff; }
+    .tier-common { border-left:5px solid #888; }
+    .tier-elite { border-left:5px solid gold; }
+    .spec { font-size:13px; opacity:0.9; }
+</style>
+</head>
+<body>
+
+<h1>Outfit Shop</h1>
+
+<div class="filters">
+    <button onclick="filterShop('all')">Tutte</button>
+    <button onclick="filterShop('human')">Human</button>
+    <button onclick="filterShop('jared')">Jared</button>
+    <button onclick="filterShop('technician')">Technicians</button>
+    <button onclick="filterShop('neutral')">Neutrali</button>
+    <button onclick="filterTier('elite')">Elite</button>
+</div>
+
+<div id="shop" class="shop"></div>
+
+<script>
+/* 
+    Comando terminale per avviare un server locale:
+    python3 -m http.server 8080
+*/
+
+// === JSON INCORPORATO (puoi spostarlo in outfits.json) ===
+const data = fetch("/shop/outfits.json"); 
+// Inserisci qui il JSON che ti ho fornito prima, oppure sostituisci con fetch("outfits.json")
+
+// === RENDERING SHOP ===
+function renderShop(items) {
+    const shop = document.getElementById("shop");
+    shop.innerHTML = "";
+
+    items.forEach(o => {
+        const div = document.createElement("div");
+        div.className = `card tier-${o.tier}`;
+
+        div.innerHTML = `
+            <h3>${o.name}</h3>
+            <div class="spec">Specie: ${o.species}</div>
+            <div class="spec">Costo: ${o.cost}</div>
+            <div class="spec">Massa: ${o.mass}</div>
+            <div class="spec">Energy Use: ${o.energyUse}</div>
+            <div class="spec">Heat: ${o.heat}</div>
+            <p>${o.description}</p>
+            ${o.specialEffect ? `<p><strong>Effetto:</strong> ${o.specialEffect}</p>` : ""}
+        `;
+        shop.appendChild(div);
+    });
+}
+
+renderShop(data.outfits);
+
+// === FILTRI ===
+function filterShop(species) {
+    if (species === "all") return renderShop(data.outfits);
+    renderShop(data.outfits.filter(o => o.species === species));
+}
+
+function filterTier(tier) {
+    renderShop(data.outfits.filter(o => o.tier === tier));
+}
+</script>
+
+</body>
+</html>
