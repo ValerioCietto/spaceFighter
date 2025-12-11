@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Canvas Spaceships</title>
+  <style>
+    body {
+      margin: 0;
+      background: #050814;
+      color: #eee;
+      font-family: system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      margin: 16px 0 8px;
+      font-size: 20px;
+    }
+    p {
+      margin: 0 0 12px;
+      font-size: 13px;
+      opacity: 0.75;
+    }
+    canvas {
+      border: 1px solid #333;
+      margin-bottom: 16px;
+      background: radial-gradient(circle at 30% 20%, #1b243b 0, #050814 50%);
+      image-rendering: pixelated;
+    }
+  </style>
+</head>
+<body>
+  <h1>10 Canvas Vector Spaceships</h1>
+  <p>All ships are drawn with ctx paths (no images).</p>
+  <canvas id="shipsCanvas" width="900" height="480"></canvas>
+
+  <script>
+    // Command (terminal): npx serve .   # then open http://localhost:3000/this-file.html
+
+    const canvas = document.getElementById('shipsCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function withTransform(ctx, x, y, s, rot, drawFn) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rot || 0);
+      ctx.scale(s, s);
+      drawFn(ctx);
+      ctx.restore();
+    }
+
+    // Simple star background
+    function drawStars(ctx, count) {
+      ctx.save();
+      for (let i = 0; i < count; i++) {
+        const x = Math.random() * ctx.canvas.width;
+        const y = Math.random() * ctx.canvas.height;
+        const r = Math.random() * 1.2;
+        ctx.globalAlpha = 0.3 + Math.random() * 0.7;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    // 1. Classic dart-shaped fighter
+    function drawShip1(ctx) {
+      ctx.fillStyle = '#9fd5ff';
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 0.3;
+
+      ctx.beginPath();
+      ctx.moveTo(0, -12);
+      ctx.lineTo(6, 10);
+      ctx.lineTo(0, 6);
+      ctx.lineTo(-6, 10);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // canopy
+      ctx.beginPath();
+      ctx.ellipse(0, -4, 3, 5, 0, 0, Math.PI * 2);
+      ctx.fillStyle = '#123050';
+      ctx.fill();
+
+      // engines
+      ctx.fillStyle = '#ffb347';
+      ctx.fillRect(-4, 10, 2, 4);
+      ctx.fillRect(2, 10, 2, 4);
+    }
+
+    // 2. Wide-wing interceptor
+    function drawShip2(ctx) {
+      ctx.fillStyle = '#f4f4f4';
+      ctx.strokeStyle = '#88c0ff';
+      ctx.lineWidth = 0.4;
+
+      // wings
+      ctx.beginPath();
+      ctx.moveTo(-14, 4);
+      ctx.lineTo(-4, -4);
+      ctx.lineTo(4, -4);
+      ctx.lineTo(14, 4);
+      ctx.lineTo(6, 10);
+      ctx.lineTo(-6, 10);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // body
+      ctx.beginPath();
+      ctx.moveTo(0, -10);
+      ctx.lineTo(4, 4);
+      ctx.lineTo(0, 12);
+      ctx.lineTo(-4, 4);
+      ctx.closePath();
+      ctx.fillStyle = '#d0e1ff';
+      ctx.fill();
+      ctx.stroke();
+
+      // cockpit
+      ctx.beginPath();
+      ctx.arc(0, -3, 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#203a70';
+      ctx.fill();
+    }
+
+    // 3. Heavy bomber
+    function drawShip3(ctx) {
+      ctx.fillStyle = '#a0a0a0';
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 0.5;
+
+      // main hull
+      ctx.beginPath();
+      ctx.moveTo(0, -14);
+      ctx.lineTo(7, -8);
+      ctx.lineTo(7, 12);
+      ctx.lineTo(-7, 12);
+      ctx.lineTo(-7, -8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // side pods
+      ctx.fillStyle = '#cccccc';
+      ctx.beginPath();
+      ctx.moveTo(-12, -2);
+      ctx.lineTo(-7, 0);
+      ctx.lineTo(-7, 10);
+      ctx.lineTo(-12, 8);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(12, -2);
+      ctx.lineTo(7, 0);
+      ctx.lineTo(7, 10);
+      ctx.lineTo(12, 8);
+      ctx.closePath();
+      ctx.fill();
+
+      // bombs bay lines
+      ctx.strokeStyle = '#555';
+      ctx.beginPath();
+      ctx.moveTo(-3, -2);
+      ctx.lineTo(-3, 10);
+      ctx.moveTo(3, -2);
+      ctx.lineTo(3, 10);
+      ctx.stroke();
+    }
+
+    // 4. Arrowhead scout
+    function drawShip4(ctx) {
+      ctx.fillStyle = '#ffd27f';
+      ctx.strokeStyle = '#7a4f00';
+      ctx.lineWidth = 0.4;
+
+      ctx.beginPath();
+      ctx.moveTo(0, -14);
+      ctx.lineTo(10, 6);
+      ctx.lineTo(4, 12);
+      ctx.lineTo(-4, 12);
+      ctx.lineTo(-10, 6);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // inner triangle
+      ctx.beginPath();
+      ctx.moveTo(0, -10);
+      ctx.lineTo(5, 4);
+      ctx.lineTo(-5, 4);
+      ctx.closePath();
+      ctx.fillStyle = '#ffefc0';
+      ctx.fill();
+    }
+
+    // 5. Ring-shaped cruiser
+    function drawShip5(ctx) {
+      ctx.strokeStyle = '#9ad0ff';
+      ctx.lineWidth = 1.1;
+
+      ctx.beginPath();
+      ctx.arc(0, 0, 10, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(0, 0, 5, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // central core
+      ctx.fillStyle = '#9ad0ff';
+      ctx.beginPath();
+      ctx.arc(0, 0, 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      // bridge
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(-2, -11, 4, 4);
+    }
+
+    // 6. Vertical spear frigate
+    function drawShip6(ctx) {
+      ctx.fillStyle = '#c0e8ff';
+      ctx.strokeStyle = '#1b4b6f';
+      ctx.lineWidth = 0.4;
+
+      ctx.beginPath();
+      ctx.moveTo(0, -18);
+      ctx.lineTo(5, -8);
+      ctx.lineTo(4, 14);
+      ctx.lineTo(-4, 14);
+      ctx.lineTo(-5, -8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // fins
+      ctx.beginPath();
+      ctx.moveTo(-6, -4);
+      ctx.lineTo(-10, 6);
+      ctx.lineTo(-4, 6);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(6, -4);
+      ctx.lineTo(10, 6);
+      ctx.lineTo(4, 6);
+      ctx.closePath();
+      ctx.fill();
+
+      // window stripe
+      ctx.strokeStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.moveTo(-3, -2);
+      ctx.lineTo(3, -2);
+      ctx.stroke();
+    }
+
+    // 7. Asymmetric gunship
+    function drawShip7(ctx) {
+      ctx.fillStyle = '#e0e0e0';
+      ctx.strokeStyle = '#444';
+      ctx.lineWidth = 0.4;
+
+      // main body
+      ctx.beginPath();
+      ctx.moveTo(-4, -10);
+      ctx.lineTo(6, -6);
+      ctx.lineTo(8, 6);
+      ctx.lineTo(-2, 12);
+      ctx.lineTo(-8, 4);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // side cannon
+      ctx.fillStyle = '#999';
+      ctx.fillRect(8, -1, 5, 2);
+      ctx.fillRect(13, -0.5, 3, 1);
+    }
+
+    // 8. Tri-wing fighter
+    function drawShip8(ctx) {
+      ctx.fillStyle = '#c8f0ff';
+      ctx.strokeStyle = '#2d6a8f';
+      ctx.lineWidth = 0.4;
+
+      // vertical wing
+      ctx.beginPath();
+      ctx.moveTo(0, -14);
+      ctx.lineTo(3, 12);
+      ctx.lineTo(-3, 12);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // left wing
+      ctx.beginPath();
+      ctx.moveTo(0, -4);
+      ctx.lineTo(-12, 4);
+      ctx.lineTo(-4, 10);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // right wing
+      ctx.beginPath();
+      ctx.moveTo(0, -4);
+      ctx.lineTo(12, 4);
+      ctx.lineTo(4, 10);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // cockpit
+      ctx.beginPath();
+      ctx.arc(0, -5, 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#16324f';
+      ctx.fill();
+    }
+
+    // 9. Boxy cargo ship
+    function drawShip9(ctx) {
+      ctx.fillStyle = '#b0b0b0';
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 0.4;
+
+      ctx.beginPath();
+      ctx.rect(-6, -10, 12, 20);
+      ctx.fill();
+      ctx.stroke();
+
+      // cargo containers
+      ctx.fillStyle = '#dadada';
+      ctx.fillRect(-10, -6, 4, 12);
+      ctx.fillRect(6, -6, 4, 12);
+
+      // windows
+      ctx.fillStyle = '#3a6fa0';
+      for (let i = -6; i <= 6; i += 4) {
+        ctx.fillRect(i - 1, -8, 2, 3);
+      }
+    }
+
+    // 10. Stealth wedge
+    function drawShip10(ctx) {
+      ctx.fillStyle = '#5a6680';
+      ctx.strokeStyle = '#a8b4d0';
+      ctx.lineWidth = 0.4;
+
+      ctx.beginPath();
+      ctx.moveTo(0, -14);
+      ctx.lineTo(10, 12);
+      ctx.lineTo(0, 8);
+      ctx.lineTo(-10, 12);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // center spine
+      ctx.strokeStyle = '#c5d0f0';
+      ctx.beginPath();
+      ctx.moveTo(0, -12);
+      ctx.lineTo(0, 9);
+      ctx.stroke();
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawStars(ctx, 180);
+
+      const ships = [
+        drawShip1, drawShip2, drawShip3, drawShip4, drawShip5,
+        drawShip6, drawShip7, drawShip8, drawShip9, drawShip10
+      ];
+
+      const cols = 5;
+      const rows = 2;
+      const cellW = canvas.width / cols;
+      const cellH = canvas.height / rows;
+
+      ships.forEach((drawFn, i) => {
+        const col = i % cols;
+        const row = (i / cols) | 0;
+        const x = (col + 0.5) * cellW;
+        const y = (row + 0.5) * cellH;
+        const scale = 2.2;
+
+        withTransform(ctx, x, y, scale, 0, drawFn);
+      });
+    }
+
+    render();
+  </script>
+</body>
+</html>
