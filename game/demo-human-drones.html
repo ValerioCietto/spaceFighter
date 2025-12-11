@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Human Drone Ships – Canvas Demo</title>
+  <style>
+    body {
+      margin: 0;
+      background: #050814;
+      color: #e5e9f0;
+      font-family: system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      margin: 10px 0 2px;
+      font-size: 18px;
+    }
+    p {
+      margin: 0 0 10px;
+      font-size: 12px;
+      opacity: 0.8;
+    }
+    canvas {
+      background: radial-gradient(circle at 30% 10%, #202b46 0, #050814 60%);
+      border: 1px solid #333;
+      margin: 12px;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>Human Drone Ships – Canvas</h1>
+  <p>4 human drones: interceptor, gun, shield, repair.</p>
+  <canvas id="humanDrones" width="900" height="420"></canvas>
+
+  <script>
+    // Command (terminal): npx serve .   // then open http://localhost:3000/this-file.html
+
+    const canvas = document.getElementById("humanDrones");
+    const ctx = canvas.getContext("2d");
+
+    function withTransform(ctx, x, y, s, rot, fn) {
+      ctx.save();
+      ctx.translate(x, y);
+      if (rot) ctx.rotate(rot);
+      ctx.scale(s, s);
+      fn(ctx);
+      ctx.restore();
+    }
+
+    function drawStarfield(ctx, count) {
+      ctx.save();
+      for (let i = 0; i < count; i++) {
+        const x = Math.random() * ctx.canvas.width;
+        const y = Math.random() * ctx.canvas.height;
+        const r = Math.random() * 1.3 + 0.2;
+        const g = ctx.createRadialGradient(x, y, 0, x, y, r * 3);
+        g.addColorStop(0, "rgba(255,255,255,0.9)");
+        g.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x, y, r * 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    // 1) Interceptor Drone (sleek arrow)
+    function drawInterceptorDrone(ctx) {
+      ctx.save();
+
+      const hullGrad = ctx.createLinearGradient(-20, 0, 30, 0);
+      hullGrad.addColorStop(0, "#cfdcf3");
+      hullGrad.addColorStop(1, "#6b7fa4");
+      ctx.fillStyle = hullGrad;
+      ctx.strokeStyle = "#d8dee9";
+      ctx.lineWidth = 1.2;
+
+      // main hull
+      ctx.beginPath();
+      ctx.moveTo(-18, -8);
+      ctx.lineTo(18, -6);
+      ctx.lineTo(30, 0);
+      ctx.lineTo(18, 6);
+      ctx.lineTo(-18, 8);
+      ctx.lineTo(-26, 4);
+      ctx.lineTo(-26, -4);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // small fins
+      ctx.fillStyle = "#9aaacc";
+      ctx.beginPath();
+      ctx.moveTo(-4, -8);
+      ctx.lineTo(10, -14);
+      ctx.lineTo(16, -10);
+      ctx.lineTo(4, -4);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(-4, 8);
+      ctx.lineTo(10, 14);
+      ctx.lineTo(16, 10);
+      ctx.lineTo(4, 4);
+      ctx.closePath();
+      ctx.fill();
+
+      // engine glow
+      ctx.globalCompositeOperation = "lighter";
+      const g = ctx.createRadialGradient(-28, 0, 0, -28, 0, 10);
+      g.addColorStop(0, "rgba(160,220,255,1)");
+      g.addColorStop(1, "rgba(160,220,255,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(-28, 0, 10, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.globalCompositeOperation = "source-over";
+
+      // visor
+      ctx.fillStyle = "#1c2330";
+      ctx.beginPath();
+      ctx.ellipse(6, 0, 6, 3, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // 2) Gun Drone (compact with twin barrels)
+    function drawGunDrone(ctx) {
+      ctx.save();
+
+      // body
+      const hullGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 20);
+      hullGrad.addColorStop(0, "#e5f2ff");
+      hullGrad.addColorStop(1, "#5e6f96");
+      ctx.fillStyle = hullGrad;
+      ctx.strokeStyle = "#d8dee9";
+      ctx.lineWidth = 1.3;
+
+      ctx.beginPath();
+      ctx.arc(0, 0, 18, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // cross panel
+      ctx.strokeStyle = "#435064";
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(-18, 0);
+      ctx.lineTo(18, 0);
+      ctx.moveTo(0, -18);
+      ctx.lineTo(0, 18);
+      ctx.stroke();
+
+      // twin barrels
+      ctx.strokeStyle = "#e5edf9";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(4, 0);
+      ctx.lineTo(18, -4);
+      ctx.moveTo(-4, 0);
+      ctx.lineTo(-18, -4);
+      ctx.stroke();
+
+      // muzzle glow
+      ctx.globalCompositeOperation = "lighter";
+      const g1 = ctx.createRadialGradient(18, -4, 0, 18, -4, 6);
+      g1.addColorStop(0, "rgba(255,210,150,1)");
+      g1.addColorStop(1, "rgba(255,210,150,0)");
+      ctx.fillStyle = g1;
+      ctx.beginPath();
+      ctx.arc(18, -4, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      const g2 = ctx.createRadialGradient(-18, -4, 0, -18, -4, 6);
+      g2.addColorStop(0, "rgba(255,210,150,1)");
+      g2.addColorStop(1, "rgba(255,210,150,0)");
+      ctx.fillStyle = g2;
+      ctx.beginPath();
+      ctx.arc(-18, -4, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.globalCompositeOperation = "source-over";
+
+      ctx.restore();
+    }
+
+    // 3) Shield Drone (ring with hex core)
+    function drawShieldDrone(ctx) {
+      ctx.save();
+
+      // outer ring
+      ctx.strokeStyle = "#88c0ff";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(0, 0, 20, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // inner ring
+      ctx.strokeStyle = "#d8dee9";
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.arc(0, 0, 13, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // hex core
+      ctx.fillStyle = "#1a2130";
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const a = (Math.PI / 3) * i - Math.PI / 6;
+        const x = Math.cos(a) * 7;
+        const y = Math.sin(a) * 7;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fill();
+
+      // shield glow
+      ctx.globalCompositeOperation = "lighter";
+      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 22);
+      g.addColorStop(0, "rgba(130,200,255,0.9)");
+      g.addColorStop(1, "rgba(130,200,255,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(0, 0, 22, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.globalCompositeOperation = "source-over";
+      ctx.restore();
+    }
+
+    // 4) Repair Drone (arms + blue core)
+    function drawRepairDrone(ctx) {
+      ctx.save();
+
+      // body
+      const bodyGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 18);
+      bodyGrad.addColorStop(0, "#f0f6ff");
+      bodyGrad.addColorStop(1, "#7b88a3");
+      ctx.fillStyle = bodyGrad;
+      ctx.strokeStyle = "#d8dee9";
+      ctx.lineWidth = 1.3;
+      ctx.beginPath();
+      ctx.arc(0, 0, 16, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // arms
+      ctx.strokeStyle = "#4c566a";
+      ctx.lineWidth = 2;
+      const armLen = 20;
+      for (let i = 0; i < 3; i++) {
+        const a = (-Math.PI / 2) + (i * Math.PI / 3);
+        const x2 = Math.cos(a) * armLen;
+        const y2 = Math.sin(a) * armLen;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+
+        // claw
+        ctx.beginPath();
+        ctx.moveTo(x2, y2);
+        ctx.lineTo(x2 + Math.cos(a + 0.4) * 6, y2 + Math.sin(a + 0.4) * 6);
+        ctx.moveTo(x2, y2);
+        ctx.lineTo(x2 + Math.cos(a - 0.4) * 6, y2 + Math.sin(a - 0.4) * 6);
+        ctx.stroke();
+      }
+
+      // blue core
+      ctx.globalCompositeOperation = "lighter";
+      const core = ctx.createRadialGradient(0, 0, 0, 0, 0, 10);
+      core.addColorStop(0, "rgba(140,210,255,1)");
+      core.addColorStop(1, "rgba(140,210,255,0)");
+      ctx.fillStyle = core;
+      ctx.beginPath();
+      ctx.arc(0, 0, 10, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.globalCompositeOperation = "source-over";
+
+      ctx.restore();
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawStarfield(ctx, 160);
+
+      const drones = [
+        { fn: drawInterceptorDrone, label: "Interceptor Drone" },
+        { fn: drawGunDrone,        label: "Gun Drone" },
+        { fn: drawShieldDrone,     label: "Shield Drone" },
+        { fn: drawRepairDrone,     label: "Repair Drone" }
+      ];
+
+      const cellW = canvas.width / drones.length;
+      const centerY = canvas.height / 2;
+      const scale = 2.3;
+
+      ctx.fillStyle = "#e5e9f0";
+      ctx.font = "13px system-ui, sans-serif";
+      ctx.textAlign = "center";
+
+      drones.forEach((d, i) => {
+        const x = (i + 0.5) * cellW;
+        withTransform(ctx, x, centerY - 10, scale, 0, d.fn);
+        ctx.fillText(d.label, x, centerY + 60);
+      });
+    }
+
+    render();
+  </script>
+</body>
+</html>
