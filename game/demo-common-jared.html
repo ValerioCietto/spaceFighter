@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Jared Common Spaceship Parts</title>
+  <style>
+    body {
+      margin: 0;
+      background: #050814;
+      color: #e5e9f0;
+      font-family: system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      margin: 10px 0 2px;
+      font-size: 18px;
+    }
+    p {
+      margin: 0 0 10px;
+      font-size: 12px;
+      opacity: 0.8;
+    }
+    canvas {
+      background: radial-gradient(circle at 30% 10%, #1f1427 0, #050814 60%);
+      border: 1px solid #333;
+      margin: 12px;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>Jared Common Spaceship Parts</h1>
+  <p>U-engine, rotating scanner, energy reactor, adaptive curved wings (canvas ctx).</p>
+  <canvas id="jaredParts" width="900" height="500"></canvas>
+
+  <script>
+    // Command (terminal): npx serve .   // then open http://localhost:3000/this-file.html
+
+    const canvas = document.getElementById('jaredParts');
+    const ctx = canvas.getContext('2d');
+
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+
+    // basic helpers
+    function withTransform(ctx, x, y, sx, sy, rot, fn) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rot || 0);
+      ctx.scale(sx, sy);
+      fn(ctx);
+      ctx.restore();
+    }
+
+    function drawStarfield() {
+      // static simple starfield each frame (cheap enough)
+      ctx.save();
+      ctx.fillStyle = "#050814";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < 130; i++) {
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
+        const r = Math.random() * 1.4 + 0.1;
+        ctx.globalAlpha = 0.4 + Math.random() * 0.6;
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      ctx.restore();
+    }
+
+    // 1) Jared U-shaped engine with yellow glow
+    function drawUEngine(ctx, t) {
+      ctx.save();
+
+      // organic U structure
+      const grad = ctx.createLinearGradient(-40, -40, 40, 40);
+      grad.addColorStop(0, "#7e3a24");
+      grad.addColorStop(0.5, "#e19a58");
+      grad.addColorStop(1, "#5a2516");
+      ctx.fillStyle = grad;
+      ctx.strokeStyle = "#3b150c";
+      ctx.lineWidth = 3;
+
+      ctx.beginPath();
+      ctx.moveTo(-40, -40);
+      ctx.bezierCurveTo(-70, -10, -70, 20, -40, 40);
+      ctx.bezierCurveTo(-20, 60, -8, 60, 0, 60);
+      ctx.bezierCurveTo(8, 60, 20, 60, 40, 40);
+      ctx.bezierCurveTo(70, 20, 70, -10, 40, -40);
+      ctx.bezierCurveTo(20, -60, 8, -60, 0, -60);
+      ctx.bezierCurveTo(-8, -60, -20, -60, -40, -40);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // vein lines
+      ctx.strokeStyle = "rgba(60,20,10,0.9)";
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(-32, -36);
+      ctx.quadraticCurveTo(-48, 0, -32, 36);
+      ctx.moveTo(32, -36);
+      ctx.quadraticCurveTo(48, 0, 32, 36);
+      ctx.stroke();
+
+      // central spherical yellow glow
+      const pulse = 0.8 + 0.2 * Math.sin(t * 2.0);
+      ctx.globalCompositeOperation = "lighter";
+      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 26);
+      g.addColorStop(0, `rgba(255,240,140,${0.8 + 0.2 * pulse})`);
+      g.addColorStop(0.5, `rgba(255,210,70,${0.5 + 0.2 * pulse})`);
+      g.addColorStop(1, "rgba(255,180,40,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(0, 0, 26, 0, Math.PI * 2);
+      ctx.fill();
+
+      // inner core
+      ctx.globalCompositeOperation = "source-over";
+      ctx.fillStyle = "#3b1b0a";
+      ctx.beginPath();
+      ctx.arc(0, 0, 10, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // 2) Rotating scanner with laser
+    function drawScanner(ctx, t) {
+      ctx.save();
+
+      // base organic node
+      const baseGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 22);
+      baseGrad.addColorStop(0, "#fbd8aa");
+      baseGrad.addColorStop(1, "#9b4a2a");
+      ctx.fillStyle = baseGrad;
+      ctx.strokeStyle = "#4c1f11";
+      ctx.lineWidth = 2;
+
+      ctx.beginPath();
+      ctx.arc(0, 0, 22, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // rotating arm
+      const angle = t * 1.8;
+      ctx.save();
+      ctx.rotate(angle);
+
+      // arm
+      ctx.strokeStyle = "#ffe6c8";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(32, 0);
+      ctx.stroke();
+
+      // laser emitter pod
+      ctx.fillStyle = "#5b2616";
+      ctx.beginPath();
+      ctx.arc(32, 0, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // laser beam (pulses length)
+      const l = 50 + 10 * Math.sin(t * 5);
+      ctx.globalCompositeOperation = "lighter";
+      const lg = ctx.createLinearGradient(32, 0, 32 + l, 0);
+      lg.addColorStop(0, "rgba(0,255,180,0.9)");
+      lg.addColorStop(1, "rgba(0,255,180,0)");
+      ctx.strokeStyle = lg;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(32, 0);
+      ctx.lineTo(32 + l, 0);
+      ctx.stroke();
+
+      ctx.restore(); // undo arm rotation
+
+      // small eye
+      ctx.globalCompositeOperation = "lighter";
+      const eye = ctx.createRadialGradient(0, 0, 0, 0, 0, 8);
+      eye.addColorStop(0, "rgba(0,255,160,1)");
+      eye.addColorStop(1, "rgba(0,255,160,0)");
+      ctx.fillStyle = eye;
+      ctx.beginPath();
+      ctx.arc(0, 0, 8, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.globalCompositeOperation = "source-over";
+      ctx.restore();
+    }
+
+    // 3) Reactor energy outfit with glowing rays
+    function drawReactorOutfit(ctx, t) {
+      ctx.save();
+
+      // outer organic ring
+      const ringGrad = ctx.createLinearGradient(-30, -30, 30, 30);
+      ringGrad.addColorStop(0, "#8a4224");
+      ringGrad.addColorStop(1, "#d88a4a");
+      ctx.fillStyle = ringGrad;
+      ctx.strokeStyle = "#4a1e0f";
+      ctx.lineWidth = 2.2;
+
+      ctx.beginPath();
+      ctx.arc(0, 0, 32, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#1b0f10";
+      ctx.beginPath();
+      ctx.arc(0, 0, 20, 0, Math.PI * 2);
+      ctx.fill();
+
+      // inner core
+      ctx.fillStyle = "#301217";
+      ctx.beginPath();
+      ctx.arc(0, 0, 10, 0, Math.PI * 2);
+      ctx.fill();
+
+      // glowing rays
+      ctx.globalCompositeOperation = "lighter";
+      const corePulse = 0.6 + 0.4 * Math.sin(t * 1.6);
+
+      for (let i = 0; i < 8; i++) {
+        const a = (Math.PI * 2 / 8) * i + Math.sin(t * 0.7) * 0.3;
+        const r1 = 18;
+        const r2 = 40 + Math.sin(t * 3 + i) * 6;
+        const x1 = Math.cos(a) * r1;
+        const y1 = Math.sin(a) * r1;
+        const x2 = Math.cos(a) * r2;
+        const y2 = Math.sin(a) * r2;
+
+        const g = ctx.createLinearGradient(x1, y1, x2, y2);
+        g.addColorStop(0, `rgba(120,255,220,${0.8 * corePulse})`);
+        g.addColorStop(1, "rgba(120,255,220,0)");
+        ctx.strokeStyle = g;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
+
+      // core halo
+      const halo = ctx.createRadialGradient(0, 0, 0, 0, 0, 22);
+      halo.addColorStop(0, `rgba(120,255,220,${0.9 * corePulse})`);
+      halo.addColorStop(1, "rgba(120,255,220,0)");
+      ctx.fillStyle = halo;
+      ctx.beginPath();
+      ctx.arc(0, 0, 22, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.globalCompositeOperation = "source-over";
+      ctx.restore();
+    }
+
+    // 4) Adaptive curved wings (Jared style)
+    function drawAdaptiveCurvedWings(ctx, t) {
+      ctx.save();
+
+      // mode 0 = wide + curved, 1 = folded + narrow
+      const mode = (Math.sin(t * 0.7) + 1) / 2;
+      const baseAngle = 35 * Math.PI / 180;
+      const foldedAngle = 10 * Math.PI / 180;
+      const angle = baseAngle * (1 - mode) + foldedAngle * mode;
+
+      const length = 110;
+      const thicknessWide = 30;
+      const thicknessFold = 14;
+      const thick = thicknessWide * (1 - mode) + thicknessFold * mode;
+
+      // central organic hub
+      const hubGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 20);
+      hubGrad.addColorStop(0, "#fdd9b1");
+      hubGrad.addColorStop(1, "#9b4f2b");
+      ctx.fillStyle =
