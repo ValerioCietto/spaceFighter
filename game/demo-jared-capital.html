@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Jared Capital Ship – Brood Leviathan</title>
+  <style>
+    body {
+      margin: 0;
+      background: #050814;
+      color: #e5e9f0;
+      font-family: system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      margin: 12px 0 2px;
+      font-size: 20px;
+    }
+    p {
+      margin: 0 0 10px;
+      font-size: 13px;
+      opacity: 0.8;
+    }
+    canvas {
+      background: radial-gradient(circle at 30% 10%, #221828 0, #050814 60%);
+      border: 1px solid #333;
+      margin: 12px;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>Jared Capital Ship – “Brood Leviathan”</h1>
+  <p>Organic, spiked, bioluminescent. Drawn with canvas ctx only.</p>
+  <canvas id="jaredCapital" width="1200" height="520"></canvas>
+
+  <script>
+    // Command (terminal): npx serve .   // then open http://localhost:3000/this-file.html
+
+    const canvas = document.getElementById('jaredCapital');
+    const ctx = canvas.getContext('2d');
+
+    function withTransform(ctx, x, y, s, rot, fn) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rot || 0);
+      ctx.scale(s, s);
+      fn(ctx);
+      ctx.restore();
+    }
+
+    function drawStarfield(ctx, count) {
+      ctx.save();
+      for (let i = 0; i < count; i++) {
+        const x = Math.random() * ctx.canvas.width;
+        const y = Math.random() * ctx.canvas.height;
+        const r = Math.random() * 1.6 + 0.2;
+        const g = ctx.createRadialGradient(x, y, 0, x, y, r * 3);
+        const hue = 200 + Math.random() * 60;
+        g.addColorStop(0, `hsla(${hue}, 80%, 80%, 1)`);
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x, y, r * 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawJaredCapital(ctx) {
+      ctx.save();
+
+      // --- MAIN ORGANIC SUPER-HULL (big manta / whale shape) ---
+      const skin = ctx.createLinearGradient(-260, 0, 260, 0);
+      skin.addColorStop(0, '#7d3a22');
+      skin.addColorStop(0.25, '#bf6d3a');
+      skin.addColorStop(0.5, '#fcd7a6');
+      skin.addColorStop(0.75, '#bf6d3a');
+      skin.addColorStop(1, '#5a2615');
+
+      ctx.fillStyle = skin;
+      ctx.strokeStyle = '#3a160c';
+      ctx.lineWidth = 3;
+
+      ctx.beginPath();
+      ctx.moveTo(-260, 0);
+      ctx.bezierCurveTo(-220, -80, -120, -130, 0, -140);
+      ctx.bezierCurveTo(120, -130, 220, -80, 260, 0);
+      ctx.bezierCurveTo(220, 80, 120, 130, 0, 150);
+      ctx.bezierCurveTo(-120, 130, -220, 80, -260, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // --- UNDERBELLY LAYER (darker, visible at bottom) ---
+      const belly = ctx.createLinearGradient(0, 40, 0, 160);
+      belly.addColorStop(0, '#6e311c');
+      belly.addColorStop(1, '#2e1310');
+      ctx.fillStyle = belly;
+
+      ctx.beginPath();
+      ctx.moveTo(-220, 40);
+      ctx.bezierCurveTo(-160, 120, -60, 150, 0, 160);
+      ctx.bezierCurveTo(60, 150, 160, 120, 220, 40);
+      ctx.bezierCurveTo(140, 80, -140, 80, -220, 40);
+      ctx.closePath();
+      ctx.fill();
+
+      // --- DORSAL SPINE RIDGE ---
+      ctx.strokeStyle = '#ffe6c9';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-220, -10);
+      ctx.bezierCurveTo(-120, -70, -40, -90, 0, -96);
+      ctx.bezierCurveTo(40, -90, 120, -70, 220, -10);
+      ctx.stroke();
+
+      // segmented plates along the spine
+      ctx.strokeStyle = 'rgba(255, 230, 200, 0.8)';
+      ctx.lineWidth = 1.4;
+      for (let i = -5; i <= 5; i++) {
+        const t = i / 5;
+        const x = t * 180;
+        const y = -60 - Math.abs(t) * 20;
+        ctx.beginPath();
+        ctx.moveTo(x - 14, y - 4);
+        ctx.lineTo(x + 14, y - 4);
+        ctx.lineTo(x + 10, y + 4);
+        ctx.lineTo(x - 10, y + 4);
+        ctx.closePath();
+        ctx.stroke();
+      }
+
+      // --- FORWARD LANCE-HEAD (command & ramming section) ---
+      const headGrad = ctx.createLinearGradient(0, -160, 0, -90);
+      headGrad.addColorStop(0, '#ffebc9');
+      headGrad.addColorStop(1, '#d88a48');
+      ctx.fillStyle = headGrad;
+      ctx.strokeStyle = '#4a1e10';
+      ctx.lineWidth = 2;
+
+      ctx.beginPath();
+      ctx.moveTo(0, -160);
+      ctx.lineTo(28, -144);
+      ctx.lineTo(40, -120);
+      ctx.quadraticCurveTo(0, -110, -40, -120);
+      ctx.lineTo(-28, -144);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // mandible spikes underside
+      ctx.fillStyle = '#c86d3a';
+      ctx.beginPath();
+      ctx.moveTo(-18, -126);
+      ctx.lineTo(-34, -148);
+      ctx.lineTo(-22, -124);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(18, -126);
+      ctx.lineTo(34, -148);
+      ctx.lineTo(22, -124);
+      ctx.closePath();
+      ctx.fill();
+
+      // --- BIO-LUMINESCENT "EYES" AND COMMAND WINDOWS ---
+      ctx.globalCompositeOperation = 'lighter';
+
+      function glowEye(x, y, radius, color) {
+        const g = ctx.createRadialGradient(x, y, 0, x, y, radius);
+        g.addColorStop(0, color.replace('ALPHA', '1'));
+        g.addColorStop(1, color.replace('ALPHA', '0'));
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      glowEye(-18, -130, 7, 'rgba(0,255,170,ALPHA)');
+      glowEye(18, -130, 7, 'rgba(0,255,170,ALPHA)');
+
+      // lateral sensor clusters
+      glowEye(-160, -40, 10, 'rgba(0,255,210,ALPHA)');
+      glowEye(160, -40, 10, 'rgba(0,255,210,ALPHA)');
+
+      ctx.globalCompositeOperation = 'source-over';
+
+      // --- SIDE BLADE-WINGS (large scythe-like structures) ---
+      ctx.fillStyle = '#c4713f';
+      ctx.strokeStyle = '#4a1e10';
+      ctx.lineWidth = 2;
+
+      function sideBlade(sign) {
+        ctx.save();
+        ctx.scale(sign, 1);
+        ctx.beginPath();
+        ctx.moveTo(40, -40);
+        ctx.quadraticCurveTo(160, -20, 230, 20);
+        ctx.quadraticCurveTo(160, 10, 80, 40);
+        ctx.quadraticCurveTo(60, 20, 40, -40);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      sideBlade(1);
+      sideBlade(-1);
+
+      // blade ridges
+      ctx.strokeStyle = '#ffe1c4';
+      ctx.lineWidth = 1.3;
+      function bladeLines(sign) {
+        ctx.save();
+        ctx.scale(sign, 1);
+        ctx.beginPath();
+        ctx.moveTo(60, -28);
+        ctx.lineTo(180, -10);
+        ctx.moveTo(56, -10);
+        ctx.lineTo(170, 4);
+        ctx.moveTo(52, 8);
+        ctx.lineTo(160, 16);
+        ctx.stroke();
+        ctx.restore();
+      }
+      bladeLines(1);
+      bladeLines(-1);
+
+      // --- VENTRAL HANGARS (for Jared swarm craft) ---
+      ctx.fillStyle = '#2b130c';
+      ctx.strokeStyle = '#5c2a17';
+      ctx.lineWidth = 1.4;
+
+      function hangar(x, y) {
+        ctx.beginPath();
+        ctx.ellipse(x, y, 36, 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+      hangar(-80, 50);
+      hangar(0, 60);
+      hangar(80, 50);
+
+      // hangar glows
+      ctx.globalCompositeOperation = 'lighter';
+      glowEye(-80, 52, 20, 'rgba(0,255,200,ALPHA)');
+      glowEye(0, 62, 24, 'rgba(0,255,200,ALPHA)');
+      glowEye(80, 52, 20, 'rgba(0,255,200,ALPHA)');
+      ctx.globalCompositeOperation = 'source-over';
+
+      // --- REAR THRUST MEMBRANES (organic engines) ---
+      ctx.fillStyle = '#5d2716';
+      ctx.strokeStyle = '#2c0f0a';
+      ctx.lineWidth = 2;
+
+      function engineLobe(x, y) {
+        ctx.beginPath();
+        ctx.moveTo(x - 30, y - 10);
+        ctx.quadraticCurveTo(x - 60, y, x - 30, y + 10);
+        ctx.quadraticCurveTo(x - 10, y + 6, x, y);
+        ctx.quadraticCurveTo(x - 10, y - 6, x - 30, y - 10);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      engineLobe(-200, -10);
+      engineLobe(-210, 20);
+      engineLobe(-200, 50);
+
+      // engine glow field
+      ctx.globalCompositeOperation = 'lighter';
+      glowEye(-220, 0, 40, 'rgba(255,180,80,ALPHA)');
+      glowEye(-220, 40, 32, 'rgba(255,160,60,ALPHA)');
+      ctx.globalCompositeOperation = 'source-over';
+
+      // --- ARMOR VEINS & CRACKS (veiny bio-structure) ---
+      ctx.strokeStyle = 'rgba(80,32,20,0.9)';
+      ctx.lineWidth = 1.2;
+
+      function vein(x1, y1, x2, y2, ctrlOffset) {
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.quadraticCurveTo((x1 + x2) / 2 + ctrlOffset, (y1 + y2) / 2, x2, y2);
+        ctx.stroke();
+      }
+
+      vein(-200, -10, -80, -30, 20);
+      vein(-200, 20, -100, -10, 10);
+      vein(-200, 50, -120, 10, 15);
+      vein(200, -10, 80, -30, -20);
+      vein(200, 20, 100, -10, -10);
+      vein(200, 50, 120, 10, -15);
+
+      // --- SMALL SPIKES AROUND THE EDGES ---
+      ctx.fillStyle = '#8a4023';
+      function spike(x, y, dx, dy) {
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + dx, y + dy);
+        ctx.lineTo(x - dy * 0.3, y + dx * 0.3);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // some spikes along lower edge
+      for (let i = -4; i <= 4; i++) {
+        const t = i / 4;
+        const x = t * 200;
+        const y = 120 + Math.abs(t) * 10;
+        spike(x, y, 0, 16);
+      }
+
+      // --- NAME GLYPH (Jared organic symbol) ---
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.strokeStyle = 'rgba(0,255,160,0.9)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, -40);
+      ctx.bezierCurveTo(20, -30, 24, -16, 0, -8);
+      ctx.bezierCurveTo(-24, -16, -20, -30, 0, -40);
+      ctx.stroke();
+
+      ctx.globalCompositeOperation = 'source-over';
+
+      ctx.restore();
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawStarfield(ctx, 260);
+      withTransform(ctx, canvas.width / 2, canvas.height / 2 + 10, 1.1, 0, drawJaredCapital);
+    }
+
+    render();
+  </script>
+</body>
+</html>
