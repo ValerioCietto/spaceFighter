@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Human Capital Ship ZEUS (Canvas)</title>
+  <style>
+    body {
+      margin: 0;
+      background: #050814;
+      color: #e5e9f0;
+      font-family: system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      margin: 12px 0 2px;
+      font-size: 20px;
+    }
+    p {
+      margin: 0 0 10px;
+      font-size: 13px;
+      opacity: 0.8;
+    }
+    canvas {
+      background: radial-gradient(circle at 30% 10%, #202b46 0, #050814 55%);
+      border: 1px solid #333;
+      margin: 12px;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>Human Capital Ship “ZEUS” – Canvas Vector</h1>
+  <p>Flagship of the Human Navy. All shapes are pure ctx paths, gradients and strokes.</p>
+  <canvas id="zeusCanvas" width="1200" height="520"></canvas>
+
+  <script>
+    // Command (terminal): npx serve .   // then open http://localhost:3000/this-file.html
+
+    const canvas = document.getElementById("zeusCanvas");
+    const ctx = canvas.getContext("2d");
+
+    function withTransform(ctx, x, y, s, rot, fn) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rot || 0);
+      ctx.scale(s, s);
+      fn(ctx);
+      ctx.restore();
+    }
+
+    function drawStarfield(ctx, count) {
+      ctx.save();
+      for (let i = 0; i < count; i++) {
+        const x = Math.random() * ctx.canvas.width;
+        const y = Math.random() * ctx.canvas.height;
+        const r = Math.random() * 1.5 + 0.2;
+        const g = ctx.createRadialGradient(x, y, 0, x, y, r * 3);
+        const hue = 200 + Math.random() * 40;
+        g.addColorStop(0, `hsla(${hue}, 80%, 80%, 1)`);
+        g.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x, y, r * 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawZeus(ctx) {
+      ctx.save();
+
+      // --- HULL BACKPLATE (shadow base) ---
+      ctx.fillStyle = "rgba(0,0,0,0.4)";
+      ctx.beginPath();
+      ctx.moveTo(-260, 52);
+      ctx.lineTo(260, 52);
+      ctx.quadraticCurveTo(280, 60, 260, 68);
+      ctx.lineTo(-260, 68);
+      ctx.quadraticCurveTo(-280, 60, -260, 52);
+      ctx.closePath();
+      ctx.fill();
+
+      // --- MAIN CENTRAL HULL ---
+      const hullGrad = ctx.createLinearGradient(-260, 0, 260, 0);
+      hullGrad.addColorStop(0,  "#a0b9d9");
+      hullGrad.addColorStop(0.25,"#d8e4f5");
+      hullGrad.addColorStop(0.5, "#f0f6ff");
+      hullGrad.addColorStop(0.75,"#d1e0f3");
+      hullGrad.addColorStop(1,  "#8fa6c3");
+
+      ctx.fillStyle = hullGrad;
+      ctx.strokeStyle = "#cfd8e8";
+      ctx.lineWidth = 2.2;
+
+      ctx.beginPath();
+      ctx.moveTo(-260, -32);
+      ctx.lineTo(220, -32);
+      ctx.lineTo(260, -18);
+      ctx.lineTo(280, 0);
+      ctx.lineTo(260, 18);
+      ctx.lineTo(220, 32);
+      ctx.lineTo(-260, 32);
+      ctx.lineTo(-290, 22);
+      ctx.lineTo(-305, 0);
+      ctx.lineTo(-290, -22);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // --- LOWER ARMOR LAYER (darker) ---
+      const lowerGrad = ctx.createLinearGradient(0, -10, 0, 40);
+      lowerGrad.addColorStop(0, "#4c566a");
+      lowerGrad.addColorStop(1, "#2e3440");
+      ctx.fillStyle = lowerGrad;
+      ctx.beginPath();
+      ctx.moveTo(-250, 16);
+      ctx.lineTo(220, 16);
+      ctx.lineTo(250, 26);
+      ctx.lineTo(240, 38);
+      ctx.lineTo(-250, 38);
+      ctx.lineTo(-265, 28);
+      ctx.closePath();
+      ctx.fill();
+
+      // --- UPPER ARMOR LAYER (slightly darker band) ---
+      ctx.fillStyle = "rgba(70, 82, 105, 0.85)";
+      ctx.beginPath();
+      ctx.moveTo(-240, -10);
+      ctx.lineTo(220, -10);
+      ctx.lineTo(240, 0);
+      ctx.lineTo(220, 10);
+      ctx.lineTo(-240, 10);
+      ctx.lineTo(-255, 0);
+      ctx.closePath();
+      ctx.fill();
+
+      // --- BOW (FRONT SPEAR) ---
+      const bowGrad = ctx.createLinearGradient(224, -18, 290, 18);
+      bowGrad.addColorStop(0, "#e5f2ff");
+      bowGrad.addColorStop(1, "#9bb2d3");
+      ctx.fillStyle = bowGrad;
+      ctx.strokeStyle = "#dde7f5";
+      ctx.lineWidth = 1.7;
+
+      ctx.beginPath();
+      ctx.moveTo(220, -18);
+      ctx.lineTo(260, -8);
+      ctx.lineTo(290, 0);
+      ctx.lineTo(260, 8);
+      ctx.lineTo(220, 18);
+      ctx.quadraticCurveTo(232, 0, 220, -18);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // --- BRIDGE TOWER (central superstructure) ---
+      const towerGrad = ctx.createLinearGradient(0, -90, 0, -20);
+      towerGrad.addColorStop(0, "#dfe9f7");
+      towerGrad.addColorStop(1, "#8ea4c2");
+      ctx.fillStyle = towerGrad;
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 1.4;
+
+      ctx.beginPath();
+      ctx.moveTo(-30, -80);
+      ctx.lineTo(30, -80);
+      ctx.lineTo(40, -64);
+      ctx.lineTo(40, -40);
+      ctx.lineTo(26, -28);
+      ctx.lineTo(-26, -28);
+      ctx.lineTo(-40, -40);
+      ctx.lineTo(-40, -64);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Bridge windows band
+      ctx.fillStyle = "#1f2933";
+      ctx.fillRect(-26, -62, 52, 10);
+
+      // Bridge windows lights
+      ctx.fillStyle = "#74a2ff";
+      for (let i = -22; i <= 22; i += 8) {
+        ctx.fillRect(i - 2, -60, 4, 6);
+      }
+
+      // Secondary tower (radar/command) on top
+      ctx.fillStyle = "#dfe9f7";
+      ctx.beginPath();
+      ctx.moveTo(-14, -92);
+      ctx.lineTo(14, -92);
+      ctx.lineTo(18, -86);
+      ctx.lineTo(12, -80);
+      ctx.lineTo(-12, -80);
+      ctx.lineTo(-18, -86);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Radar dish
+      ctx.strokeStyle = "#e5f2ff";
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.arc(0, -96, 6, 0, Math.PI, true);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, -96);
+      ctx.lineTo(0, -100);
+      ctx.stroke();
+
+      // --- HANGAR BAYS (side recesses) ---
+      ctx.fillStyle = "#151b26";
+      ctx.strokeStyle = "#3b4252";
+      ctx.lineWidth = 1;
+
+      function drawHangar(xCenter) {
+        ctx.beginPath();
+        ctx.moveTo(xCenter - 40, 4);
+        ctx.lineTo(xCenter + 40, 4);
+        ctx.lineTo(xCenter + 32, 20);
+        ctx.lineTo(xCenter - 32, 20);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // hangar internal lights
+        ctx.fillStyle = "#88c0ff";
+        for (let x = xCenter - 30; x <= xCenter + 30; x += 12) {
+          ctx.fillRect(x - 3, 8, 6, 3);
+        }
+        ctx.fillStyle = "#151b26";
+      }
+
+      drawHangar(-120);
+      drawHangar(120);
+
+      // --- DECK WINDOWS & LIGHTS ---
+      ctx.fillStyle = "#5e81ac";
+      for (let x = -240; x <= 240; x += 20) {
+        ctx.fillRect(x - 1.5, -6, 3, 4);
+      }
+      ctx.fillStyle = "#88c0ff";
+      for (let x = -220; x <= 220; x += 28) {
+        ctx.fillRect(x - 1.5, 12, 3, 4);
+      }
+
+      // --- ARMOR PANEL LINES (subtle) ---
+      ctx.strokeStyle = "rgba(76,86,106,0.8)";
+      ctx.lineWidth = 0.9;
+
+      // vertical panel lines
+      for (let x = -240; x <= 240; x += 40) {
+        ctx.beginPath();
+        ctx.moveTo(x, -32);
+        ctx.lineTo(x, 32);
+        ctx.stroke();
+      }
+
+      // horizontal panel lines
+      ctx.beginPath();
+      ctx.moveTo(-260, -16);
+      ctx.lineTo(260, -16);
+      ctx.moveTo(-260, 0);
+      ctx.lineTo(260, 0);
+      ctx.moveTo(-260, 16);
+      ctx.lineTo(260, 16);
+      ctx.stroke();
+
+      // --- WEAPONS BATTERIES (turrets) ---
+      function turret(x, y) {
+        ctx.save();
+        ctx.translate(x, y);
+
+        // base
+        ctx.fillStyle = "#3b4252";
+        ctx.beginPath();
+        ctx.arc(0, 0, 10, 0, Math.PI * 2);
+        ctx.fill();
+
+        // turret top
+        ctx.fillStyle = "#dfe6f5";
+        ctx.beginPath();
+        ctx.arc(0, -2, 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        // barrels
+        ctx.strokeStyle = "#e5edf9";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-2, -6);
+        ctx.lineTo(-2, -18);
+        ctx.moveTo(2, -6);
+        ctx.lineTo(2, -18);
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      turret(-180, -20);
+      turret(-60,  -20);
+      turret(60,   -20);
+      turret(180,  -20);
+
+      // point-defense turrets
+      function pd(x, y) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.fillStyle = "#3b4252";
+        ctx.beginPath();
+        ctx.arc(0, 0, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#dfe6f5";
+        ctx.lineWidth = 1.3;
+        ctx.beginPath();
+        ctx.moveTo(0, -3);
+        ctx.lineTo(0, -10);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      pd(-220, 4);
+      pd(-160, 8);
+      pd(-100, 4);
+      pd(100, 4);
+      pd(160, 8);
+      pd(220, 4);
+
+      // --- ENGINES (rear blocks) ---
+      const engineGrad = ctx.createLinearGradient(-220, 40, -220, 80);
+      engineGrad.addColorStop(0, "#4c566a");
+      engineGrad.addColorStop(1, "#2e3440");
+      ctx.fillStyle = engineGrad;
+      ctx.strokeStyle = "#d8dee9";
+      ctx.lineWidth = 1.5;
+
+      function engineBlock(x) {
+        ctx.beginPath();
+        ctx.moveTo(x - 32, 32);
+        ctx.lineTo(x + 32, 32);
+        ctx.lineTo(x + 30, 52);
+        ctx.lineTo(x - 30, 52);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      engineBlock(-160);
+      engineBlock(0);
+      engineBlock(160);
+
+      // engine nozzles
+      ctx.fillStyle = "#151b26";
+      function nozzle(x) {
+        ctx.beginPath();
+        ctx.arc(x, 52, 10, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      nozzle(-160);
+      nozzle(-130);
+      nozzle(-30);
+      nozzle(0);
+      nozzle(30);
+      nozzle(130);
+      nozzle(160);
+
+      // --- ENGINE GLOW (blue) ---
+      ctx.globalCompositeOperation = "lighter";
+      function engineGlow(x) {
+        const g = ctx.createRadialGradient(x, 56, 0, x, 56, 18);
+        g.addColorStop(0, "rgba(150,220,255,1)");
+        g.addColorStop(0.4, "rgba(120,200,255,0.7)");
+        g.addColorStop(1, "rgba(80,150,255,0)");
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x, 56, 18, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      engineGlow(-160);
+      engineGlow(-130);
+      engineGlow(-30);
+      engineGlow(0);
+      engineGlow(30);
+      engineGlow(130);
+      engineGlow(160);
+
+      // --- NAMEPLATE "ZEUS" ---
+      ctx.globalCompositeOperation = "source-over";
+      ctx.fillStyle = "rgba(15,19,28,0.8)";
+      ctx.fillRect(-70, -20, 140, 16);
+      ctx.strokeStyle = "#cdd7e6";
+      ctx.lineWidth = 0.8;
+      ctx.strokeRect(-70, -20, 140, 16);
+
+      ctx.fillStyle = "#e5ecf8";
+      ctx.font = "bold 12px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("HNS ZEUS", 0, -12);
+
+      ctx.restore();
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawStarfield(ctx, 260);
+      withTransform(ctx, canvas.width / 2, canvas.height / 2 + 10, 1.2, 0, drawZeus);
+    }
+
+    render();
+  </script>
+</body>
+</html>
