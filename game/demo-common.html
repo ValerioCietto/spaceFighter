@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Animated Spaceship Components (Canvas)</title>
+  <style>
+    body {
+      margin: 0;
+      background: #050814;
+      color: #e5e9f0;
+      font-family: system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      margin: 10px 0 2px;
+      font-size: 18px;
+    }
+    p {
+      margin: 0 0 10px;
+      font-size: 12px;
+      opacity: 0.8;
+    }
+    canvas {
+      background: radial-gradient(circle at 30% 15%, #20263f 0, #050814 55%);
+      border: 1px solid #333;
+      margin: 12px;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>Animated Spaceship Components – Canvas</h1>
+  <p>Big slow thrusters, fast thruster, rotating scanners, reactor glow, adaptable wings.</p>
+  <canvas id="shipComponents" width="800" height="480"></canvas>
+
+  <script>
+    // Command (terminal): npx serve .   // then open http://localhost:3000/this-file.html
+
+    const canvas = document.getElementById('shipComponents');
+    const ctx = canvas.getContext('2d');
+
+    function withTransform(ctx, x, y, s, rot, fn) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rot || 0);
+      ctx.scale(s, s);
+      fn(ctx);
+      ctx.restore();
+    }
+
+    function drawStarfield(ctx, count) {
+      ctx.save();
+      for (let i = 0; i < count; i++) {
+        const x = Math.random() * ctx.canvas.width;
+        const y = Math.random() * ctx.canvas.height;
+        const r = Math.random() * 1.3 + 0.2;
+        const g = ctx.createRadialGradient(x, y, 0, x, y, r * 3);
+        g.addColorStop(0, 'rgba(255,255,255,0.9)');
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x, y, r * 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    // Ship body (simple reference hull)
+    function drawHull(ctx) {
+      const grad = ctx.createLinearGradient(0, -40, 0, 40);
+      grad.addColorStop(0, '#e5f2ff');
+      grad.addColorStop(1, '#7b88a3');
+
+      ctx.fillStyle = grad;
+      ctx.strokeStyle = '#d8dee9';
+      ctx.lineWidth = 2;
+
+      ctx.beginPath();
+      ctx.moveTo(40, -40);
+      ctx.lineTo(120, -20);
+      ctx.lineTo(140, 0);
+      ctx.lineTo(120, 20);
+      ctx.lineTo(40, 40);
+      ctx.lineTo(-60, 40);
+      ctx.lineTo(-80, 24);
+      ctx.lineTo(-80, -24);
+      ctx.lineTo(-60, -40);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    // Big slow thrusters (left/right main engines)
+    function drawBigThruster(ctx, t, offsetX, offsetY) {
+      ctx.save();
+      ctx.translate(offsetX, offsetY);
+
+      // engine body
+      ctx.fillStyle = '#3b4252';
+      ctx.beginPath();
+      ctx.roundRect(-16, -10, 32, 20, 6);
+      ctx.fill();
+
+      // nozzle opening
+      ctx.fillStyle = '#151b26';
+      ctx.beginPath();
+      ctx.arc(-18, 0, 8, Math.PI * 0.5, Math.PI * 1.5);
+      ctx.fill();
+
+      // slow pulsing flame
+      const pulse = 0.65 + 0.25 * Math.sin(t * 1.2); // slow movement
+      const flameLength = 28 * pulse;
+
+      ctx.globalCompositeOperation = 'lighter';
+      const g = ctx.createLinearGradient(-18 - flameLength, 0, -18, 0);
+      g.addColorStop(0, 'rgba(120, 200, 255, 0)');
+      g.addColorStop(0.4, 'rgba(140, 210, 255, 0.7)');
+      g.addColorStop(1, 'rgba(200, 240, 255, 1)');
+
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(-18, -6);
+      ctx.lineTo(-18 - flameLength, -2);
+      ctx.lineTo(-18 - flameLength, 2);
+      ctx.lineTo(-18, 6);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // Fast thruster (small but twitchy)
+    function drawFastThruster(ctx, t, offsetX, offsetY) {
+      ctx.save();
+      ctx.translate(offsetX, offsetY);
+
+      // body
+      ctx.fillStyle = '#4c566a';
+      ctx.beginPath();
+      ctx.roundRect(-12, -8, 24, 16, 4);
+      ctx.fill();
+
+      // nozzle
+      ctx.fillStyle = '#151b26';
+      ctx.beginPath();
+      ctx.arc(-12, 0, 6, Math.PI * 0.5, Math.PI * 1.5);
+      ctx.fill();
+
+      // fast flickering flame
+      const jitter = (Math.sin(t * 10) + Math.sin(t * 17)) * 0.35;
+      const length = 30 + jitter * 10;
+
+      ctx.globalCompositeOperation = 'lighter';
+      const g = ctx.createLinearGradient(-12 - length, 0, -12, 0);
+      g.addColorStop(0, 'rgba(255,240,180,0)');
+      g.addColorStop(0.4, 'rgba(255,220,120,0.8)');
+      g.addColorStop(1, 'rgba(255,255,255,1)');
+
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(-12, -3);
+      ctx.lineTo(-12 - length, -1);
+      ctx.lineTo(-12 - length, 1);
+      ctx.lineTo(-12, 3);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // Rotating scanners (top of hull)
+    function drawRotatingScanner(ctx, t, offsetX, offsetY) {
+      ctx.save();
+      ctx.translate(offsetX, offsetY);
+
+      // base
+      ctx.fillStyle = '#2e3440';
+      ctx.beginPath();
+      ctx.arc(0, 0, 10, 0, Math.PI * 2);
+      ctx.fill();
+
+      // rotating arm
+      const angle = t * 1.5; // rotation speed
+      ctx.rotate(angle);
+
+      ctx.strokeStyle = '#88c0ff';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(20, 0);
+      ctx.stroke();
+
+      // small scanning arc at end
+      ctx.beginPath();
+      ctx.arc(20, 0, 6, -0.6, 0.6);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    // Energy reactor core (slow fade in/out)
+    function drawReactor(ctx, t, offsetX, offsetY) {
+      ctx.save();
+      ctx.translate(offsetX, offsetY);
+
+      // housing ring
+      ctx.strokeStyle = '#4c566a';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(0, 0, 20, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // core glow (alpha based on sine)
+      const alpha = 0.4 + 0.35 * (Math.sin(t * 0.9) + 1) / 2; // slow breathing
+      ctx.globalCompositeOperation = 'lighter';
+      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 18);
+      g.addColorStop(0, `rgba(120, 255, 220, ${alpha + 0.3})`);
+      g.addColorStop(1, 'rgba(120, 255, 220, 0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(0, 0, 18, 0, Math.PI * 2);
+      ctx.fill();
+
+      // inner core disc
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = '#0b1820';
+      ctx.beginPath();
+      ctx.arc(0, 0, 8, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // Adaptable wings (change from wide / slow to swept / fast)
+    function drawAdaptableWings(ctx, t, offsetX, offsetY) {
+      ctx.save();
+      ctx.translate(offsetX, offsetY);
+
+      // mode goes from 0 (wide) to 1 (swept) and back
+      const mode = (Math.sin(t * 0.6) + 1) / 2; // slow morph
+      // angle range (in radians): wide ~ 35°, swept ~ 5°
+      const spreadAngle = (35 * Math.PI / 180) * (1 - mode) + (5 * Math.PI / 180) * mode;
+
+      const wingLength = 90;
+      const wingWidthWide = 24;
+      const wingWidthSwept = 12;
+      const wingWidth = wingWidthWide * (1 - mode) + wingWidthSwept * mode;
+
+      ctx.fillStyle = '#cfd7e6';
+      ctx.strokeStyle = '#8b96ad';
+      ctx.lineWidth = 2;
+
+      function drawWing(sign) {
+        ctx.save();
+        ctx.scale(sign, 1); // right wing by flip
+
+        ctx.rotate(-spreadAngle);
+
+        ctx.beginPath();
+        ctx.moveTo(0, -wingWidth / 2);
+        ctx.lineTo(wingLength * 0.6, -wingWidth);
+        ctx.lineTo(wingLength, 0);
+        ctx.lineTo(wingLength * 0.6, wingWidth);
+        ctx.lineTo(0, wingWidth / 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // inner dark panel
+        ctx.fillStyle = 'rgba(30, 36, 50, 0.8)';
+        ctx.beginPath();
+        ctx.moveTo(8, -wingWidth / 3);
+        ctx.lineTo(wingLength * 0.55, -wingWidth * 0.6);
+        ctx.lineTo(wingLength * 0.55, wingWidth * 0.6);
+        ctx.lineTo(8, wingWidth / 3);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.restore();
+      }
+
+      drawWing(-1); // left
+      drawWing(1);  // right
+
+      ctx.restore();
+    }
+
+    let lastTime = 0;
+    function loop(timestamp) {
+      if (!lastTime) lastTime = timestamp;
+      const dt = (timestamp - lastTime) / 1000;
+      lastTime = timestamp;
+
+      const t = timestamp / 1000;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawStarfield(ctx, 80);
+
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+
+      withTransform(ctx, centerX, centerY, 1, 0, drawHull);
+
+      // Big slow thrusters (rear left/right)
+      withTransform(ctx, centerX, centerY + 22, 1, 0, (c) => {
+        drawBigThruster(c, t, -80, 30);
+        drawBigThruster(c, t, -40, 30);
+      });
+
+      // Fast thruster (underslung)
+      withTransform(ctx, centerX, centerY + 18, 1, 0, (c) => {
+        drawFastThruster(c, t, -20, 52);
+      });
+
+      // Rotating scanners (on top of hull)
+      withTransform(ctx, centerX, centerY - 42, 1, 0, (c) => {
+        drawRotatingScanner(c, t, -20, -10);
+        drawRotatingScanner(c, t * 1.2 + 1, 24, -4);
+      });
+
+      // Energy reactor core (mid-body)
+      withTransform(ctx, centerX - 10, centerY + 4, 1, 0, (c) => {
+        drawReactor(c, t, -90, 0);
+      });
+
+      // Adaptable wings (sides)
+      withTransform(ctx, centerX + 10, centerY - 4, 1, 0, (c) => {
+        drawAdaptableWings(c, t, 0, 0);
+      });
+
+      requestAnimationFrame(loop);
+    }
+
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
