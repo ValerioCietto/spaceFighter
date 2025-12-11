@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Technician Capital Ship – Quantum Bastion</title>
+  <style>
+    body {
+      margin: 0;
+      background: #050814;
+      color: #e5e9f0;
+      font-family: system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      margin: 12px 0 2px;
+      font-size: 20px;
+    }
+    p {
+      margin: 0 0 10px;
+      font-size: 13px;
+      opacity: 0.8;
+    }
+    canvas {
+      background: radial-gradient(circle at 30% 10%, #202b46 0, #050814 60%);
+      border: 1px solid #333;
+      margin: 12px;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>Technician Capital Ship – “Quantum Bastion”</h1>
+  <p>High-tech modular capital ship with rings, capacitors, and big engine cluster (pure canvas ctx).</p>
+  <canvas id="techCapital" width="1200" height="520"></canvas>
+
+  <script>
+    // Command (terminal): npx serve .   // then open http://localhost:3000/this-file.html
+
+    const canvas = document.getElementById("techCapital");
+    const ctx = canvas.getContext("2d");
+
+    function withTransform(ctx, x, y, s, rot, fn) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rot || 0);
+      ctx.scale(s, s);
+      fn(ctx);
+      ctx.restore();
+    }
+
+    function drawStarfield(ctx, count) {
+      ctx.save();
+      for (let i = 0; i < count; i++) {
+        const x = Math.random() * ctx.canvas.width;
+        const y = Math.random() * ctx.canvas.height;
+        const r = Math.random() * 1.5 + 0.2;
+        const g = ctx.createRadialGradient(x, y, 0, x, y, r * 3);
+        const hue = 200 + Math.random() * 40;
+        g.addColorStop(0, `hsla(${hue}, 80%, 80%, 1)`);
+        g.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x, y, r * 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawTechnicianCapital(ctx) {
+      ctx.save();
+
+      // --- BACK SHADOW PLATE ---
+      ctx.fillStyle = "rgba(0,0,0,0.45)";
+      ctx.beginPath();
+      ctx.moveTo(-280, 60);
+      ctx.lineTo(260, 60);
+      ctx.quadraticCurveTo(290, 68, 260, 76);
+      ctx.lineTo(-280, 76);
+      ctx.quadraticCurveTo(-305, 68, -280, 60);
+      ctx.closePath();
+      ctx.fill();
+
+      // --- MAIN CENTRAL HULL ---
+      const hullGrad = ctx.createLinearGradient(-280, 0, 260, 0);
+      hullGrad.addColorStop(0,  "#8fa4c3");
+      hullGrad.addColorStop(0.25,"#cfdcf2");
+      hullGrad.addColorStop(0.5, "#edf4ff");
+      hullGrad.addColorStop(0.75,"#c0d0ec");
+      hullGrad.addColorStop(1,  "#7589a6");
+
+      ctx.fillStyle = hullGrad;
+      ctx.strokeStyle = "#d8e2f5";
+      ctx.lineWidth = 2.2;
+
+      ctx.beginPath();
+      ctx.moveTo(-280, -34);
+      ctx.lineTo(220, -34);
+      ctx.lineTo(260, -20);
+      ctx.lineTo(285, 0);
+      ctx.lineTo(260, 20);
+      ctx.lineTo(220, 34);
+      ctx.lineTo(-280, 34);
+      ctx.lineTo(-310, 22);
+      ctx.lineTo(-325, 0);
+      ctx.lineTo(-310, -22);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // --- LOWER ARMOR BAND ---
+      const lowerGrad = ctx.createLinearGradient(0, -10, 0, 44);
+      lowerGrad.addColorStop(0, "#4c566a");
+      lowerGrad.addColorStop(1, "#2e3440");
+      ctx.fillStyle = lowerGrad;
+
+      ctx.beginPath();
+      ctx.moveTo(-270, 18);
+      ctx.lineTo(220, 18);
+      ctx.lineTo(255, 30);
+      ctx.lineTo(245, 44);
+      ctx.lineTo(-270, 44);
+      ctx.lineTo(-285, 30);
+      ctx.closePath();
+      ctx.fill();
+
+      // --- UPPER TECH BAND ---
+      ctx.fillStyle = "rgba(63,74,96,0.95)";
+      ctx.beginPath();
+      ctx.moveTo(-260, -12);
+      ctx.lineTo(220, -12);
+      ctx.lineTo(245, 0);
+      ctx.lineTo(220, 12);
+      ctx.lineTo(-260, 12);
+      ctx.lineTo(-278, 0);
+      ctx.closePath();
+      ctx.fill();
+
+      // --- BOW SPEAR / SENSOR NODE ---
+      const bowGrad = ctx.createLinearGradient(224, -20, 300, 20);
+      bowGrad.addColorStop(0, "#e7f2ff");
+      bowGrad.addColorStop(1, "#8ca6ce");
+      ctx.fillStyle = bowGrad;
+      ctx.strokeStyle = "#e5edf9";
+      ctx.lineWidth = 1.7;
+
+      ctx.beginPath();
+      ctx.moveTo(220, -20);
+      ctx.lineTo(260, -10);
+      ctx.lineTo(300, 0);
+      ctx.lineTo(260, 10);
+      ctx.lineTo(220, 20);
+      ctx.quadraticCurveTo(232, 0, 220, -20);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // --- CENTRAL SPINE / RAIL ---
+      ctx.fillStyle = "#3b4252";
+      ctx.beginPath();
+      ctx.roundRect(-210, -8, 360, 16, 8);
+      ctx.fill();
+
+      // spine light line
+      ctx.strokeStyle = "#88c0ff";
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(-200, 0);
+      ctx.lineTo(140, 0);
+      ctx.stroke();
+
+      // --- PANEL LINES ON HULL ---
+      ctx.strokeStyle = "rgba(76,86,106,0.8)";
+      ctx.lineWidth = 1;
+
+      for (let x = -240; x <= 220; x += 40) {
+        ctx.beginPath();
+        ctx.moveTo(x, -34);
+        ctx.lineTo(x, 34);
+        ctx.stroke();
+      }
+
+      ctx.beginPath();
+      ctx.moveTo(-280, -18);
+      ctx.lineTo(260, -18);
+      ctx.moveTo(-280, 0);
+      ctx.lineTo(260, 0);
+      ctx.moveTo(-280, 18);
+      ctx.lineTo(260, 18);
+      ctx.stroke();
+
+      // --- RING FRAMES (Technician signature) ---
+      function ringFrame(cx, cy, rOuter, rInner) {
+        const ringGrad = ctx.createLinearGradient(cx - rOuter, cy, cx + rOuter, cy);
+        ringGrad.addColorStop(0, "#88c0d0");
+        ringGrad.addColorStop(0.5, "#4c566a");
+        ringGrad.addColorStop(1, "#88c0d0");
+        ctx.strokeStyle = ringGrad;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(cx, cy, rOuter, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.strokeStyle = "#d8dee9";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(cx, cy, rInner, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      ringFrame(-120, 0, 42, 30);
+      ringFrame(20, 0, 48, 34);
+
+      // ring spokes
+      ctx.strokeStyle = "#a3be8c";
+      ctx.lineWidth = 1.2;
+      function ringSpokes(cx, cy, rInner, rOuter) {
+        for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
+          const x1 = cx + Math.cos(a) * rInner;
+          const y1 = cy + Math.sin(a) * rInner;
+          const x2 = cx + Math.cos(a) * rOuter;
+          const y2 = cy + Math.sin(a) * rOuter;
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+        }
+      }
+      ringSpokes(-120, 0, 24, 42);
+      ringSpokes(20, 0, 26, 48);
+
+      // --- CENTRAL CORE GLOWS INSIDE RINGS ---
+      ctx.globalCompositeOperation = "lighter";
+      function coreGlow(cx, cy, r, colorCenter, colorOuter) {
+        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+        g.addColorStop(0, colorCenter);
+        g.addColorStop(1, colorOuter);
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      coreGlow(-120, 0, 18, "rgba(150,230,255,1)", "rgba(150,230,255,0)");
+      coreGlow(20, 0, 22, "rgba(170,255,230,1)", "rgba(170,255,230,0)");
+
+      ctx.globalCompositeOperation = "source-over";
+
+      // --- UPPER TOWERS / CAPACITOR BANKS ---
+      function tower(xCenter) {
+        const towerGrad = ctx.createLinearGradient(0, -70, 0, -20);
+        towerGrad.addColorStop(0, "#edf4ff");
+        towerGrad.addColorStop(1, "#7b88a3");
+        ctx.fillStyle = towerGrad;
+        ctx.strokeStyle = "#d8dee9";
+        ctx.lineWidth = 1.5;
+
+        ctx.beginPath();
+        ctx.moveTo(xCenter - 24, -70);
+        ctx.lineTo(xCenter + 24, -70);
+        ctx.lineTo(xCenter + 30, -56);
+        ctx.lineTo(xCenter + 26, -40);
+        ctx.lineTo(xCenter - 26, -40);
+        ctx.lineTo(xCenter - 30, -56);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // windows band
+        ctx.fillStyle = "#1f2933";
+        ctx.fillRect(xCenter - 18, -60, 36, 8);
+        ctx.fillStyle = "#88c0ff";
+        for (let x = xCenter - 14; x <= xCenter + 14; x += 7) {
+          ctx.fillRect(x - 1.2, -58.5, 2.4, 5);
+        }
+
+        // top cap
+        ctx.fillStyle = "#4c566a";
+        ctx.beginPath();
+        ctx.roundRect(xCenter - 16, -78, 32, 8, 3);
+        ctx.fill();
+      }
+
+      tower(-80);
+      tower(60);
+
+      // --- SIDE HANGAR BAYS ---
+      ctx.fillStyle = "#151b26";
+      ctx.strokeStyle = "#3b4252";
+      ctx.lineWidth = 1.1;
+
+      function hangar(xCenter) {
+        ctx.beginPath();
+        ctx.moveTo(xCenter - 42, 4);
+        ctx.lineTo(xCenter + 42, 4);
+        ctx.lineTo(xCenter + 36, 24);
+        ctx.lineTo(xCenter - 36, 24);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = "#88c0ff";
+        for (let x = xCenter - 32; x <= xCenter + 32; x += 12) {
+          ctx.fillRect(x - 2, 9, 4, 3);
+        }
+        ctx.fillStyle = "#151b26";
+      }
+
+      hangar(-170);
+      hangar(140);
+
+      // --- DECK WINDOWS ---
+      ctx.fillStyle = "#5e81ac";
+      for (let x = -250; x <= 240; x += 18) {
+        ctx.fillRect(x - 1.5, -8, 3, 4);
+      }
+      ctx.fillStyle = "#88c0ff";
+      for (let x = -240; x <= 230; x += 24) {
+        ctx.fillRect(x - 1.5, 10, 3, 4);
+      }
+
+      // --- HEAVY TURRETS ---
+      function turret(x, y) {
+        ctx.save();
+        ctx.translate(x, y);
+
+        // base
+        ctx.fillStyle = "#3b4252";
+        ctx.beginPath();
+        ctx.arc(0, 0, 11, 0, Math.PI * 2);
+        ctx.fill();
+
+        // turret head
+        ctx.fillStyle = "#dfe6f5";
+        ctx.beginPath();
+        ctx.arc(0, -2, 7, 0, Math.PI * 2);
+        ctx.fill();
+
+        // barrels
+        ctx.strokeStyle = "#e5edf9";
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.moveTo(-3, -7);
+        ctx.lineTo(-3, -22);
+        ctx.moveTo(3, -7);
+        ctx.lineTo(3, -22);
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      turret(-200, -18);
+      turret(-120, -18);
+      turret(-40,  -18);
+      turret(40,   -18);
+      turret(120,  -18);
+      turret(200,  -16);
+
+      // point defense
+      function pd(x, y) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.fillStyle = "#3b4252";
+        ctx.beginPath();
+        ctx.arc(0, 0, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#dfe6f5";
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(0, -2);
+        ctx.lineTo(0, -8);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      pd(-240, 6);
+      pd(-200, 10);
+      pd(-160, 6);
+      pd(160, 6);
+      pd(200, 10);
+      pd(240, 6);
+
+      // --- ENGINE CLUSTER (rear) ---
+      const engineGrad = ctx.createLinearGradient(-230, 40, -230, 80);
+      engineGrad.addColorStop(0, "#4c566a");
+      engineGrad.addColorStop(1, "#2e3440");
+      ctx.fillStyle = engineGrad;
+      ctx.strokeStyle = "#d8dee9";
+      ctx.lineWidth = 1.5;
+
+      function engineBlock(x) {
+        ctx.beginPath();
+        ctx.moveTo(x - 38, 36);
+        ctx.lineTo(x + 38, 36);
+        ctx.lineTo(x + 34, 56);
+        ctx.lineTo(x - 34, 56);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      engineBlock(-180);
+      engineBlock(-80);
+      engineBlock(20);
+      engineBlock(120);
+
+      // engine nozzles
+      ctx.fillStyle = "#151b26";
+      function nozzle(x) {
+        ctx.beginPath();
+        ctx.arc(x, 56, 10, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      [-200, -160, -100, -60, 0, 40, 100, 140].forEach(nozzle);
+
+      // engine glows
+      ctx.globalCompositeOperation = "lighter";
+      function engineGlow(x) {
+        const g = ctx.createRadialGradient(x, 60, 0, x, 60, 20);
+        g.addColorStop(0, "rgba(150,220,255,1)");
+        g.addColorStop(0.4, "rgba(120,200,255,0.7)");
+        g.addColorStop(1, "rgba(80,150,255,0)");
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x, 60, 20, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      [-200, -160, -100, -60, 0, 40, 100, 140].forEach(engineGlow);
+
+      ctx.globalCompositeOperation = "source-over";
+
+      // --- NAMEPLATE ---
+      ctx.fillStyle = "rgba(10,14,20,0.9)";
+      ctx.fillRect(-80, -22, 160, 16);
+      ctx.strokeStyle = "#cdd7e6";
+      ctx.lineWidth = 0.9;
+      ctx.strokeRect(-80, -22, 160, 16);
+
+      ctx.fillStyle = "#e5ecf8";
+      ctx.font = "bold 12px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("TNS QUANTUM BASTION", 0, -14);
+
+      ctx.restore();
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawStarfield(ctx, 260);
+      withTransform(ctx, canvas.width / 2, canvas.height / 2 + 10, 1.1, 0, drawTechnicianCapital);
+    }
+
+    render();
+  </script>
+</body>
+</html>
