@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hyperspace Jump (Canvas)</title>
+  <style>
+    body {
+      margin: 0;
+      background: #050814;
+      color: #e5e9f0;
+      font-family: system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      margin: 10px 0 2px;
+      font-size: 18px;
+    }
+    p {
+      margin: 0 0 10px;
+      font-size: 12px;
+      opacity: 0.8;
+    }
+    canvas {
+      background: radial-gradient(circle at 30% 15%, #1b2337 0, #050814 60%);
+      border: 1px solid #333;
+      margin: 12px;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>Hyperspace Jump Animation</h1>
+  <p>Engine off → rotate → ludicrous speed & stretch → fade to white → slow down & reset.</p>
+  <canvas id="jumpCanvas" width="900" height="500"></canvas>
+
+  <script>
+    // Command (terminal): npx serve .   // then open http://localhost:3000/this-file.html
+
+    const canvas = document.getElementById("jumpCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+
+    // Simple starfield
+    const stars = [];
+    for (let i = 0; i < 150; i++) {
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.5 + 0.2
+      });
+    }
+
+    function drawStarfield(speedFactor, angle) {
+      ctx.save();
+      ctx.fillStyle = "#050814";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const dirX = Math.cos(angle);
+      const dirY = Math.sin(angle);
+
+      stars.forEach(s => {
+        ctx.save();
+        ctx.translate(s.x, s.y);
+
+        if (speedFactor > 0.1) {
+          // stretch into lines opposite to travel direction
+          const len = 40 * speedFactor;
+          ctx.strokeStyle = "rgba(220, 240, 255, 0.9)";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(-dirX * len, -dirY * len);
+          ctx.lineTo(dirX * len * 0.2, dirY * len * 0.2);
+          ctx.stroke();
+        } else {
+          ctx.fillStyle = "#ffffff";
+          ctx.beginPath();
+          ctx.arc(0, 0, s.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.restore();
+      });
+
+      ctx.restore();
+    }
+
+    function withTransform(ctx, x, y, sx, sy, rot, fn) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rot);
+      ctx.scale(sx, sy);
+      fn(ctx);
+      ctx.restore();
+    }
+
+    // Simple spaceship silhouette
+    function drawShip(ctx, engineOn, stretchPhase) {
+      // hull
+      const hullGrad = ctx.createLinearGradient(-20, 0, 60, 0);
+      hullGrad.addColorStop(0, "#b7c6dd");
+      hullGrad.addColorStop(1, "#e5f2ff");
+      ctx.fillStyle = hullGrad;
+      ctx.strokeStyle = "#d8dee9";
+      ctx.lineWidth = 2;
+
+      ctx.beginPath();
+      ctx.moveTo(-40, -16);
+      ctx.lineTo(40, -14);
+      ctx.lineTo(70, 0);
+      ctx.lineTo(40, 14);
+      ctx.lineTo(-40, 16);
+      ctx.lineTo(-54, 8);
+      ctx.lineTo(-54, -8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // cockpit
+      ctx.fillStyle = "#1f2a3a";
+      ctx.beginPath();
+      ctx.ellipse(20, 0, 14, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // wings
+      ctx.fillStyle = "#a5b3cc";
+      ctx.beginPath();
+      ctx.moveTo(-8, -16);
+      ctx.lineTo(16, -26);
+      ctx.lineTo(36, -18);
+      ctx.lineTo(24, -10);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(-8, 16);
+      ctx.lineTo(16, 26);
+      ctx.lineTo(36, 18);
+      ctx.lineTo(24, 10);
+      ctx.closePath();
+      ctx.fill();
+
+      // engine block
+      ctx.fillStyle = "#3b4252";
+      ctx.beginPath();
+      ctx.roundRect(-54, -8, 10, 16, 3);
+      ctx.fill();
+
+      // engine glow
+      if (engineOn) {
+        ctx.globalCompositeOperation = "lighter";
+        const core = ctx.createRadialGradient(-60, 0, 0, -60, 0, 18);
+        core.addColorStop(0, "rgba(150, 220, 255, 1)");
+        core.addColorStop(1, "rgba(150, 220, 255, 0)");
+        ctx.fillStyle = core;
+        ctx.beginPath();
+        ctx.arc(-60, 0, 18, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = "source-over";
+      }
+
+      // subtle stretch glow when jumping
+      if (stretchPhase > 0) {
+        ctx.globalCompositeOperation = "lighter";
+        const g = ctx.createLinearGradient(-40, 0, 70, 0);
+        g.addColorStop(0, "rgba(200, 240, 255, 0)");
+        g.addColorStop(0.5, "rgba(220, 250, 255, 0.6)");
+        g.addColorStop(1, "rgba(200, 240, 255, 0)");
+        ctx.fillStyle = g;
+        ctx.fillRect(-40, -10, 110, 20);
+        ctx.globalCompositeOperation = "source-over";
+      }
+    }
+
+    // State machine
+    const STATE = {
+      CRUISE: 0,
+      ROTATE: 1,
+      ACCEL: 2,
+      FADE: 3,
+      SLOWDOWN: 4
+    };
+
+    let state = STATE.CRUISE;
+    let stateTime = 0;
+    let shipAngle = 0;
+    let targetAngle = 0;
+    let travelOffset = 0;   // how far from center
+    let speedFactor = 0;    // for star stretch
+    let fade = 0;           // white overlay 0→1→0
+
+    function resetJump() {
+      state = STATE.CRUISE;
+      stateTime = 0;
+      shipAngle = 0;
+      targetAngle = (Math.random() * Math.PI * 2) - Math.PI; // random orientation
+      travelOffset = 0;
+      speedFactor = 0;
+      fade = 0;
+    }
+
+    resetJump();
+
+    let lastTime = 0;
+    function loop(timestamp) {
+      if (!lastTime) lastTime = timestamp;
+      const dt = (timestamp - lastTime) / 1000;
+      lastTime = timestamp;
+
+      stateTime += dt;
+
+      const cruiseDur = 2.0;
+      const rotateDur = 2.0;
+      const accelDur  = 1.4;
+      const fadeDur   = 0.8;
+      const slowDur   = 1.4;
+
+      let engineOn = true;
+      let stretchPhase = 0;
+      let drawAngle = shipAngle;
+      let offset = travelOffset;
+
+      switch (
