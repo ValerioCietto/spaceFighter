@@ -279,4 +279,99 @@
       const hubGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 20);
       hubGrad.addColorStop(0, "#fdd9b1");
       hubGrad.addColorStop(1, "#9b4f2b");
-      ctx.fillStyle =
+      ctx.fillStyle = hubGrad;
+      ctx.strokeStyle = "#4a1e0f";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, 0, 20, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#321412";
+      ctx.beginPath();
+      ctx.arc(0, 0, 10, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = "#ffe5c5";
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(-10, -6);
+      ctx.quadraticCurveTo(0, -14, 10, -6);
+      ctx.moveTo(-8, 6);
+      ctx.quadraticCurveTo(0, 12, 8, 6);
+      ctx.stroke();
+
+      function wing(sign) {
+        ctx.save();
+        ctx.scale(sign, 1);
+        ctx.rotate(-angle);
+
+        ctx.fillStyle = "#c9733f";
+        ctx.strokeStyle = "#4a1e0f";
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+        ctx.moveTo(12, -thick / 2);
+        ctx.quadraticCurveTo(length * 0.5, -thick * 0.9, length, 0);
+        ctx.quadraticCurveTo(length * 0.5, thick * 0.9, 12, thick / 2);
+        ctx.quadraticCurveTo(4, thick * 0.3, 4, 0);
+        ctx.quadraticCurveTo(4, -thick * 0.3, 12, -thick / 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // internal veins
+        ctx.strokeStyle = "rgba(255,230,200,0.8)";
+        ctx.lineWidth = 1.1;
+        ctx.beginPath();
+        ctx.moveTo(16, -thick * 0.25);
+        ctx.quadraticCurveTo(length * 0.5, -thick * 0.5, length * 0.9, -thick * 0.1);
+        ctx.moveTo(16, 0);
+        ctx.quadraticCurveTo(length * 0.5, 0, length * 0.9, 0);
+        ctx.moveTo(16, thick * 0.25);
+        ctx.quadraticCurveTo(length * 0.5, thick * 0.5, length * 0.9, thick * 0.1);
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      wing(-1);
+      wing(1);
+
+      ctx.restore();
+    }
+
+    // main loop
+    let lastTime = 0;
+    function loop(timestamp) {
+      if (!lastTime) lastTime = timestamp;
+      const t = timestamp / 1000;
+
+      drawStarfield();
+
+      // positions
+      // U engine on left
+      withTransform(ctx, cx - 260, cy, 1.4, 1.4, 0, c => drawUEngine(c, t));
+      // scanner top-right
+      withTransform(ctx, cx + 220, cy - 120, 1.1, 1.1, 0, c => drawScanner(c, t));
+      // reactor bottom-right
+      withTransform(ctx, cx + 220, cy + 80, 1.2, 1.2, 0, c => drawReactorOutfit(c, t));
+      // adaptive curved wings center
+      withTransform(ctx, cx, cy - 10, 0.9, 0.9, 0, c => drawAdaptiveCurvedWings(c, t));
+
+      // labels
+      ctx.fillStyle = "#e5e9f0";
+      ctx.font = "12px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("Jared U-shaped Engine", cx - 260, cy + 90);
+      ctx.fillText("Rotating Scanner + Laser", cx + 220, cy - 60);
+      ctx.fillText("Reactor Energy Outfit", cx + 220, cy + 150);
+      ctx.fillText("Adaptive Curved Wings", cx, cy + 70);
+
+      requestAnimationFrame(loop);
+    }
+
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
