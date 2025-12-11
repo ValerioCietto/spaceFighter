@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Outfit Icons</title>
+<style>
+  body { background:#0a0f18; color:#e5e9f0; font-family:sans-serif; }
+  #c { background:#141b29; border:1px solid #333; display:block; margin:20px auto; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1200" height="700"></canvas>
+
+<script>
+// Command (terminal): npx serve .
+
+const c = document.getElementById("c");
+const ctx = c.getContext("2d");
+
+function t(x,y,s){ ctx.save(); ctx.translate(x,y); ctx.scale(s,s); }
+function r(){ ctx.restore(); }
+
+// Draw simple vector outfit icons
+const outfits = [
+  { name:"Pulse Shield Emitter",
+    desc:"Generates timed defensive pulses.",
+    draw:()=>{ ctx.fillStyle="#66b3ff"; ctx.beginPath(); ctx.arc(0,0,18,0,Math.PI*2); ctx.fill();
+               ctx.strokeStyle="#aaddff"; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(0,0,26,0,Math.PI*2); ctx.stroke(); }
+  },
+  { name:"Bio-Spine Reinforcement",
+    desc:"Organic agility enhancer.",
+    draw:()=>{ ctx.fillStyle="#e0a070";
+               ctx.beginPath(); ctx.moveTo(0,-24); ctx.bezierCurveTo(12,-10,12,10,0,24);
+               ctx.bezierCurveTo(-12,10,-12,-10,0,-24); ctx.fill(); }
+  },
+  { name:"Nanoforge Module",
+    desc:"Repairs hull over time.",
+    draw:()=>{ ctx.fillStyle="#88c0d0"; ctx.fillRect(-22,-12,44,24);
+               ctx.fillStyle="#4c566a"; ctx.fillRect(-10,-6,20,12); }
+  },
+  { name:"Thermal Torpedo Rack",
+    desc:"Adds torpedo capacity.",
+    draw:()=>{ ctx.fillStyle="#ff934d"; ctx.fillRect(-28,-10,56,20);
+               ctx.fillStyle="#ffaa77"; for(let i=-20;i<=20;i+=20){ ctx.beginPath(); ctx.arc(i,0,6,0,Math.PI*2); ctx.fill(); } }
+  },
+  { name:"Afterburner Booster",
+    desc:"Short burst acceleration.",
+    draw:()=>{ ctx.fillStyle="#5e81ac"; ctx.fillRect(-20,-12,40,24);
+               ctx.fillStyle="#ffdd55"; ctx.beginPath(); ctx.moveTo(-20,0); ctx.lineTo(-34,-6); ctx.lineTo(-34,6); ctx.closePath(); ctx.fill(); }
+  },
+  { name:"Acid Reservoir",
+    desc:"Shots melt armor.",
+    draw:()=>{ ctx.fillStyle="#8f4a2f"; ctx.fillRect(-20,-16,40,32);
+               ctx.fillStyle="#52ff7d"; ctx.beginPath(); ctx.arc(0,0,10,0,Math.PI*2); ctx.fill(); }
+  },
+  { name:"Shield Matrix Expander",
+    desc:"Increases shield capacity.",
+    draw:()=>{ ctx.strokeStyle="#66ccff"; ctx.lineWidth=4;
+               ctx.beginPath(); ctx.arc(0,0,22,0,Math.PI*2); ctx.stroke();
+               ctx.strokeStyle="#aaddff"; ctx.lineWidth=2;
+               ctx.beginPath(); ctx.arc(0,0,14,0,Math.PI*2); ctx.stroke(); }
+  },
+  { name:"Cargo Gyroscope",
+    desc:"Improves handling.",
+    draw:()=>{ ctx.strokeStyle="#a3be8c"; ctx.lineWidth=4;
+               ctx.strokeRect(-20,-20,40,40);
+               ctx.strokeStyle="#d8f5b0"; ctx.lineWidth=3;
+               ctx.beginPath(); ctx.arc(0,0,10,0,Math.PI*2); ctx.stroke(); }
+  },
+  { name:"Plasma Intake Converter",
+    desc:"Converts plasma hits to energy.",
+    draw:()=>{ ctx.fillStyle="#5f8dd3"; ctx.beginPath(); ctx.ellipse(0,0,28,18,0,0,Math.PI*2); ctx.fill();
+               ctx.fillStyle="#ffffff"; ctx.fillRect(-6,-6,12,12); }
+  },
+  { name:"Quantum Navigation Beacon",
+    desc:"Faster hyperjump alignment.",
+    draw:()=>{ ctx.strokeStyle="#b48ead"; ctx.lineWidth=3;
+               ctx.beginPath(); ctx.moveTo(-20,0); ctx.lineTo(20,0); ctx.stroke();
+               ctx.beginPath(); ctx.moveTo(0,-20); ctx.lineTo(0,20); ctx.stroke();
+               ctx.fillStyle="#d8b4ff"; ctx.beginPath(); ctx.arc(0,0,8,0,Math.PI*2); ctx.fill(); }
+  }
+];
+
+// Render grid
+function drawAll(){
+  ctx.clearRect(0,0,c.width,c.height);
+  let X=150, Y=120, i=0;
+
+  outfits.forEach(o=>{
+    t(X,Y,1.2);
+    o.draw();
+    r();
+    // text
+    ctx.fillStyle="#e5e9f0";
+    ctx.font="16px sans-serif";
+    ctx.fillText(o.name, X-50, Y+50);
+    ctx.font="12px sans-serif";
+    ctx.fillText(o.desc, X-50, Y+68);
+
+    X+=300;
+    if(++i % 3 === 0){ X=150; Y+=200; }
+  });
+}
+
+drawAll();
+</script>
+</body>
+</html>
