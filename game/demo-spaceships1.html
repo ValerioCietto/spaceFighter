@@ -1,0 +1,463 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Detailed Canvas Spaceships</title>
+  <style>
+    body {
+      margin: 0;
+      background: #050814;
+      color: #e5e9f0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      margin: 16px 0 4px;
+      font-size: 22px;
+    }
+    p {
+      margin: 0 0 12px;
+      font-size: 13px;
+      opacity: 0.8;
+    }
+    canvas {
+      border: 1px solid #333;
+      margin-bottom: 16px;
+      background: radial-gradient(circle at 30% 10%, #202d4a 0, #050814 55%);
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>5 Detailed Vector Spaceships (Canvas 2D)</h1>
+  <p>All geometry is drawn with ctx paths, gradients, and shadows. No images.</p>
+  <canvas id="shipsDetailed" width="1000" height="420"></canvas>  <script>
+    // Command (terminal): npx serve .   // then open http://localhost:3000/this-file.html
+
+    const canvas = document.getElementById('shipsDetailed');
+    const ctx = canvas.getContext('2d');
+
+    function withTransform(ctx, x, y, s, rot, drawFn) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rot || 0);
+      ctx.scale(s, s);
+      drawFn(ctx);
+      ctx.restore();
+    }
+
+    function drawStarfield(ctx, count) {
+      ctx.save();
+      for (let i = 0; i < count; i++) {
+        const x = Math.random() * ctx.canvas.width;
+        const y = Math.random() * ctx.canvas.height;
+        const r = Math.random() * 1.4 + 0.2;
+        const g = ctx.createRadialGradient(x, y, 0, x, y, r * 3);
+        const hue = 200 + Math.random() * 40;
+        g.addColorStop(0, `hsla(${hue}, 80%, 80%, 1)`);
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x, y, r * 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    // 1. Human Navy Assault Corvette (modular hull, glow engines)
+    function drawShipA(ctx) {
+      ctx.save();
+
+      // hull gradient
+      const hullGrad = ctx.createLinearGradient(0, -18, 0, 20);
+      hullGrad.addColorStop(0, '#e5f2ff');
+      hullGrad.addColorStop(0.5, '#9eb8d8');
+      hullGrad.addColorStop(1, '#4c566a');
+
+      // main hull
+      ctx.fillStyle = hullGrad;
+      ctx.strokeStyle = '#cddff5';
+      ctx.lineWidth = 0.6;
+      ctx.beginPath();
+      ctx.moveTo(0, -24);
+      ctx.lineTo(10, -12);
+      ctx.lineTo(10, 8);
+      ctx.lineTo(6, 20);
+      ctx.lineTo(-6, 20);
+      ctx.lineTo(-10, 8);
+      ctx.lineTo(-10, -12);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // armor panels
+      ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+      ctx.lineWidth = 0.4;
+      ctx.beginPath();
+      ctx.moveTo(-7, -10);
+      ctx.lineTo(7, -10);
+      ctx.moveTo(-8, -2);
+      ctx.lineTo(8, -2);
+      ctx.moveTo(-7, 6);
+      ctx.lineTo(7, 6);
+      ctx.stroke();
+
+      // side missile pods
+      ctx.fillStyle = '#4c566a';
+      ctx.beginPath();
+      ctx.moveTo(-14, -6);
+      ctx.lineTo(-10, -4);
+      ctx.lineTo(-10, 4);
+      ctx.lineTo(-14, 2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(14, -6);
+      ctx.lineTo(10, -4);
+      ctx.lineTo(10, 4);
+      ctx.lineTo(14, 2);
+      ctx.closePath();
+      ctx.fill();
+
+      // canopy
+      const canopyGrad = ctx.createLinearGradient(-3, -12, 3, 0);
+      canopyGrad.addColorStop(0, '#1b2e4a');
+      canopyGrad.addColorStop(1, '#6bb6ff');
+      ctx.fillStyle = canopyGrad;
+      ctx.beginPath();
+      ctx.moveTo(-3, -14);
+      ctx.quadraticCurveTo(0, -18, 3, -14);
+      ctx.lineTo(3, -6);
+      ctx.quadraticCurveTo(0, -4, -3, -6);
+      ctx.closePath();
+      ctx.fill();
+
+      // engine glow
+      ctx.globalCompositeOperation = 'lighter';
+      const glowGrad = ctx.createRadialGradient(0, 22, 0, 0, 22, 6);
+      glowGrad.addColorStop(0, 'rgba(135, 206, 255, 0.9)');
+      glowGrad.addColorStop(1, 'rgba(135, 206, 255, 0)');
+      ctx.fillStyle = glowGrad;
+      ctx.beginPath();
+      ctx.arc(0, 22, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // 2. Jared Spiked Raider (organic, aggressive)
+    function drawShipB(ctx) {
+      ctx.save();
+
+      // base organic shape
+      const skinGrad = ctx.createLinearGradient(0, -22, 0, 22);
+      skinGrad.addColorStop(0, '#ffdfb5');
+      skinGrad.addColorStop(0.5, '#e7a66a');
+      skinGrad.addColorStop(1, '#8a4a2a');
+
+      ctx.fillStyle = skinGrad;
+      ctx.strokeStyle = '#5b2b16';
+      ctx.lineWidth = 0.6;
+
+      ctx.beginPath();
+      ctx.moveTo(0, -26);
+      ctx.bezierCurveTo(14, -20, 18, -2, 10, 14);
+      ctx.bezierCurveTo(4, 22, -4, 22, -10, 14);
+      ctx.bezierCurveTo(-18, -2, -14, -20, 0, -26);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // dorsal ridge
+      ctx.strokeStyle = '#ffefd8';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(0, -24);
+      ctx.quadraticCurveTo(4, -8, 0, 8);
+      ctx.quadraticCurveTo(-3, 16, 0, 20);
+      ctx.stroke();
+
+      // side spikes
+      ctx.fillStyle = '#d1834a';
+      for (let i = -1; i <= 1; i++) {
+        const y = i * 6;
+        ctx.beginPath();
+        ctx.moveTo(14, y - 2);
+        ctx.lineTo(24, y);
+        ctx.lineTo(14, y + 2);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(-14, y - 2);
+        ctx.lineTo(-24, y);
+        ctx.lineTo(-14, y + 2);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // bioluminescent eyes
+      ctx.globalCompositeOperation = 'lighter';
+      function glowEye(x, y) {
+        const g = ctx.createRadialGradient(x, y, 0, x, y, 3.5);
+        g.addColorStop(0, 'rgba(0, 255, 180, 1)');
+        g.addColorStop(1, 'rgba(0, 255, 180, 0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      glowEye(4, -10);
+      glowEye(-4, -10);
+
+      ctx.restore();
+    }
+
+    // 3. Technician Drone Carrier (ring + inner ship)
+    function drawShipC(ctx) {
+      ctx.save();
+
+      // outer ring
+      const ringGrad = ctx.createLinearGradient(-24, 0, 24, 0);
+      ringGrad.addColorStop(0, '#88c0d0');
+      ringGrad.addColorStop(0.5, '#4c566a');
+      ringGrad.addColorStop(1, '#88c0d0');
+      ctx.strokeStyle = ringGrad;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(0, 0, 24, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // segmented panels on ring
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(216,222,233,0.7)';
+      for (let a = 0; a < Math.PI * 2; a += Math.PI / 6) {
+        const r1 = 20;
+        const r2 = 28;
+        const x1 = Math.cos(a) * r1;
+        const y1 = Math.sin(a) * r1;
+        const x2 = Math.cos(a) * r2;
+        const y2 = Math.sin(a) * r2;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
+
+      // inner carrier hull
+      const hullGrad = ctx.createLinearGradient(0, -18, 0, 18);
+      hullGrad.addColorStop(0, '#e5f2ff');
+      hullGrad.addColorStop(1, '#5e81ac');
+      ctx.fillStyle = hullGrad;
+      ctx.strokeStyle = '#d8dee9';
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      ctx.moveTo(0, -18);
+      ctx.quadraticCurveTo(10, -10, 10, 0);
+      ctx.quadraticCurveTo(10, 10, 0, 18);
+      ctx.quadraticCurveTo(-10, 10, -10, 0);
+      ctx.quadraticCurveTo(-10, -10, 0, -18);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // drone bays
+      ctx.fillStyle = '#2e3440';
+      for (let y = -6; y <= 6; y += 6) {
+        ctx.fillRect(-8, y - 1.5, 4, 3);
+        ctx.fillRect(4, y - 1.5, 4, 3);
+      }
+
+      // central core glow
+      ctx.globalCompositeOperation = 'lighter';
+      const core = ctx.createRadialGradient(0, 0, 0, 0, 0, 7);
+      core.addColorStop(0, 'rgba(173, 216, 255, 1)');
+      core.addColorStop(1, 'rgba(173, 216, 255, 0)');
+      ctx.fillStyle = core;
+      ctx.beginPath();
+      ctx.arc(0, 0, 7, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // 4. Human Stealth Destroyer (flat, angular, panel lines)
+    function drawShipD(ctx) {
+      ctx.save();
+
+      const hullGrad = ctx.createLinearGradient(-20, -10, 20, 16);
+      hullGrad.addColorStop(0, '#3b4252');
+      hullGrad.addColorStop(0.4, '#4c566a');
+      hullGrad.addColorStop(1, '#2e3440');
+
+      ctx.fillStyle = hullGrad;
+      ctx.strokeStyle = '#88c0d0';
+      ctx.lineWidth = 0.7;
+
+      ctx.beginPath();
+      ctx.moveTo(0, -22);
+      ctx.lineTo(22, -4);
+      ctx.lineTo(16, 4);
+      ctx.lineTo(14, 12);
+      ctx.lineTo(0, 20);
+      ctx.lineTo(-14, 12);
+      ctx.lineTo(-16, 4);
+      ctx.lineTo(-22, -4);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // inner darker wedge
+      ctx.fillStyle = 'rgba(0,0,0,0.4)';
+      ctx.beginPath();
+      ctx.moveTo(0, -18);
+      ctx.lineTo(14, 0);
+      ctx.lineTo(0, 14);
+      ctx.lineTo(-14, 0);
+      ctx.closePath();
+      ctx.fill();
+
+      // panel lines
+      ctx.strokeStyle = 'rgba(236,239,244,0.3)';
+      ctx.lineWidth = 0.4;
+      ctx.beginPath();
+      ctx.moveTo(-10, -4);
+      ctx.lineTo(10, -4);
+      ctx.moveTo(-8, 4);
+      ctx.lineTo(8, 4);
+      ctx.moveTo(0, -18);
+      ctx.lineTo(0, 14);
+      ctx.stroke();
+
+      // small blue windows
+      ctx.fillStyle = '#5e81ac';
+      for (let x = -8; x <= 8; x += 4) {
+        ctx.fillRect(x - 0.7, -2, 1.4, 2.5);
+      }
+
+      // vent thrusters
+      ctx.globalCompositeOperation = 'lighter';
+      function thruster(x, y) {
+        const g = ctx.createRadialGradient(x, y, 0, x, y, 4);
+        g.addColorStop(0, 'rgba(255, 180, 80, 1)');
+        g.addColorStop(1, 'rgba(255, 180, 80, 0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      thruster(-8, 16);
+      thruster(8, 16);
+
+      ctx.restore();
+    }
+
+    // 5. Technician Heavy Hauler (multi-section cargo with piping)
+    function drawShipE(ctx) {
+      ctx.save();
+
+      // rear engine block
+      const engineGrad = ctx.createLinearGradient(-10, -8, 10, 8);
+      engineGrad.addColorStop(0, '#4c566a');
+      engineGrad.addColorStop(1, '#2e3440');
+      ctx.fillStyle = engineGrad;
+      ctx.strokeStyle = '#d8dee9';
+      ctx.lineWidth = 0.6;
+      ctx.beginPath();
+      ctx.roundRect(-10, -8, 20, 16, 3);
+      ctx.fill();
+      ctx.stroke();
+
+      // mid spine
+      ctx.fillStyle = '#5e81ac';
+      ctx.beginPath();
+      ctx.roundRect(-6, -4, 12, 26, 3);
+      ctx.fill();
+
+      // cargo containers
+      const containerGrad = ctx.createLinearGradient(-30, 0, 30, 0);
+      containerGrad.addColorStop(0, '#e5e9f0');
+      containerGrad.addColorStop(1, '#a3be8c');
+      ctx.fillStyle = containerGrad;
+      ctx.strokeStyle = '#4c566a';
+      ctx.lineWidth = 0.6;
+      for (let i = -1; i <= 1; i++) {
+        const x = i * 16;
+        ctx.beginPath();
+        ctx.roundRect(x - 10, 0, 20, 12, 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // vertical ribs
+        ctx.strokeStyle = 'rgba(76,86,106,0.5)';
+        ctx.lineWidth = 0.35;
+        for (let r = -6; r <= 6; r += 4) {
+          ctx.beginPath();
+          ctx.moveTo(x + r, 1);
+          ctx.lineTo(x + r, 11);
+          ctx.stroke();
+        }
+      }
+
+      // front command module
+      const noseGrad = ctx.createLinearGradient(0, -10, 0, 10);
+      noseGrad.addColorStop(0, '#e5f2ff');
+      noseGrad.addColorStop(1, '#81a1c1');
+      ctx.fillStyle = noseGrad;
+      ctx.strokeStyle = '#d8dee9';
+      ctx.lineWidth = 0.6;
+      ctx.beginPath();
+      ctx.moveTo(6, -8);
+      ctx.lineTo(20, -4);
+      ctx.lineTo(20, 4);
+      ctx.lineTo(6, 8);
+      ctx.quadraticCurveTo(2, 0, 6, -8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // cockpit windows
+      ctx.fillStyle = '#2e3440';
+      ctx.fillRect(10, -3, 4, 2);
+      ctx.fillRect(10, 1, 4, 2);
+
+      // pipes under cargo
+      ctx.strokeStyle = '#88c0d0';
+      ctx.lineWidth = 0.6;
+      ctx.beginPath();
+      ctx.moveTo(-24, 14);
+      ctx.bezierCurveTo(-12, 16, 0, 18, 20, 16);
+      ctx.stroke();
+
+      // exhaust glow
+      ctx.globalCompositeOperation = 'lighter';
+      const ex = ctx.createRadialGradient(-12, 0, 0, -12, 0, 8);
+      ex.addColorStop(0, 'rgba(120, 200, 255, 1)');
+      ex.addColorStop(1, 'rgba(120, 200, 255, 0)');
+      ctx.fillStyle = ex;
+      ctx.beginPath();
+      ctx.arc(-12, 0, 8, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawStarfield(ctx, 260);
+
+      const ships = [drawShipA, drawShipB, drawShipC, drawShipD, drawShipE];
+      const cellW = canvas.width / ships.length;
+      const centerY = canvas.height / 2;
+
+      ships.forEach((drawFn, i) => {
+        const x = (i + 0.5) * cellW;
+        const scale = 2.2;
+        withTransform(ctx, x, centerY, scale, 0, drawFn);
+      });
+    }
+
+    render();
+  </script></body>
+</html>
