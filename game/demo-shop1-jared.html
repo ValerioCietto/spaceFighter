@@ -1,0 +1,423 @@
+<!-- Terminal: python -m http.server 8080 -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Jared Ship Bazaar — Expanding Tiles</title>
+  <style>
+    :root{
+      --bg0:#100406; --bg1:#24080b;
+      --cardA: rgba(35,8,8,.72);
+      --cardB: rgba(10,2,3,.72);
+      --line: rgba(255,140,60,.35);
+      --line2: rgba(255,70,40,.25);
+      --text:#fff0e4;
+      --muted: rgba(255,220,190,.72);
+      --ok:#ffcc66;
+      --warn:#ff6a3a;
+      --btn:#ff6a1f;
+      --btn2: rgba(255,120,60,.12);
+      --shadow: 0 12px 34px rgba(0,0,0,.55);
+      --glow: 0 0 0 1px rgba(255,125,45,.20), 0 0 34px rgba(255,75,25,.14);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(900px 650px at 25% 18%, rgba(255,120,40,.20) 0%, transparent 55%),
+        radial-gradient(900px 650px at 75% 55%, rgba(255,40,25,.16) 0%, transparent 58%),
+        radial-gradient(1400px 900px at 50% 10%, rgba(120,10,10,.65) 0%, var(--bg0) 55%, #050104 100%);
+    }
+    header{
+      padding:14px 16px;
+      border-bottom:1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(50,10,10,.92), rgba(16,4,6,.78));
+      display:flex; gap:12px; align-items:baseline; justify-content:space-between;
+    }
+    .title{font-weight:900; letter-spacing:.3px}
+    .sub{font-size:12px; color:var(--muted)}
+    .wrap{padding:14px; max-width:1100px; margin:0 auto}
+
+    .toolbar{
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      margin-bottom:12px;
+    }
+    .search{
+      flex:1;
+      display:flex; gap:8px; align-items:center;
+      background: rgba(255,255,255,.04);
+      border:1px solid var(--line2);
+      border-radius:14px;
+      padding:10px 12px;
+      box-shadow: var(--glow);
+    }
+    .search input{
+      width:100%;
+      background:transparent; border:none; outline:none; color:var(--text);
+      font-size:13px;
+    }
+    .chips{display:flex; gap:8px; flex-wrap:wrap}
+    .chip{
+      font-size:12px; color:var(--muted);
+      border:1px solid var(--line2);
+      padding:7px 11px; border-radius:999px;
+      cursor:pointer; user-select:none;
+      background: rgba(255,120,60,.08);
+      box-shadow: var(--glow);
+    }
+    .chip.active{
+      color:var(--text);
+      border-color: rgba(255,130,60,.6);
+      background: rgba(255,110,40,.18);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap:12px;
+      align-items:start;
+    }
+
+    .tile{
+      border:1px solid var(--line2);
+      background: linear-gradient(180deg, var(--cardA), var(--cardB));
+      border-radius:16px;
+      padding:12px;
+      box-shadow: var(--shadow), var(--glow);
+      cursor:pointer;
+      transition: transform .08s ease, border-color .08s ease, filter .08s ease;
+      overflow:hidden;
+      position:relative;
+    }
+    .tile:hover{
+      transform: translateY(-1px);
+      border-color: rgba(255,140,60,.6);
+      filter: saturate(1.08);
+    }
+    .tile.selected{
+      outline:2px solid rgba(255,190,90,.55);
+    }
+
+    .sigil{
+      position:absolute;
+      top:10px; right:10px;
+      font-size:11px;
+      padding:6px 9px;
+      border-radius:999px;
+      border:1px solid rgba(255,140,60,.32);
+      background: rgba(255,120,60,.08);
+      color: rgba(255,220,200,.8);
+    }
+
+    .thumb{
+      height:118px;
+      border-radius:14px;
+      border:1px solid rgba(255,140,60,.18);
+      background:
+        radial-gradient(180px 70px at 35% 35%, rgba(255,140,60,.22), transparent 70%),
+        radial-gradient(220px 120px at 70% 65%, rgba(255,60,40,.14), transparent 60%),
+        linear-gradient(135deg, rgba(60,10,10,.9), rgba(18,4,6,.9));
+      display:flex; align-items:center; justify-content:center;
+      position:relative;
+      overflow:hidden;
+    }
+    .thumb svg{width:98%; height:98%; opacity:.96}
+
+    .toprow{display:flex; justify-content:space-between; align-items:flex-start; margin-top:10px; gap:10px}
+    .name{font-weight:900; font-size:14px; line-height:1.2}
+    .price{font-weight:900; color:var(--ok); font-size:13px; white-space:nowrap}
+    .meta{margin-top:4px; font-size:12px; color:var(--muted); display:flex; justify-content:space-between}
+
+    .details{
+      max-height:0;
+      opacity:0;
+      transform: translateY(-4px);
+      transition: max-height .18s ease, opacity .18s ease, transform .18s ease;
+      margin-top:10px;
+    }
+    .tile.selected .details{
+      max-height:280px;
+      opacity:1;
+      transform: translateY(0);
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:8px;
+      margin-bottom:10px;
+    }
+    .stat{
+      padding:9px;
+      border-radius:14px;
+      border:1px solid rgba(255,140,60,.18);
+      background: rgba(255,120,60,.07);
+    }
+    .k{font-size:11px; color:var(--muted)}
+    .v{margin-top:3px; font-weight:950}
+
+    .desc{
+      font-size:12.5px;
+      color:var(--text);
+      line-height:1.35;
+      border:1px solid rgba(255,140,60,.16);
+      background: rgba(255,120,60,.05);
+      border-radius:14px;
+      padding:10px;
+      margin-bottom:10px;
+    }
+
+    .actions{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:8px;
+    }
+    button{
+      border:none;
+      padding:10px 10px;
+      border-radius:14px;
+      cursor:pointer;
+      color:var(--text);
+      background: rgba(255,120,60,.10);
+      border:1px solid rgba(255,140,60,.20);
+      font-weight:900;
+    }
+    button.primary{
+      background: linear-gradient(180deg, rgba(255,120,50,.95), rgba(255,70,35,.88));
+      border-color: rgba(255,130,60,.55);
+      box-shadow: 0 0 24px rgba(255,90,35,.16);
+    }
+    button:disabled{opacity:.55; cursor:not-allowed}
+
+    .note{
+      margin-top:10px;
+      font-size:12px;
+      color:var(--muted);
+      opacity:.95;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="title">Jared Ship Bazaar — Ember Dock</div>
+    <div class="sub">Organic hulls • Heat-sinks • Ritual warranty</div>
+  </div>
+  <div class="sub" id="credits">Amber: 250,000</div>
+</header>
+
+<div class="wrap">
+  <div class="toolbar">
+    <div class="search">
+      <span class="sub">Search</span>
+      <input id="q" placeholder="sting, spore, leviathan..." />
+    </div>
+    <div class="chips">
+      <div class="chip active" data-type="all">All</div>
+      <div class="chip" data-type="stalker">Stalker</div>
+      <div class="chip" data-type="carapace">Carapace</div>
+      <div class="chip" data-type="leviathan">Leviathan</div>
+    </div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="note">Tip: Click a tile to unfold the ship’s vitals. Jared crafts favor heat and close-range brutality.</div>
+</div>
+
+<script>
+  // Terminal: python -m http.server 8080
+  const state = {
+    amber: 250000,
+    filterType: "all",
+    query: "",
+    selectedId: null,
+    ships: [
+      { id:"j1", name:"Serrated Wisp", type:"stalker", hull:130, speed:"Very High", cargo:"6 pods", guns:2, price:52000,
+        desc:"A needle-thin ambush craft. Vent-flares confuse targeting; thrives in knife-range strafes." },
+      { id:"j2", name:"Ash-Runner", type:"stalker", hull:170, speed:"High", cargo:"8 pods", guns:3, price:88000,
+        desc:"Fast pursuit body with spiral fins. Emits hot dust to mask approach vectors." },
+      { id:"j3", name:"Carapace Barge", type:"carapace", hull:310, speed:"Medium", cargo:"42 pods", guns:2, price:128000,
+        desc:"A thick-shelled hauler grown in segmented plates. Comfortable under sustained micrometeor hits." },
+      { id:"j4", name:"Spore-Crucible", type:"carapace", hull:460, speed:"Low", cargo:"85 pods", guns:2, price:214000,
+        desc:"Cargo-focused hull with furnace glands. Slow, steady, and dangerously resilient." },
+      { id:"j5", name:"Leviathan Fang", type:"leviathan", hull:540, speed:"Low", cargo:"14 pods", guns:5, price:315000,
+        desc:"Heavy war-body with layered bone arcs. Designed to hold lanes and harvest hulls." },
+      { id:"j6", name:"Cinder Mantle", type:"leviathan", hull:380, speed:"Medium", cargo:"18 pods", guns:4, price:196000,
+        desc:"Escort leviathan with molten core vents. Strong forward bite and reliable thermal shielding." },
+    ],
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const fmt = (n) => n.toLocaleString("en-US");
+
+  function jaredAlienSvg(kind){
+    // Alien silhouettes: curvy, asymmetric, “organic”
+    const common = 'viewBox="0 0 240 140" xmlns="http://www.w3.org/2000/svg"';
+    const glow = 'rgba(255,120,60,.55)';
+    const bone = 'rgba(255,240,228,.92)';
+    const dark = 'rgba(30,6,8,.65)';
+    if(kind==="stalker"){
+      return `<svg ${common}>
+        <path d="M120 18
+                 C150 28, 170 44, 190 62
+                 C170 60, 150 64, 138 74
+                 C130 92, 124 112, 120 124
+                 C116 112, 110 92, 102 74
+                 C90 64, 70 60, 50 62
+                 C70 44, 90 28, 120 18Z" fill="${bone}"/>
+        <path d="M120 30 C140 42, 148 60, 120 86 C92 60, 100 42, 120 30Z" fill="${dark}"/>
+        <circle cx="120" cy="62" r="10" fill="${glow}"/>
+        <path d="M60 64 C78 70, 92 78, 106 96" stroke="rgba(255,120,60,.35)" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <path d="M180 64 C162 70, 148 78, 134 96" stroke="rgba(255,120,60,.35)" stroke-width="5" stroke-linecap="round" fill="none"/>
+      </svg>`;
+    }
+    if(kind==="carapace"){
+      return `<svg ${common}>
+        <path d="M55 72
+                 C60 40, 95 24, 120 24
+                 C145 24, 180 40, 185 72
+                 C180 104, 145 120, 120 120
+                 C95 120, 60 104, 55 72Z" fill="${bone}"/>
+        <path d="M75 72 C80 52, 100 42, 120 42 C140 42, 160 52, 165 72
+                 C160 92, 140 102, 120 102 C100 102, 80 92, 75 72Z" fill="${dark}"/>
+        <path d="M65 78 C85 88, 95 96, 110 116" stroke="rgba(255,120,60,.28)" stroke-width="6" stroke-linecap="round" fill="none"/>
+        <path d="M175 78 C155 88, 145 96, 130 116" stroke="rgba(255,120,60,.28)" stroke-width="6" stroke-linecap="round" fill="none"/>
+        <circle cx="120" cy="74" r="9" fill="${glow}"/>
+        <path d="M95 30 C105 36, 115 38, 120 38 C125 38, 135 36, 145 30"
+              stroke="rgba(255,120,60,.24)" stroke-width="5" stroke-linecap="round" fill="none"/>
+      </svg>`;
+    }
+    // leviathan
+    return `<svg ${common}>
+      <path d="M40 78
+               C55 42, 92 28, 120 26
+               C148 28, 185 42, 200 78
+               C190 92, 168 102, 150 106
+               C140 122, 130 128, 120 130
+               C110 128, 100 122, 90 106
+               C72 102, 50 92, 40 78Z" fill="${bone}"/>
+      <path d="M78 78
+               C86 56, 102 46, 120 46
+               C138 46, 154 56, 162 78
+               C154 98, 138 110, 120 110
+               C102 110, 86 98, 78 78Z" fill="${dark}"/>
+      <path d="M55 74 C70 62, 86 56, 92 52" stroke="rgba(255,120,60,.35)" stroke-width="6" stroke-linecap="round" fill="none"/>
+      <path d="M185 74 C170 62, 154 56, 148 52" stroke="rgba(255,120,60,.35)" stroke-width="6" stroke-linecap="round" fill="none"/>
+      <circle cx="120" cy="78" r="10" fill="${glow}"/>
+      <path d="M108 20 C112 30, 116 34, 120 34 C124 34, 128 30, 132 20"
+            stroke="rgba(255,120,60,.28)" stroke-width="6" stroke-linecap="round" fill="none"/>
+    </svg>`;
+  }
+
+  function filteredShips(){
+    const q = state.query.trim().toLowerCase();
+    return state.ships.filter(s=>{
+      const okType = state.filterType==="all" || s.type===state.filterType;
+      const okQ = !q || s.name.toLowerCase().includes(q) || s.type.toLowerCase().includes(q);
+      return okType && okQ;
+    });
+  }
+
+  function renderCredits(){
+    $("credits").textContent = `Amber: ${fmt(state.amber)}`;
+  }
+
+  function render(){
+    const list = filteredShips();
+    $("grid").innerHTML = list.map(s=>{
+      const sel = s.id===state.selectedId ? "selected" : "";
+      const canBuy = state.amber >= s.price;
+      return `
+        <div class="tile ${sel}" data-id="${s.id}">
+          <div class="sigil">JARED</div>
+          <div class="thumb">${jaredAlienSvg(s.type)}</div>
+
+          <div class="toprow">
+            <div class="name">${s.name}</div>
+            <div class="price">${fmt(s.price)} amber</div>
+          </div>
+
+          <div class="meta">
+            <span>${s.type}</span>
+            <span>${canBuy ? "Offered" : "Not enough amber"}</span>
+          </div>
+
+          <div class="details">
+            <div class="stats">
+              <div class="stat"><div class="k">Carapace</div><div class="v">${s.hull}</div></div>
+              <div class="stat"><div class="k">Drift</div><div class="v">${s.speed}</div></div>
+              <div class="stat"><div class="k">Pods</div><div class="v">${s.cargo}</div></div>
+              <div class="stat"><div class="k">Fangs</div><div class="v">${s.guns}</div></div>
+            </div>
+
+            <div class="desc">${s.desc}</div>
+
+            <div class="actions">
+              <button data-act="taste">Preview</button>
+              <button class="primary" data-act="buy" ${canBuy ? "" : "disabled"}>Buy</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("") || `<div class="sub">No Jared hulls match this filter.</div>`;
+
+    // expand/collapse on tile click
+    document.querySelectorAll(".tile").forEach(tile=>{
+      tile.addEventListener("click", (e)=>{
+        const btn = e.target.closest("button");
+        if(btn) return;
+        const id = tile.dataset.id;
+        state.selectedId = (state.selectedId===id) ? null : id;
+        render();
+      });
+
+      tile.querySelectorAll("button").forEach(btn=>{
+        btn.addEventListener("click", (e)=>{
+          e.stopPropagation();
+          const id = tile.dataset.id;
+          const ship = state.ships.find(x=>x.id===id);
+          const act = btn.dataset.act;
+
+          if(act==="taste"){
+            alert(`Preview: ${ship.name}\n\n(Replace with Jared hangar scene: drifting embers + organic motion.)`);
+          } else if(act==="buy"){
+            if(state.amber < ship.price) return;
+            state.amber -= ship.price;
+            alert(`Bonded: ${ship.name}\nRemaining amber: ${fmt(state.amber)}`);
+            renderCredits();
+            render();
+          }
+        });
+      });
+    });
+  }
+
+  function setupFilters(){
+    document.querySelectorAll(".chip").forEach(ch=>{
+      ch.addEventListener("click", ()=>{
+        document.querySelectorAll(".chip").forEach(x=>x.classList.remove("active"));
+        ch.classList.add("active");
+        state.filterType = ch.dataset.type;
+        state.selectedId = null;
+        render();
+      });
+    });
+
+    $("q").addEventListener("input", (e)=>{
+      state.query = e.target.value;
+      state.selectedId = null;
+      render();
+    });
+  }
+
+  renderCredits();
+  setupFilters();
+  render();
+</script>
+</body>
+</html>
