@@ -1,0 +1,333 @@
+<!-- Terminal: python -m http.server 8080 -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Shipyard — Expanding Tiles</title>
+  <style>
+    :root{
+      --bg0:#050712; --bg1:#0b1330;
+      --card:#0f1b3f; --line:#243a7a;
+      --text:#e7efff; --muted:#a9b9e6; --ok:#7dff9f; --btn:#2c7cff;
+      --shadow: 0 10px 28px rgba(0,0,0,.45);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background: radial-gradient(1100px 700px at 30% 15%, #12245a 0%, var(--bg0) 55%, #02030a 100%);
+    }
+    header{
+      padding:14px 16px;
+      border-bottom:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(15,25,60,.95), rgba(10,15,40,.85));
+      display:flex; gap:12px; align-items:baseline; justify-content:space-between;
+    }
+    .title{font-weight:800; letter-spacing:.2px}
+    .sub{font-size:12px; color:var(--muted)}
+    .wrap{padding:14px; max-width:1100px; margin:0 auto}
+
+    .toolbar{
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      margin-bottom:12px;
+    }
+    .search{
+      flex:1;
+      display:flex; gap:8px; align-items:center;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:12px;
+      padding:10px 12px;
+    }
+    .search input{
+      width:100%;
+      background:transparent; border:none; outline:none; color:var(--text);
+      font-size:13px;
+    }
+    .chips{display:flex; gap:8px; flex-wrap:wrap}
+    .chip{
+      font-size:12px; color:var(--muted);
+      border:1px solid rgba(255,255,255,.12);
+      padding:7px 11px; border-radius:999px;
+      cursor:pointer; user-select:none;
+      background: rgba(255,255,255,.04);
+    }
+    .chip.active{color:var(--text); border-color: rgba(44,124,255,.7); background: rgba(44,124,255,.12)}
+
+    /* GRID */
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap:12px;
+      align-items:start;
+    }
+    .tile{
+      border:1px solid rgba(36,58,122,.9);
+      background: linear-gradient(180deg, rgba(15,27,63,.9), rgba(8,12,26,.85));
+      border-radius:14px;
+      padding:12px;
+      box-shadow: var(--shadow);
+      cursor:pointer;
+      transition: transform .08s ease, border-color .08s ease;
+      overflow:hidden;
+    }
+    .tile:hover{transform: translateY(-1px); border-color: rgba(44,124,255,.85)}
+    .tile.selected{outline:2px solid rgba(125,255,159,.65)}
+
+    .thumb{
+      height:110px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.08);
+      background:
+        radial-gradient(160px 70px at 35% 35%, rgba(44,124,255,.25), transparent 70%),
+        linear-gradient(135deg, rgba(27,42,85,.9), rgba(10,20,51,.9));
+      display:flex; align-items:center; justify-content:center;
+    }
+    .thumb svg{width:96%; height:96%; opacity:.95}
+
+    .toprow{display:flex; justify-content:space-between; align-items:flex-start; margin-top:10px; gap:10px}
+    .name{font-weight:800; font-size:14px; line-height:1.2}
+    .price{font-weight:900; color:var(--ok); font-size:13px; white-space:nowrap}
+    .meta{margin-top:4px; font-size:12px; color:var(--muted); display:flex; justify-content:space-between}
+
+    /* EXPANDED CONTENT */
+    .details{
+      max-height:0;
+      opacity:0;
+      transform: translateY(-4px);
+      transition: max-height .18s ease, opacity .18s ease, transform .18s ease;
+      margin-top:10px;
+    }
+    .tile.selected .details{
+      max-height:260px; /* enough to show stats */
+      opacity:1;
+      transform: translateY(0);
+    }
+    .stats{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:8px;
+      margin-bottom:10px;
+    }
+    .stat{
+      padding:9px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+    }
+    .k{font-size:11px; color:var(--muted)}
+    .v{margin-top:3px; font-weight:900}
+    .desc{
+      font-size:12.5px;
+      color:var(--text);
+      line-height:1.35;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      border-radius:12px;
+      padding:10px;
+      margin-bottom:10px;
+    }
+    .actions{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:8px;
+    }
+    button{
+      border:none;
+      padding:10px 10px;
+      border-radius:12px;
+      cursor:pointer;
+      color:var(--text);
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      font-weight:800;
+    }
+    button.primary{background: var(--btn); border-color: rgba(44,124,255,.7)}
+    button:disabled{opacity:.55; cursor:not-allowed}
+  </style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="title">Orbital Station A-17 — Ships on Sale</div>
+    <div class="sub">Click a ship tile to expand and view stats</div>
+  </div>
+  <div class="sub" id="credits">Credits: 250,000 cr</div>
+</header>
+
+<div class="wrap">
+  <div class="toolbar">
+    <div class="search">
+      <span class="sub">Search</span>
+      <input id="q" placeholder="fighter, trader, gunship..." />
+    </div>
+    <div class="chips">
+      <div class="chip active" data-type="all">All</div>
+      <div class="chip" data-type="fighter">Fighter</div>
+      <div class="chip" data-type="trader">Trader</div>
+      <div class="chip" data-type="gunship">Gunship</div>
+    </div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+  // Terminal: python -m http.server 8080
+  const state = {
+    credits: 250000,
+    filterType: "all",
+    query: "",
+    selectedId: null,
+    ships: [
+      { id:"s1", name:"XF-12 Sparrow", type:"fighter", hull:120, speed:"High", cargo:"8t", guns:2, price:45000,
+        desc:"Fast interceptor for station patrol and short-range bounty work." },
+      { id:"s2", name:"Vega Arrow", type:"fighter", hull:160, speed:"High", cargo:"10t", guns:3, price:82000,
+        desc:"Balanced dogfighter with improved radiator profile for sustained fire." },
+      { id:"s3", name:"Mercury-C", type:"trader", hull:280, speed:"Medium", cargo:"45t", guns:2, price:120000,
+        desc:"Reliable mid-size hauler. Great as a money-maker and fleet backbone." },
+      { id:"s4", name:"Atlas Hauler", type:"trader", hull:420, speed:"Low", cargo:"90t", guns:2, price:205000,
+        desc:"Cargo-first platform with reinforced pylons. Not fast, but very profitable." },
+      { id:"s5", name:"Ares-IX", type:"gunship", hull:520, speed:"Low", cargo:"15t", guns:5, price:310000,
+        desc:"Heavy gunship with thick plating and multiple hardpoints." },
+      { id:"s6", name:"Kestrel Mk2", type:"gunship", hull:360, speed:"Medium", cargo:"20t", guns:4, price:190000,
+        desc:"Escort gunship with strong forward battery. Ideal for convoy protection." },
+    ],
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const fmt = (n) => n.toLocaleString("en-US");
+
+  function shipSvg(kind){
+    const common = 'viewBox="0 0 220 120" xmlns="http://www.w3.org/2000/svg"';
+    if(kind==="fighter"){
+      return `<svg ${common}>
+        <path d="M110 18 L130 42 L180 52 L130 62 L110 102 L90 62 L40 52 L90 42 Z" fill="rgba(231,239,255,.92)"/>
+        <circle cx="110" cy="55" r="10" fill="rgba(44,124,255,.65)"/>
+        <rect x="104" y="35" width="12" height="55" rx="6" fill="rgba(15,27,63,.65)"/>
+      </svg>`;
+    }
+    if(kind==="trader"){
+      return `<svg ${common}>
+        <path d="M40 60 C60 30, 160 30, 180 60 C160 92, 60 92, 40 60 Z" fill="rgba(231,239,255,.90)"/>
+        <rect x="95" y="30" width="30" height="20" rx="6" fill="rgba(44,124,255,.55)"/>
+        <rect x="70" y="55" width="80" height="35" rx="10" fill="rgba(15,27,63,.6)"/>
+      </svg>`;
+    }
+    return `<svg ${common}>
+      <path d="M30 65 L70 40 L140 40 L190 65 L140 90 L70 90 Z" fill="rgba(231,239,255,.90)"/>
+      <rect x="92" y="32" width="36" height="18" rx="6" fill="rgba(255,210,106,.55)"/>
+      <rect x="80" y="52" width="60" height="45" rx="10" fill="rgba(15,27,63,.62)"/>
+      <circle cx="60" cy="65" r="6" fill="rgba(44,124,255,.55)"/>
+      <circle cx="160" cy="65" r="6" fill="rgba(44,124,255,.55)"/>
+    </svg>`;
+  }
+
+  function filteredShips(){
+    const q = state.query.trim().toLowerCase();
+    return state.ships.filter(s=>{
+      const okType = state.filterType==="all" || s.type===state.filterType;
+      const okQ = !q || s.name.toLowerCase().includes(q) || s.type.toLowerCase().includes(q);
+      return okType && okQ;
+    });
+  }
+
+  function renderCredits(){
+    $("credits").textContent = `Credits: ${fmt(state.credits)} cr`;
+  }
+
+  function render(){
+    const list = filteredShips();
+    $("grid").innerHTML = list.map(s=>{
+      const sel = s.id===state.selectedId ? "selected" : "";
+      const canBuy = state.credits >= s.price;
+      return `
+        <div class="tile ${sel}" data-id="${s.id}">
+          <div class="thumb">${shipSvg(s.type)}</div>
+
+          <div class="toprow">
+            <div class="name">${s.name}</div>
+            <div class="price">${fmt(s.price)} cr</div>
+          </div>
+
+          <div class="meta">
+            <span>${s.type}</span>
+            <span>${canBuy ? "Available" : "Insufficient credits"}</span>
+          </div>
+
+          <div class="details">
+            <div class="stats">
+              <div class="stat"><div class="k">Hull</div><div class="v">${s.hull}</div></div>
+              <div class="stat"><div class="k">Speed</div><div class="v">${s.speed}</div></div>
+              <div class="stat"><div class="k">Cargo</div><div class="v">${s.cargo}</div></div>
+              <div class="stat"><div class="k">Hardpoints</div><div class="v">${s.guns}</div></div>
+            </div>
+
+            <div class="desc">${s.desc}</div>
+
+            <div class="actions">
+              <button data-act="preview">Preview</button>
+              <button class="primary" data-act="buy" ${canBuy ? "" : "disabled"}>Buy</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("") || `<div class="sub">No ships match this filter.</div>`;
+
+    // tile click expands; button clicks don't collapse
+    [...document.querySelectorAll(".tile")].forEach(tile=>{
+      tile.addEventListener("click", (e)=>{
+        const id = tile.dataset.id;
+        const btn = e.target.closest("button");
+        if(btn) return; // handled below
+        state.selectedId = (state.selectedId===id) ? null : id;
+        render();
+      });
+
+      tile.querySelectorAll("button").forEach(btn=>{
+        btn.addEventListener("click", (e)=>{
+          e.stopPropagation();
+          const id = tile.dataset.id;
+          const ship = state.ships.find(x=>x.id===id);
+          const act = btn.dataset.act;
+
+          if(act==="preview"){
+            alert(`Preview: ${ship.name}\n\n(Replace with hangar/3D preview scene.)`);
+          } else if(act==="buy"){
+            if(state.credits < ship.price) return;
+            state.credits -= ship.price;
+            alert(`Purchased: ${ship.name}\nRemaining credits: ${fmt(state.credits)} cr`);
+            renderCredits();
+            render(); // refresh buttons + availability
+          }
+        });
+      });
+    });
+  }
+
+  function setupFilters(){
+    document.querySelectorAll(".chip").forEach(ch=>{
+      ch.addEventListener("click", ()=>{
+        document.querySelectorAll(".chip").forEach(x=>x.classList.remove("active"));
+        ch.classList.add("active");
+        state.filterType = ch.dataset.type;
+        state.selectedId = null;
+        render();
+      });
+    });
+
+    $("q").addEventListener("input", (e)=>{
+      state.query = e.target.value;
+      state.selectedId = null;
+      render();
+    });
+  }
+
+  renderCredits();
+  setupFilters();
+  render();
+</script>
+</body>
+</html>
