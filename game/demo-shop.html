@@ -1,0 +1,525 @@
+<!-- Terminal: python -m http.server 8080 -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Station Shipyard Shop</title>
+  <style>
+    :root{
+      --bg0:#050712; --bg1:#0b1330; --card:#0f1b3f; --card2:#0b1433;
+      --line:#243a7a; --text:#e7efff; --muted:#a9b9e6; --ok:#7dff9f; --warn:#ffd26a;
+      --btn:#2c7cff; --btn2:#1f356f; --shadow: 0 10px 28px rgba(0,0,0,.45);
+      --fleetH: 38vh; /* expanded height */
+      --fleetPeek: 42px; /* collapsed visible height */
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; color:var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1100px 700px at 30% 15%, #12245a 0%, var(--bg0) 55%, #02030a 100%);
+      overflow:hidden;
+    }
+    header{
+      height:56px; display:flex; align-items:center; justify-content:space-between;
+      padding:0 14px; border-bottom:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(15,25,60,.95), rgba(10,15,40,.85));
+    }
+    header .title{font-weight:700; letter-spacing:.2px}
+    header .sub{font-size:12px; color:var(--muted)}
+    .wrap{
+      position:relative;
+      height:calc(100vh - 56px);
+      padding:14px;
+    }
+
+    /* MAIN LAYOUT */
+    .main{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:14px;
+      height:100%;
+      padding-bottom: calc(var(--fleetPeek) + 10px); /* keep content above fleet when collapsed */
+    }
+
+    /* LEFT: GRID */
+    .gridPanel{
+      border:1px solid var(--line);
+      background: rgba(10,16,40,.65);
+      border-radius:12px;
+      padding:12px;
+      box-shadow: var(--shadow);
+      display:flex; flex-direction:column; min-height:0;
+    }
+    .gridTop{
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      margin-bottom:10px;
+    }
+    .search{
+      flex:1;
+      display:flex; gap:8px; align-items:center;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:10px;
+      padding:8px 10px;
+    }
+    .search input{
+      width:100%; background:transparent; border:none; outline:none; color:var(--text);
+      font-size:13px;
+    }
+    .chips{display:flex; gap:8px; flex-wrap:wrap}
+    .chip{
+      font-size:12px; color:var(--muted);
+      border:1px solid rgba(255,255,255,.12);
+      padding:6px 10px; border-radius:999px;
+      cursor:pointer; user-select:none;
+      background: rgba(255,255,255,.04);
+    }
+    .chip.active{color:var(--text); border-color: rgba(44,124,255,.7); background: rgba(44,124,255,.12)}
+    .shipGrid{
+      overflow:auto; min-height:0;
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap:10px;
+      padding-right:6px;
+    }
+    .shipTile{
+      border:1px solid rgba(36,58,122,.9);
+      background: linear-gradient(180deg, rgba(15,27,63,.9), rgba(8,12,26,.85));
+      border-radius:12px;
+      padding:10px;
+      cursor:pointer;
+      transition: transform .08s ease, border-color .08s ease;
+    }
+    .shipTile:hover{transform: translateY(-1px); border-color: rgba(44,124,255,.85)}
+    .shipTile.selected{outline:2px solid rgba(125,255,159,.65); outline-offset:0}
+    .thumb{
+      height:86px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.08);
+      background: radial-gradient(120px 60px at 35% 35%, rgba(44,124,255,.25), transparent 70%),
+                  linear-gradient(135deg, rgba(27,42,85,.9), rgba(10,20,51,.9));
+      display:flex; align-items:center; justify-content:center;
+      position:relative;
+      overflow:hidden;
+    }
+    .thumb svg{width:95%; height:95%; opacity:.95}
+    .tileName{margin-top:8px; font-weight:700; font-size:13px}
+    .tileMeta{margin-top:2px; font-size:12px; color:var(--muted); display:flex; justify-content:space-between}
+    .tilePrice{color:var(--ok); font-weight:700}
+
+    /* RIGHT: DETAILS */
+    .detailPanel{
+      border:1px solid var(--line);
+      background: rgba(10,16,40,.65);
+      border-radius:12px;
+      padding:12px;
+      box-shadow: var(--shadow);
+      display:flex; flex-direction:column; min-height:0;
+    }
+    .detailHero{
+      border:1px solid rgba(255,255,255,.08);
+      background: linear-gradient(180deg, rgba(15,27,63,.9), rgba(8,12,26,.85));
+      border-radius:12px;
+      height:180px;
+      display:flex; align-items:center; justify-content:center;
+      position:relative; overflow:hidden;
+      margin-bottom:12px;
+    }
+    .detailHero .badge{
+      position:absolute; top:10px; left:10px;
+      font-size:12px; color:var(--muted);
+      padding:6px 10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+    }
+    .detailTitle{font-size:18px; font-weight:800; margin:2px 0 2px}
+    .detailSub{font-size:12px; color:var(--muted); margin-bottom:10px}
+    .stats{
+      display:grid; grid-template-columns: 1fr 1fr;
+      gap:8px;
+      margin-bottom:12px;
+    }
+    .stat{
+      padding:10px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.04);
+    }
+    .stat .k{font-size:11px; color:var(--muted)}
+    .stat .v{margin-top:3px; font-weight:800}
+    .desc{
+      font-size:13px; color:var(--text);
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.03);
+      border-radius:10px;
+      padding:10px;
+      line-height:1.35;
+      margin-bottom:12px;
+      overflow:auto;
+      min-height:0;
+      max-height:120px;
+    }
+    .actions{
+      display:grid; gap:8px;
+      grid-template-columns: 1fr 1fr 1fr;
+      margin-top:auto;
+    }
+    .btn{
+      border:none;
+      padding:10px 10px;
+      border-radius:10px;
+      cursor:pointer;
+      color:var(--text);
+      background: var(--btn2);
+      border:1px solid rgba(255,255,255,.10);
+      font-weight:700;
+    }
+    .btn.primary{background: var(--btn); border-color: rgba(44,124,255,.7)}
+    .btn.warn{background: rgba(255,210,106,.14); border-color: rgba(255,210,106,.35)}
+    .btn:disabled{opacity:.55; cursor:not-allowed}
+
+    /* FLEET PANEL (BOTTOM, TOGGLE UP/DOWN) */
+    .fleet{
+      position:absolute; left:14px; right:14px;
+      bottom:14px;
+      height: var(--fleetH);
+      transform: translateY(calc(var(--fleetH) - var(--fleetPeek)));
+      transition: transform .18s ease;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background: rgba(8,12,26,.86);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      display:flex; flex-direction:column;
+      backdrop-filter: blur(8px);
+    }
+    .fleet.open{transform: translateY(0)}
+    .fleetBar{
+      height: var(--fleetPeek);
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 12px;
+      background: linear-gradient(180deg, rgba(15,25,60,.95), rgba(10,15,40,.85));
+      border-bottom:1px solid rgba(255,255,255,.08);
+      cursor:pointer; user-select:none;
+    }
+    .fleetBar .left{display:flex; gap:10px; align-items:center}
+    .pill{
+      font-size:12px; color:var(--muted);
+      border:1px solid rgba(255,255,255,.12);
+      padding:5px 10px; border-radius:999px;
+      background: rgba(255,255,255,.04);
+    }
+    .fleetGrid{
+      padding:12px;
+      overflow:auto;
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap:10px;
+      min-height:0;
+    }
+    .fleetTile{
+      border:1px solid rgba(36,58,122,.9);
+      background: rgba(255,255,255,.03);
+      border-radius:12px;
+      padding:10px;
+    }
+    .fleetTile .name{font-weight:800; font-size:13px}
+    .fleetTile .meta{font-size:12px; color:var(--muted); margin-top:4px; display:flex; justify-content:space-between}
+    .small{
+      font-size:12px; color:var(--muted);
+    }
+
+    /* SCROLLBAR (subtle) */
+    .shipGrid::-webkit-scrollbar, .fleetGrid::-webkit-scrollbar, .desc::-webkit-scrollbar{width:10px}
+    .shipGrid::-webkit-scrollbar-thumb, .fleetGrid::-webkit-scrollbar-thumb, .desc::-webkit-scrollbar-thumb{
+      background: rgba(255,255,255,.08); border-radius:999px; border:2px solid transparent; background-clip: content-box;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="title">Orbital Station A-17 — Shipyard</div>
+    <div class="sub">Refuel • Outfits • Software • Shipyard</div>
+  </div>
+  <div class="sub" id="credits">Credits: 250,000 cr</div>
+</header>
+
+<div class="wrap">
+  <div class="main">
+    <!-- LEFT -->
+    <section class="gridPanel">
+      <div class="gridTop">
+        <div class="search">
+          <span class="small">Search</span>
+          <input id="q" placeholder="e.g., fighter, trader, gunship" />
+        </div>
+        <div class="chips">
+          <div class="chip active" data-type="all">All</div>
+          <div class="chip" data-type="fighter">Fighter</div>
+          <div class="chip" data-type="trader">Trader</div>
+          <div class="chip" data-type="gunship">Gunship</div>
+        </div>
+      </div>
+      <div class="shipGrid" id="shipGrid"></div>
+    </section>
+
+    <!-- RIGHT -->
+    <aside class="detailPanel">
+      <div class="detailHero" id="detailHero">
+        <div class="badge" id="detailType">—</div>
+        <div id="detailSvg"></div>
+      </div>
+
+      <div class="detailTitle" id="detailName">Select a ship</div>
+      <div class="detailSub" id="detailMeta">—</div>
+
+      <div class="stats">
+        <div class="stat"><div class="k">Hull</div><div class="v" id="stHull">—</div></div>
+        <div class="stat"><div class="k">Speed</div><div class="v" id="stSpeed">—</div></div>
+        <div class="stat"><div class="k">Cargo</div><div class="v" id="stCargo">—</div></div>
+        <div class="stat"><div class="k">Hardpoints</div><div class="v" id="stGuns">—</div></div>
+      </div>
+
+      <div class="desc" id="detailDesc">Pick a ship from the grid to view details.</div>
+
+      <div class="actions">
+        <button class="btn" id="btnPreview" disabled>Preview</button>
+        <button class="btn warn" id="btnTrade" disabled>Trade-in</button>
+        <button class="btn primary" id="btnBuy" disabled>Buy</button>
+      </div>
+      <div class="small" style="margin-top:10px" id="detailPrice">—</div>
+    </aside>
+  </div>
+
+  <!-- FLEET PANEL -->
+  <section class="fleet" id="fleet">
+    <div class="fleetBar" id="fleetBar" title="Toggle fleet panel">
+      <div class="left">
+        <strong>Current Fleet</strong>
+        <span class="pill" id="fleetCount">0 ships</span>
+        <span class="pill" id="fleetValue">Value: 0 cr</span>
+      </div>
+      <div class="small" id="fleetHint">Tap to expand</div>
+    </div>
+    <div class="fleetGrid" id="fleetGrid"></div>
+  </section>
+</div>
+
+<script>
+  // Terminal: python -m http.server 8080
+  const state = {
+    credits: 250000,
+    selectedId: null,
+    filterType: "all",
+    query: "",
+    fleet: [
+      { id:"f1", name:"Starter Falcon", type:"fighter", hull:140, speed:"High", cargo:"10t", guns:2, value:38000 },
+      { id:"t1", name:"Rusty Mule", type:"trader", hull:260, speed:"Medium", cargo:"40t", guns:1, value:75000 },
+    ],
+    ships: [
+      { id:"s1", name:"XF-12 Sparrow", type:"fighter", hull:120, speed:"High", cargo:"8t", guns:2, price:45000,
+        desc:"A fast interceptor tuned for station patrol and short-range bounty work. Low cargo, high agility." },
+      { id:"s2", name:"Vega Arrow", type:"fighter", hull:160, speed:"High", cargo:"10t", guns:3, price:82000,
+        desc:"Balanced dogfighter with extra hardpoint and improved radiator profile for sustained fire." },
+      { id:"s3", name:"Mercury-C", type:"trader", hull:280, speed:"Medium", cargo:"45t", guns:2, price:120000,
+        desc:"Reliable mid-size hauler. Great as a money-maker and fleet logistics backbone." },
+      { id:"s4", name:"Atlas Hauler", type:"trader", hull:420, speed:"Low", cargo:"90t", guns:2, price:205000,
+        desc:"A cargo-first platform with reinforced pylons. Not fast, but it prints credits on trade routes." },
+      { id:"s5", name:"Ares-IX", type:"gunship", hull:520, speed:"Low", cargo:"15t", guns:5, price:310000,
+        desc:"Heavy gunship with multiple hardpoints and thick plating. Designed to hold the line." },
+      { id:"s6", name:"Kestrel Mk2", type:"gunship", hull:360, speed:"Medium", cargo:"20t", guns:4, price:190000,
+        desc:"Escort gunship with decent speed and strong forward battery. Ideal for convoy protection." },
+    ]
+  };
+
+  const $ = (id) => document.getElementById(id);
+
+  function fmt(n){ return n.toLocaleString("en-US"); }
+
+  function shipSvg(kind){
+    // Simple inline SVG silhouettes (no external assets)
+    const common = 'viewBox="0 0 220 120" xmlns="http://www.w3.org/2000/svg"';
+    if(kind==="fighter"){
+      return `<svg ${common}>
+        <path d="M110 18 L130 42 L180 52 L130 62 L110 102 L90 62 L40 52 L90 42 Z" fill="rgba(231,239,255,.92)"/>
+        <circle cx="110" cy="55" r="10" fill="rgba(44,124,255,.65)"/>
+        <rect x="104" y="35" width="12" height="55" rx="6" fill="rgba(15,27,63,.65)"/>
+      </svg>`;
+    }
+    if(kind==="trader"){
+      return `<svg ${common}>
+        <path d="M40 60 C60 30, 160 30, 180 60 C160 92, 60 92, 40 60 Z" fill="rgba(231,239,255,.90)"/>
+        <rect x="95" y="30" width="30" height="20" rx="6" fill="rgba(44,124,255,.55)"/>
+        <rect x="70" y="55" width="80" height="35" rx="10" fill="rgba(15,27,63,.6)"/>
+      </svg>`;
+    }
+    return `<svg ${common}>
+      <path d="M30 65 L70 40 L140 40 L190 65 L140 90 L70 90 Z" fill="rgba(231,239,255,.90)"/>
+      <rect x="92" y="32" width="36" height="18" rx="6" fill="rgba(255,210,106,.55)"/>
+      <rect x="80" y="52" width="60" height="45" rx="10" fill="rgba(15,27,63,.62)"/>
+      <circle cx="60" cy="65" r="6" fill="rgba(44,124,255,.55)"/>
+      <circle cx="160" cy="65" r="6" fill="rgba(44,124,255,.55)"/>
+    </svg>`;
+  }
+
+  function filteredShips(){
+    return state.ships.filter(s=>{
+      const okType = state.filterType==="all" || s.type===state.filterType;
+      const q = state.query.trim().toLowerCase();
+      const okQ = !q || (s.name.toLowerCase().includes(q) || s.type.toLowerCase().includes(q));
+      return okType && okQ;
+    });
+  }
+
+  function renderCredits(){
+    $("credits").textContent = `Credits: ${fmt(state.credits)} cr`;
+  }
+
+  function renderGrid(){
+    const list = filteredShips();
+    $("shipGrid").innerHTML = list.map(s=>{
+      const selected = s.id===state.selectedId ? "selected" : "";
+      return `
+        <div class="shipTile ${selected}" data-id="${s.id}">
+          <div class="thumb">${shipSvg(s.type)}</div>
+          <div class="tileName">${s.name}</div>
+          <div class="tileMeta">
+            <span>${s.type}</span>
+            <span class="tilePrice">${fmt(s.price)} cr</span>
+          </div>
+        </div>
+      `;
+    }).join("") || `<div class="small">No ships match this filter.</div>`;
+
+    // wire clicks
+    [...document.querySelectorAll(".shipTile")].forEach(el=>{
+      el.addEventListener("click", ()=>selectShip(el.dataset.id));
+    });
+  }
+
+  function selectShip(id){
+    state.selectedId = id;
+    renderGrid();
+    renderDetails();
+  }
+
+  function renderDetails(){
+    const s = state.ships.find(x=>x.id===state.selectedId);
+    const has = !!s;
+
+    $("detailType").textContent = has ? s.type.toUpperCase() : "—";
+    $("detailSvg").innerHTML = has ? shipSvg(s.type) : "";
+    $("detailName").textContent = has ? s.name : "Select a ship";
+    $("detailMeta").textContent = has ? `Station stock • New hull • Warranty included` : "—";
+    $("stHull").textContent = has ? s.hull : "—";
+    $("stSpeed").textContent = has ? s.speed : "—";
+    $("stCargo").textContent = has ? s.cargo : "—";
+    $("stGuns").textContent = has ? s.guns : "—";
+    $("detailDesc").textContent = has ? s.desc : "Pick a ship from the grid to view details.";
+    $("detailPrice").textContent = has ? `Price: ${fmt(s.price)} cr` : "—";
+
+    $("btnPreview").disabled = !has;
+    $("btnTrade").disabled = !has || state.fleet.length===0;
+    $("btnBuy").disabled = !has || state.credits < s.price;
+    $("btnBuy").textContent = !has ? "Buy" : (state.credits < s.price ? "Insufficient credits" : "Buy");
+  }
+
+  function fleetValue(){
+    return state.fleet.reduce((a,s)=>a+(s.value||0),0);
+  }
+
+  function renderFleet(){
+    $("fleetCount").textContent = `${state.fleet.length} ships`;
+    $("fleetValue").textContent = `Value: ${fmt(fleetValue())} cr`;
+    $("fleetGrid").innerHTML = state.fleet.map(s=>`
+      <div class="fleetTile">
+        <div class="thumb" style="height:70px;margin-bottom:8px">${shipSvg(s.type)}</div>
+        <div class="name">${s.name}</div>
+        <div class="meta"><span>${s.type}</span><span>${fmt(s.value||0)} cr</span></div>
+      </div>
+    `).join("") || `<div class="small">Fleet empty.</div>`;
+  }
+
+  function setupFilters(){
+    [...document.querySelectorAll(".chip")].forEach(ch=>{
+      ch.addEventListener("click", ()=>{
+        [...document.querySelectorAll(".chip")].forEach(x=>x.classList.remove("active"));
+        ch.classList.add("active");
+        state.filterType = ch.dataset.type;
+        renderGrid();
+      });
+    });
+    $("q").addEventListener("input", (e)=>{
+      state.query = e.target.value;
+      renderGrid();
+    });
+  }
+
+  function setupFleetToggle(){
+    const fleet = $("fleet");
+    const bar = $("fleetBar");
+    bar.addEventListener("click", ()=>{
+      fleet.classList.toggle("open");
+      $("fleetHint").textContent = fleet.classList.contains("open") ? "Tap to collapse" : "Tap to expand";
+    });
+  }
+
+  function setupActions(){
+    $("btnPreview").addEventListener("click", ()=>{
+      const s = state.ships.find(x=>x.id===state.selectedId);
+      if(!s) return;
+      alert(`Preview: ${s.name}\n\n(Replace this with your hangar/3D preview scene.)`);
+    });
+
+    $("btnTrade").addEventListener("click", ()=>{
+      const s = state.ships.find(x=>x.id===state.selectedId);
+      if(!s || state.fleet.length===0) return;
+
+      // Trade-in: remove the lowest value ship as a simple rule
+      let idx = 0;
+      for(let i=1;i<state.fleet.length;i++){
+        if((state.fleet[i].value||0) < (state.fleet[idx].value||0)) idx = i;
+      }
+      const traded = state.fleet.splice(idx,1)[0];
+      const credit = Math.floor((traded.value||0) * 0.7);
+      state.credits += credit;
+
+      alert(`Trade-in accepted:\n${traded.name}\nCredit: ${fmt(credit)} cr (70% of value)`);
+      renderCredits(); renderFleet(); renderDetails();
+    });
+
+    $("btnBuy").addEventListener("click", ()=>{
+      const s = state.ships.find(x=>x.id===state.selectedId);
+      if(!s) return;
+      if(state.credits < s.price) return;
+
+      state.credits -= s.price;
+      state.fleet.push({
+        id: "owned-"+Math.random().toString(16).slice(2),
+        name: s.name,
+        type: s.type,
+        hull: s.hull,
+        speed: s.speed,
+        cargo: s.cargo,
+        guns: s.guns,
+        value: Math.floor(s.price*0.85)
+      });
+
+      alert(`Purchased: ${s.name}\nRemaining credits: ${fmt(state.credits)} cr`);
+      renderCredits(); renderFleet(); renderDetails();
+    });
+  }
+
+  // init
+  renderCredits();
+  setupFilters();
+  renderGrid();
+  renderDetails();
+  renderFleet();
+  setupFleetToggle();
+  setupActions();
+</script>
+</body>
+</html>
