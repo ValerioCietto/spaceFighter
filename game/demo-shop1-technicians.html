@@ -1,0 +1,428 @@
+<!-- Terminal: python -m http.server 8080 -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Technician Fabricator — Expanding Tiles</title>
+  <style>
+    :root{
+      --bg0:#06010d; --bg1:#12001d;
+      --cardA: rgba(22,6,40,.70);
+      --cardB: rgba(10,2,18,.78);
+      --line: rgba(210,60,255,.28);
+      --line2: rgba(255,70,120,.22);
+      --text:#f3e9ff;
+      --muted: rgba(226,200,255,.70);
+      --ok:#7fe8ff;          /* light blue “energy” */
+      --warn:#ff5b9f;
+      --btn:#7fe8ff;
+      --btnTxt:#0a0710;
+      --btn2: rgba(127,232,255,.10);
+      --shadow: 0 12px 34px rgba(0,0,0,.55);
+      --glow: 0 0 0 1px rgba(210,60,255,.16), 0 0 38px rgba(255,70,120,.12);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(900px 650px at 22% 18%, rgba(255,70,120,.16) 0%, transparent 55%),
+        radial-gradient(900px 650px at 78% 58%, rgba(210,60,255,.18) 0%, transparent 58%),
+        radial-gradient(1400px 900px at 50% 10%, rgba(40,6,70,.70) 0%, var(--bg0) 55%, #040008 100%);
+    }
+    header{
+      padding:14px 16px;
+      border-bottom:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(28,8,55,.92), rgba(6,1,13,.78));
+      display:flex; gap:12px; align-items:baseline; justify-content:space-between;
+    }
+    .title{font-weight:900; letter-spacing:.3px}
+    .sub{font-size:12px; color:var(--muted)}
+    .wrap{padding:14px; max-width:1100px; margin:0 auto}
+
+    .toolbar{
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      margin-bottom:12px;
+    }
+    .search{
+      flex:1;
+      display:flex; gap:8px; align-items:center;
+      background: rgba(255,255,255,.04);
+      border:1px solid var(--line2);
+      border-radius:14px;
+      padding:10px 12px;
+      box-shadow: var(--glow);
+    }
+    .search input{
+      width:100%;
+      background:transparent; border:none; outline:none; color:var(--text);
+      font-size:13px;
+    }
+    .chips{display:flex; gap:8px; flex-wrap:wrap}
+    .chip{
+      font-size:12px; color:var(--muted);
+      border:1px solid var(--line2);
+      padding:7px 11px; border-radius:999px;
+      cursor:pointer; user-select:none;
+      background: rgba(210,60,255,.08);
+      box-shadow: var(--glow);
+    }
+    .chip.active{
+      color:var(--text);
+      border-color: rgba(127,232,255,.45);
+      background: rgba(127,232,255,.10);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap:12px;
+      align-items:start;
+    }
+
+    .tile{
+      border:1px solid var(--line2);
+      background: linear-gradient(180deg, var(--cardA), var(--cardB));
+      border-radius:16px;
+      padding:12px;
+      box-shadow: var(--shadow), var(--glow);
+      cursor:pointer;
+      transition: transform .08s ease, border-color .08s ease, filter .08s ease;
+      overflow:hidden;
+      position:relative;
+    }
+    .tile:hover{
+      transform: translateY(-1px);
+      border-color: rgba(127,232,255,.35);
+      filter: saturate(1.08);
+    }
+    .tile.selected{
+      outline:2px solid rgba(127,232,255,.45);
+    }
+
+    .sigil{
+      position:absolute;
+      top:10px; right:10px;
+      font-size:11px;
+      padding:6px 9px;
+      border-radius:999px;
+      border:1px solid rgba(127,232,255,.22);
+      background: rgba(127,232,255,.08);
+      color: rgba(210,240,255,.85);
+    }
+
+    .thumb{
+      height:118px;
+      border-radius:14px;
+      border:1px solid rgba(210,60,255,.18);
+      background:
+        radial-gradient(190px 70px at 30% 30%, rgba(127,232,255,.18), transparent 70%),
+        radial-gradient(260px 120px at 70% 65%, rgba(255,70,120,.14), transparent 60%),
+        linear-gradient(135deg, rgba(40,8,70,.82), rgba(10,2,18,.92));
+      display:flex; align-items:center; justify-content:center;
+      position:relative;
+      overflow:hidden;
+    }
+    .thumb svg{width:98%; height:98%; opacity:.98}
+
+    .toprow{display:flex; justify-content:space-between; align-items:flex-start; margin-top:10px; gap:10px}
+    .name{font-weight:950; font-size:14px; line-height:1.2}
+    .price{font-weight:950; color:var(--ok); font-size:13px; white-space:nowrap}
+    .meta{margin-top:4px; font-size:12px; color:var(--muted); display:flex; justify-content:space-between}
+
+    .details{
+      max-height:0;
+      opacity:0;
+      transform: translateY(-4px);
+      transition: max-height .18s ease, opacity .18s ease, transform .18s ease;
+      margin-top:10px;
+    }
+    .tile.selected .details{
+      max-height:300px;
+      opacity:1;
+      transform: translateY(0);
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:8px;
+      margin-bottom:10px;
+    }
+    .stat{
+      padding:9px;
+      border-radius:14px;
+      border:1px solid rgba(127,232,255,.16);
+      background: rgba(127,232,255,.06);
+    }
+    .k{font-size:11px; color:var(--muted)}
+    .v{margin-top:3px; font-weight:950}
+
+    .desc{
+      font-size:12.5px;
+      color:var(--text);
+      line-height:1.35;
+      border:1px solid rgba(127,232,255,.14);
+      background: rgba(255,255,255,.03);
+      border-radius:14px;
+      padding:10px;
+      margin-bottom:10px;
+    }
+
+    .actions{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:8px;
+    }
+    button{
+      border:none;
+      padding:10px 10px;
+      border-radius:14px;
+      cursor:pointer;
+      color:var(--text);
+      background: rgba(127,232,255,.08);
+      border:1px solid rgba(127,232,255,.18);
+      font-weight:950;
+    }
+    button.primary{
+      background: linear-gradient(180deg, rgba(127,232,255,.95), rgba(90,190,255,.90));
+      color: var(--btnTxt);
+      border-color: rgba(127,232,255,.65);
+      box-shadow: 0 0 26px rgba(127,232,255,.14);
+    }
+    button:disabled{opacity:.55; cursor:not-allowed}
+
+    .note{
+      margin-top:10px;
+      font-size:12px;
+      color:var(--muted);
+      opacity:.95;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="title">Technician Fabricator — Crimson Circuit Dock</div>
+    <div class="sub">Composite hulls • Lithic ballast • Cyan sphere matrices</div>
+  </div>
+  <div class="sub" id="credits">Credits: 250,000</div>
+</header>
+
+<div class="wrap">
+  <div class="toolbar">
+    <div class="search">
+      <span class="sub">Search</span>
+      <input id="q" placeholder="shard, matrix, offset..." />
+    </div>
+    <div class="chips">
+      <div class="chip active" data-type="all">All</div>
+      <div class="chip" data-type="skirmisher">Skirmisher</div>
+      <div class="chip" data-type="carrier">Carrier</div>
+      <div class="chip" data-type="anvil">Anvil</div>
+    </div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="note">
+    Tip: Technician ships are intentionally asymmetrical: rock plates for inertia, cyan spheres for field anchoring.
+  </div>
+</div>
+
+<script>
+  // Terminal: python -m http.server 8080
+  const state = {
+    credits: 250000,
+    filterType: "all",
+    query: "",
+    selectedId: null,
+    ships: [
+      { id:"t1", name:"Offset Shard", type:"skirmisher", hull:140, speed:"Very High", cargo:"6 units", guns:2, price:56000,
+        desc:"Asymmetric dart-craft. Lithic plate on port side; cyan matrix stabilizes high-G lateral cuts." },
+      { id:"t2", name:"Cyan Needle", type:"skirmisher", hull:180, speed:"High", cargo:"8 units", guns:3, price:92000,
+        desc:"Thin, angled rocker-vanes with triple sphere nodes. Excels at snap-turns and burst volleys." },
+      { id:"t3", name:"Matrix Carrier", type:"carrier", hull:320, speed:"Medium", cargo:"44 units", guns:2, price:132000,
+        desc:"Cargo-and-drone bus. Rock ribs reduce drift; spheres maintain formation coherence." },
+      { id:"t4", name:"Grav Lattice", type:"carrier", hull:470, speed:"Low", cargo:"88 units", guns:2, price:219000,
+        desc:"Heavy composite chassis tuned for deep hauls. Stabilization spheres double as shield capacitors." },
+      { id:"t5", name:"Basalt Anvil", type:"anvil", hull:560, speed:"Low", cargo:"16 units", guns:5, price:318000,
+        desc:"Frontline slab-ship: rock mass as armor, cyan nodes as recoil sinks. Built to stand and trade." },
+      { id:"t6", name:"Violet Countermass", type:"anvil", hull:390, speed:"Medium", cargo:"20 units", guns:4, price:199000,
+        desc:"Offset mass distribution yields brutal pivots. Sphere cluster locks aim while the hull swings." },
+    ],
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const fmt = (n) => n.toLocaleString("en-US");
+
+  function techShipSvg(kind){
+    // Asymmetrical “rocks + cyan spheres” silhouettes.
+    // Rocks = jagged polygons; spheres = circles with glow; slight cables = strokes.
+    const common = 'viewBox="0 0 260 150" xmlns="http://www.w3.org/2000/svg"';
+    const rockA = 'rgba(210,190,230,.85)';
+    const rockB = 'rgba(120,90,140,.75)';
+    const seam = 'rgba(255,90,150,.20)';
+    const cyan = 'rgba(127,232,255,.92)';
+    const cyan2 = 'rgba(127,232,255,.40)';
+
+    if(kind==="skirmisher"){
+      return `<svg ${common}>
+        <!-- rock mass (port heavy) -->
+        <path d="M54 92 L76 50 L118 44 L142 68 L120 110 L80 118 Z" fill="${rockA}"/>
+        <path d="M120 110 L142 68 L182 64 L205 86 L178 114 L138 124 Z" fill="${rockB}"/>
+        <!-- cyan spheres (starboard) -->
+        <circle cx="190" cy="78" r="13" fill="${cyan}" />
+        <circle cx="214" cy="102" r="9" fill="${cyan}" />
+        <circle cx="168" cy="112" r="8" fill="${cyan}" />
+        <!-- glow -->
+        <circle cx="190" cy="78" r="20" fill="${cyan2}" />
+        <!-- cable -->
+        <path d="M142 68 C160 76, 172 78, 190 78" stroke="${seam}" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <path d="M178 114 C190 110, 202 108, 214 102" stroke="${seam}" stroke-width="4" stroke-linecap="round" fill="none"/>
+      </svg>`;
+    }
+
+    if(kind==="carrier"){
+      return `<svg ${common}>
+        <!-- main rock spine -->
+        <path d="M54 86 L86 52 L146 44 L196 66 L182 104 L120 120 L70 110 Z" fill="${rockA}"/>
+        <!-- asym pod -->
+        <path d="M150 48 L168 30 L196 34 L204 54 L190 70 L166 64 Z" fill="${rockB}"/>
+        <!-- cyan matrix nodes -->
+        <circle cx="190" cy="96" r="12" fill="${cyan}" />
+        <circle cx="214" cy="88" r="9" fill="${cyan}" />
+        <circle cx="206" cy="114" r="8" fill="${cyan}" />
+        <circle cx="168" cy="108" r="7" fill="${cyan}" />
+        <circle cx="190" cy="96" r="20" fill="${cyan2}" />
+        <!-- braces -->
+        <path d="M120 120 C145 114, 165 108, 190 96" stroke="${seam}" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <path d="M182 104 C194 98, 204 92, 214 88" stroke="${seam}" stroke-width="4" stroke-linecap="round" fill="none"/>
+      </svg>`;
+    }
+
+    // anvil
+    return `<svg ${common}>
+      <!-- heavy slab -->
+      <path d="M46 96 L78 46 L154 38 L226 78 L210 122 L128 130 L66 118 Z" fill="${rockA}"/>
+      <!-- counter-mass chunk (offset) -->
+      <path d="M66 118 L92 92 L104 112 L90 134 Z" fill="${rockB}"/>
+      <!-- cyan recoil sinks -->
+      <circle cx="196" cy="88" r="14" fill="${cyan}" />
+      <circle cx="226" cy="96" r="10" fill="${cyan}" />
+      <circle cx="186" cy="116" r="9" fill="${cyan}" />
+      <circle cx="196" cy="88" r="22" fill="${cyan2}" />
+      <!-- link struts -->
+      <path d="M154 38 C170 58, 182 72, 196 88" stroke="${seam}" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <path d="M210 122 C212 112, 218 104, 226 96" stroke="${seam}" stroke-width="4" stroke-linecap="round" fill="none"/>
+    </svg>`;
+  }
+
+  function filteredShips(){
+    const q = state.query.trim().toLowerCase();
+    return state.ships.filter(s=>{
+      const okType = state.filterType==="all" || s.type===state.filterType;
+      const okQ = !q || s.name.toLowerCase().includes(q) || s.type.toLowerCase().includes(q);
+      return okType && okQ;
+    });
+  }
+
+  function renderCredits(){
+    $("credits").textContent = `Credits: ${fmt(state.credits)}`;
+  }
+
+  function render(){
+    const list = filteredShips();
+    $("grid").innerHTML = list.map(s=>{
+      const sel = s.id===state.selectedId ? "selected" : "";
+      const canBuy = state.credits >= s.price;
+      return `
+        <div class="tile ${sel}" data-id="${s.id}">
+          <div class="sigil">TECH</div>
+          <div class="thumb">${techShipSvg(s.type)}</div>
+
+          <div class="toprow">
+            <div class="name">${s.name}</div>
+            <div class="price">${fmt(s.price)} cr</div>
+          </div>
+
+          <div class="meta">
+            <span>${s.type}</span>
+            <span>${canBuy ? "In stock" : "Insufficient credits"}</span>
+          </div>
+
+          <div class="details">
+            <div class="stats">
+              <div class="stat"><div class="k">Hull</div><div class="v">${s.hull}</div></div>
+              <div class="stat"><div class="k">Vector</div><div class="v">${s.speed}</div></div>
+              <div class="stat"><div class="k">Capacity</div><div class="v">${s.cargo}</div></div>
+              <div class="stat"><div class="k">Hardpoints</div><div class="v">${s.guns}</div></div>
+            </div>
+
+            <div class="desc">${s.desc}</div>
+
+            <div class="actions">
+              <button data-act="scan">Preview</button>
+              <button class="primary" data-act="buy" ${canBuy ? "" : "disabled"}>Buy</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("") || `<div class="sub">No Technician frames match this filter.</div>`;
+
+    document.querySelectorAll(".tile").forEach(tile=>{
+      tile.addEventListener("click", (e)=>{
+        const btn = e.target.closest("button");
+        if(btn) return;
+        const id = tile.dataset.id;
+        state.selectedId = (state.selectedId===id) ? null : id;
+        render();
+      });
+
+      tile.querySelectorAll("button").forEach(btn=>{
+        btn.addEventListener("click", (e)=>{
+          e.stopPropagation();
+          const id = tile.dataset.id;
+          const ship = state.ships.find(x=>x.id===id);
+          const act = btn.dataset.act;
+
+          if(act==="scan"){
+            alert(`Preview: ${ship.name}\n\n(Replace with Technician lab preview: jittering spheres + rock fragments.)`);
+          } else if(act==="buy"){
+            if(state.credits < ship.price) return;
+            state.credits -= ship.price;
+            alert(`Acquired: ${ship.name}\nRemaining credits: ${fmt(state.credits)}`);
+            renderCredits();
+            render();
+          }
+        });
+      });
+    });
+  }
+
+  function setupFilters(){
+    document.querySelectorAll(".chip").forEach(ch=>{
+      ch.addEventListener("click", ()=>{
+        document.querySelectorAll(".chip").forEach(x=>x.classList.remove("active"));
+        ch.classList.add("active");
+        state.filterType = ch.dataset.type;
+        state.selectedId = null;
+        render();
+      });
+    });
+
+    $("q").addEventListener("input", (e)=>{
+      state.query = e.target.value;
+      state.selectedId = null;
+      render();
+    });
+  }
+
+  renderCredits();
+  setupFilters();
+  render();
+</script>
+</body>
+</html>
