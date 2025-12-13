@@ -134,7 +134,7 @@ body {
 
 #change-ship-button {
   position: absolute;
-  top: calc(8px + 140px + 8px+20px); /* 8px (top minimap) + 140px (minimap height) + 8px margin */
+  top: calc(8px + 140px + 8px + 20px); /* 8px (top minimap) + 140px (minimap height) + 8px margin */
   right: 8px;
   width: 140px;
   padding: 6px 10px;
