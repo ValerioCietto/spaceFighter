@@ -1,0 +1,306 @@
+<!-- Terminal: python -m http.server 8080 -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>SpaceFighter – Ship Shop</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --bg:#050712;
+      --panel:rgba(10,16,40,.72);
+      --line:rgba(255,255,255,.12);
+      --text:#e7efff;
+      --muted:rgba(231,239,255,.65);
+      --ok:#7dff9f;
+      --btn:#2c7cff;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;
+      background:radial-gradient(#12245a, var(--bg));
+      color:var(--text);
+    }
+    header{
+      padding:12px 14px;
+      border-bottom:1px solid var(--line);
+      background:var(--panel);
+    }
+    .sub{font-size:12px;color:var(--muted)}
+
+    .wrap{
+      display:grid;
+      grid-template-columns: 1.3fr .7fr;
+      gap:14px;
+      padding:14px;
+      max-width:1300px;
+      margin:0 auto;
+    }
+
+    .box{
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.18);
+      border-radius:12px;
+      padding:12px;
+      min-height:0;
+    }
+
+    .filters{
+      display:flex;
+      gap:8px;
+      margin-bottom:10px;
+      flex-wrap:wrap;
+    }
+    .chip{
+      padding:6px 12px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.15);
+      font-size:12px;
+      cursor:pointer;
+      background:rgba(255,255,255,.04);
+    }
+    .chip.active{
+      background:rgba(44,124,255,.18);
+      border-color:rgba(44,124,255,.6);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+      gap:10px;
+      overflow:auto;
+      max-height:72vh;
+      padding-right:6px;
+    }
+
+    .card{
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:12px;
+      background:rgba(255,255,255,.04);
+      cursor:pointer;
+      overflow:hidden;
+    }
+    .thumb{
+      height:120px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(0,0,0,.25);
+    }
+    .thumb img{
+      max-width:100%;
+      max-height:100%;
+    }
+    .meta{
+      padding:8px;
+    }
+    .name{
+      font-size:13px;
+      font-weight:800;
+      line-height:1.2;
+    }
+    .price{
+      font-size:12px;
+      color:var(--ok);
+      font-weight:800;
+      margin-top:4px;
+    }
+
+    .preview{
+      height:240px;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(0,0,0,.25);
+      margin-bottom:10px;
+    }
+    .preview img{
+      max-width:100%;
+      max-height:100%;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+      margin:10px 0;
+    }
+    .stat{
+      padding:8px;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:10px;
+      background:rgba(255,255,255,.04);
+    }
+    .k{font-size:11px;color:var(--muted)}
+    .v{font-weight:900;margin-top:2px}
+
+    .actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+    }
+    button{
+      border:none;
+      border-radius:12px;
+      padding:10px;
+      font-weight:900;
+      cursor:pointer;
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      border:1px solid rgba(255,255,255,.15);
+    }
+    button.primary{
+      background:var(--btn);
+      border-color:rgba(44,124,255,.6);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div><b>SpaceFighter – Ship Shop</b></div>
+  <div class="sub">Assets loaded from /spaceFighter/assets/</div>
+</header>
+
+<div class="wrap">
+  <!-- LEFT -->
+  <section class="box">
+    <div class="filters" id="filters"></div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <!-- RIGHT -->
+  <aside class="box">
+    <div class="preview" id="preview">Select an item</div>
+    <div style="font-weight:900;font-size:16px" id="title">—</div>
+    <div class="sub" id="path">—</div>
+
+    <div class="stats">
+      <div class="stat"><div class="k">Hull</div><div class="v" id="hull">—</div></div>
+      <div class="stat"><div class="k">Speed</div><div class="v" id="speed">—</div></div>
+      <div class="stat"><div class="k">Cargo</div><div class="v" id="cargo">—</div></div>
+      <div class="stat"><div class="k">Hardpoints</div><div class="v" id="guns">—</div></div>
+    </div>
+
+    <div class="actions">
+      <button>Preview</button>
+      <button class="primary">Buy</button>
+    </div>
+  </aside>
+</div>
+
+<script>
+  // Terminal: python -m http.server 8080
+  const BASE = "/spaceFighter/assets/";
+
+  const ITEMS = [
+    // Advanced
+    {file:"advanced-human.png", cat:"Human"},
+    {file:"advanced-jared.png", cat:"Jared"},
+    {file:"advanced-technician.png", cat:"Technician"},
+
+    // Human ships
+    {file:"human_berseker.png", cat:"Human"},
+    {file:"human_drone_v1.png", cat:"Human"},
+    {file:"human_figther_v1.png", cat:"Human"},
+    {file:"human_gunship.png", cat:"Human"},
+    {file:"human_icarus.png", cat:"Human"},
+    {file:"human_mercury.png", cat:"Human"},
+    {file:"human_railgun_spinal_loaded.png", cat:"Human"},
+    {file:"human_railgun_spinal_projectile.png", cat:"Human"},
+    {file:"human_railgun_spinal_void.png", cat:"Human"},
+    {file:"human_starfighter.png", cat:"Human"},
+    {file:"human_toad.png", cat:"Human"},
+    {file:"human_zeus.png", cat:"Human"},
+
+    // Jared
+    {file:"jared-zuque.png", cat:"Jared"},
+    {file:"jared_three_eyes.png", cat:"Jared"},
+    {file:"jared_three_eyes_spike_hybrid.png", cat:"Jared"},
+
+    // Projectiles
+    {file:"projectile_dumb_missile.png", cat:"Projectile"},
+    {file:"projectile_red_diamond.png", cat:"Projectile"},
+    {file:"projectile_red_spike.png", cat:"Projectile"},
+    {file:"projectile_small_missile.png", cat:"Projectile"},
+
+    // Technician
+    {file:"technician-spike-razor.png", cat:"Technician"},
+    {file:"technician-spike-razor-upgraded.png", cat:"Technician"},
+    {file:"technician_hard_shell_double_closed.png", cat:"Technician"},
+    {file:"technician_hard_shell_double_open1.png", cat:"Technician"},
+    {file:"technician_hard_shell_double_open2.png", cat:"Technician"},
+    {file:"technician_hard_shell_double_open3.png", cat:"Technician"},
+    {file:"technician_hard_shell_double_open4.png", cat:"Technician"},
+    {file:"technician_hard_shell_v1.png", cat:"Technician"},
+  ];
+
+  const $ = id => document.getElementById(id);
+
+  let currentCat = "All";
+
+  function hashStats(name){
+    let h=0; for(const c of name) h=(h*31+c.charCodeAt(0))>>>0;
+    return {
+      hull: 120 + (h%520),
+      speed: ["Low","Medium","High","Very High"][h%4],
+      cargo: (6+(h%90))+"t",
+      guns: 1+(h%6),
+      price: 40000+(h%320000)
+    };
+  }
+
+  function renderFilters(){
+    const cats = ["All", ...new Set(ITEMS.map(i=>i.cat))];
+    $("filters").innerHTML = cats.map(c =>
+      `<div class="chip ${c===currentCat?"active":""}" data-cat="${c}">${c}</div>`
+    ).join("");
+
+    document.querySelectorAll(".chip").forEach(ch=>{
+      ch.onclick=()=>{
+        currentCat=ch.dataset.cat;
+        renderFilters();
+        renderGrid();
+      };
+    });
+  }
+
+  function renderGrid(){
+    const list = ITEMS.filter(i=>currentCat==="All"||i.cat===currentCat);
+    $("grid").innerHTML = list.map(i=>{
+      const s = hashStats(i.file);
+      return `
+        <div class="card" data-file="${i.file}">
+          <div class="thumb"><img src="${BASE+i.file}"></div>
+          <div class="meta">
+            <div class="name">${i.file}</div>
+            <div class="price">${s.price.toLocaleString()} cr</div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    document.querySelectorAll(".card").forEach(c=>{
+      c.onclick=()=>select(c.dataset.file);
+    });
+  }
+
+  function select(file){
+    const s = hashStats(file);
+    $("preview").innerHTML = `<img src="${BASE+file}">`;
+    $("title").textContent = file;
+    $("path").textContent = BASE+file;
+    $("hull").textContent = s.hull;
+    $("speed").textContent = s.speed;
+    $("cargo").textContent = s.cargo;
+    $("guns").textContent = s.guns;
+  }
+
+  renderFilters();
+  renderGrid();
+</script>
+</body>
+</html>
