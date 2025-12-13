@@ -31,6 +31,7 @@
       <canvas id="minimap-canvas"></canvas>
     </div>
     <button id="dock-button" type="button">Dock</button>
+    <button id="change-ship-button" type="button">Change ship</button>
 
     <!-- Docking message -->
     <div id="docking-message" class="docking-message">
@@ -197,6 +198,71 @@
       const stationExitBtn = document.getElementById("station-exit-btn");
       const stationTabButtons = document.querySelectorAll(".station-tab-btn");
       const stationTabContentEl = document.getElementById("station-tab-content");
+
+      const SHIP_ASSET_BASE = "/spaceFighter/assets/";
+
+      const shipSkins = [
+        "human_berseker.png",
+        "human_gunship.png",
+        "human_icarus.png",
+        "human_mercury.png",
+        "human_starfighter.png",
+        "human_toad.png",
+        "human_zeus.png",
+        "jared-zuque.png",
+        "jared_three_eyes.png",
+        "jared_three_eyes_spike_hybrid.png",
+        "technician-spike-razor-upgraded.png",
+        "technician-spike-razor.png",
+        "technician_hard_shell_double_closed.png",
+        "technician_hard_shell_double_open1.png",
+        "technician_hard_shell_double_open2.png",
+        "technician_hard_shell_double_open3.png",
+        "technician_hard_shell_double_open4.png",
+        "technician_hard_shell_v1.png"
+      ];
+      
+      const changeShipBtn = document.getElementById("change-ship-button");
+      
+      // sprite cache
+      const shipImages = new Map();
+      let shipSkinIndex = 0;
+      let shipImgReady = false;
+      
+      function loadShipImage(filename) {
+        shipImgReady = false;
+      
+        // cached
+        if (shipImages.has(filename)) {
+          shipImgReady = true;
+          return shipImages.get(filename);
+        }
+      
+        const img = new Image();
+        img.onload = () => { shipImgReady = true; };
+        img.onerror = () => {
+          console.warn("Failed to load ship image:", img.src);
+          shipImgReady = false;
+        };
+        img.src = SHIP_ASSET_BASE + filename;
+        shipImages.set(filename, img);
+        return img;
+      }
+      
+      // initial sprite
+      let currentShipImg = loadShipImage(shipSkins[shipSkinIndex]);
+      
+      function cycleShipSkin() {
+        shipSkinIndex = (shipSkinIndex + 1) % shipSkins.length;
+        currentShipImg = loadShipImage(shipSkins[shipSkinIndex]);
+      }
+      
+      if (changeShipBtn) {
+        changeShipBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          cycleShipSkin();
+        });
+      }
 
       let width = 0;
       let height = 0;
@@ -833,11 +899,27 @@
         ctx.restore();
       }
 
-      function drawShip() {
+     function drawShip() {
         ctx.save();
         ctx.translate(width / 2, height / 2);
         ctx.rotate(state.angle);
-
+      
+        // IMAGE SHIP (preferred)
+        if (currentShipImg && currentShipImg.complete && currentShipImg.naturalWidth > 0) {
+          // Scale ship to a reasonable on-screen size while keeping aspect ratio
+          const targetW = 52; // tweak to taste
+          const scale = targetW / currentShipImg.naturalWidth;
+          const w = currentShipImg.naturalWidth * scale;
+          const h = currentShipImg.naturalHeight * scale;
+      
+          // Centered draw
+          ctx.drawImage(currentShipImg, -w / 2, -h / 2, w, h);
+      
+          ctx.restore();
+          return;
+        }
+      
+        // FALLBACK VECTOR SHIP (your original)
         ctx.beginPath();
         ctx.moveTo(14, 0);
         ctx.lineTo(-10, -8);
@@ -846,11 +928,11 @@
         ctx.closePath();
         ctx.fillStyle = "#ffffff";
         ctx.fill();
-
+      
         ctx.strokeStyle = "#4fc3f7";
         ctx.lineWidth = 2;
         ctx.stroke();
-
+      
         const speed = Math.hypot(state.vx, state.vy);
         if (speed > 0.1 && !input.thrust) {
           ctx.save();
@@ -864,7 +946,7 @@
           ctx.fill();
           ctx.restore();
         }
-
+      
         if (input.thrust && speed > 0.1) {
           ctx.save();
           ctx.rotate(Math.PI);
@@ -877,7 +959,7 @@
           ctx.fill();
           ctx.restore();
         }
-
+      
         ctx.restore();
       }
 
