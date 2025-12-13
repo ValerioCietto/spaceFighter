@@ -79,7 +79,6 @@
   <script src="input.js"></script>
 
   <script>
-    // Command to launch: `npx serve .` then open http://localhost:3000/game.html in a browser
 
     (function () {
       const SECTOR_SIZE = 6000;
@@ -88,7 +87,6 @@
       const STAR_X = 3000;
       const STAR_Y = 3000;
 
-      // Station position (vicino alla stella)
       const STATION_X = STAR_X + 450;
       const STATION_Y = STAR_Y - 200;
       const STATION_RADIUS = 80;
@@ -904,7 +902,7 @@
         ctx.translate(width / 2, height / 2);
         // sprite loaded need rotation 90° clockwise
         ctx.rotate(state.angle + Math.PI / 2);
-        ctx.rotate(state.angle);
+       
       
         // IMAGE SHIP (preferred)
         if (currentShipImg && currentShipImg.complete && currentShipImg.naturalWidth > 0) {
@@ -919,47 +917,6 @@
       
           ctx.restore();
           return;
-        }
-      
-        // FALLBACK VECTOR SHIP (your original)
-        ctx.beginPath();
-        ctx.moveTo(14, 0);
-        ctx.lineTo(-10, -8);
-        ctx.lineTo(-3, 0);
-        ctx.lineTo(-10, 8);
-        ctx.closePath();
-        ctx.fillStyle = "#ffffff";
-        ctx.fill();
-      
-        ctx.strokeStyle = "#4fc3f7";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-      
-        const speed = Math.hypot(state.vx, state.vy);
-        if (speed > 0.1 && !input.thrust) {
-          ctx.save();
-          ctx.rotate(Math.PI);
-          ctx.beginPath();
-          ctx.moveTo(10, -3);
-          ctx.lineTo(18, 0);
-          ctx.lineTo(10, 3);
-          ctx.closePath();
-          ctx.fillStyle = "#ff9800";
-          ctx.fill();
-          ctx.restore();
-        }
-      
-        if (input.thrust && speed > 0.1) {
-          ctx.save();
-          ctx.rotate(Math.PI);
-          ctx.beginPath();
-          ctx.moveTo(12, -4);
-          ctx.lineTo(22, 0);
-          ctx.lineTo(12, 4);
-          ctx.closePath();
-          ctx.fillStyle = "#ffeb3b";
-          ctx.fill();
-          ctx.restore();
         }
       
         ctx.restore();
