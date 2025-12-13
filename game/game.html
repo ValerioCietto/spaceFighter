@@ -902,6 +902,8 @@
      function drawShip() {
         ctx.save();
         ctx.translate(width / 2, height / 2);
+        // sprite loaded need rotation 90° clockwise
+        ctx.rotate(state.angle + Math.PI / 2);
         ctx.rotate(state.angle);
       
         // IMAGE SHIP (preferred)
