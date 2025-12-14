@@ -165,10 +165,6 @@
         "technician_spike_razor_upgraded.png",
         "technician_spike_razor.png",
         "technician_hard_shell_double_closed.png",
-        "technician_hard_shell_double_open1.png",
-        "technician_hard_shell_double_open2.png",
-        "technician_hard_shell_double_open3.png",
-        "technician_hard_shell_double_open4.png",
         "technician_hard_shell_v1.png"
       ];
             
