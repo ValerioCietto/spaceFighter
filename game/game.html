@@ -757,14 +757,21 @@
       function drawStation() {
         const screenX = width / 2 + (STATION_X - state.x);
         const screenY = height / 2 + (STATION_Y - state.y);
-
+      
         ctx.save();
         ctx.translate(screenX, screenY);
         ctx.rotate(stationAngle);
-
+      
+        if (stationImg.complete && stationImg.naturalWidth > 0) {
+          // Draw centered; size based on your existing station radius
+          const size = STATION_RADIUS * 2;
+          ctx.drawImage(stationImg, -size / 2, -size / 2, size, size);
+          ctx.restore();
+          return;
+        }
+      
+        // fallback (your old vector, keep for loading errors)
         const r = STATION_RADIUS;
-
-        // Ottagono principale
         ctx.beginPath();
         for (let i = 0; i < 8; i++) {
           const a = (Math.PI * 2 * i) / 8;
@@ -779,6 +786,7 @@
         ctx.strokeStyle = "#bbbbbb";
         ctx.lineWidth = 2;
         ctx.stroke();
+      
         ctx.restore();
       }
 
