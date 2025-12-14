@@ -10,7 +10,7 @@
 // mercury
 // spinal weapon platform
 // toad
-// zeus
+// capital zeus
 
 // jared
 
@@ -19,13 +19,15 @@
 // three eyes
 // three eyes spike hybrid
 // gold guard
-// queen
+// * reaper 
+// capital queen
 
 // technician
 
 // hard shell
 // spike razor
 // spike razor upgraded
+// * capital hivemind
 
 
 const SHIPS = {
