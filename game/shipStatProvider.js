@@ -258,7 +258,7 @@ const DEFAULT_STATS = {
  * - key without extension (e.g. "human_zeus")
  * - dashed names (e.g. "jared-zuque.png")
  */
-export function getStats(shipName) {
+function getStats(shipName) {
   const key = String(shipName || "").replace(/\.png$/i, "");
   return SHIPS[key] ? structuredClone(SHIPS[key]) : structuredClone(DEFAULT_STATS);
 }
