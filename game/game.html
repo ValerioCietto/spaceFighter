@@ -80,7 +80,16 @@
   <script src="shipStatProvider.js"></script>
 
   <script>
+    (() => {
+      const changeShipBtn = document.getElementById("change-ship-button");
+      if (!changeShipBtn) return;
 
+      changeShipBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // important if anything listens higher up
+        cycleShipSkin();     // ONLY this
+      });
+    })();
     (function () {
 
       const SystemInfo = {
@@ -230,9 +239,7 @@
         "technician_hard_shell_double_open4.png",
         "technician_hard_shell_v1.png"
       ];
-      
-      const changeShipBtn = document.getElementById("change-ship-button");
-      
+            
       // sprite cache
       const shipImages = new Map();
       let shipSkinIndex = 0;
@@ -264,13 +271,6 @@
       function cycleShipSkin() {
         shipSkinIndex = (shipSkinIndex + 1) % shipSkins.length;
         currentShipImg = loadShipImage(shipSkins[shipSkinIndex]);
-      }
-      
-      if (changeShipBtn) {
-        changeShipBtn.addEventListener("click", (e) => {
-          e.preventDefault();
-          cycleShipSkin();
-        });
       }
 
       let width = 0;
@@ -1042,10 +1042,10 @@
         spawnTarget();
         updateLockButtonVisual();
         // Station manager: gli passo info di sistema e un getter dello state giocatore
-     StationManager.init({
-       systemInfo: SystemInfo,
-       getPlayerState: () => state
-     });
+        StationManager.init({
+          systemInfo: SystemInfo,
+          getPlayerState: () => state
+        });
 
         setupInput(
           input,
