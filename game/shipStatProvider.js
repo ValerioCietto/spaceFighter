@@ -1,4 +1,32 @@
 // Command to launch: `npx serve .` (module consumed by game.html via <script type="module">)
+// Humans
+
+// starfighter
+// icarus
+// berseker
+// gunship
+// diamond fortress
+// diamond fortress spike
+// mercury
+// spinal weapon platform
+// toad
+// zeus
+
+// jared
+
+// zuque
+// razor
+// three eyes
+// three eyes spike hybrid
+// gold guard
+// queen
+
+// technician
+
+// hard shell
+// spike razor
+// spike razor upgraded
+
 
 const SHIPS = {
   // Humans
