@@ -1,14 +1,14 @@
 // Command to launch: `npx serve .` (module consumed by game.html via <script type="module">)
 // Humans
 
-// starfighter
+// starfighter perseus
 // icarus
 // berseker
 // gunship
-// diamond fortress
+// diamond fortress athena
 // diamond fortress spike
 // mercury
-// spinal weapon platform
+// spinal weapon platform ares
 // toad
 // capital zeus
 
