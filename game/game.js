@@ -37,13 +37,24 @@
       const stationImg = new Image();
       stationImg.src = STATION_ASSET;
 
+      const spaceshipStats = {
+        speed: 150,
+        acceleration: 120,
+        turningSpeedRad: Math.PI * 1.25,
+        engineFlareType: "triangular",
+        engineFlareWidth: 16,
+        engineFlareLength: 48,
+        image: "human_starfigther.png",
+        shieldDiameterPx: 90,
+        shipCenter: { x: 0.5, y: 0.5 },
+        engineCoords: [{ x: 0.20, y: 0.50 }],
+        weaponGunCoords: [{ x: 0.83, y: 0.50 }],
+      }
 
-      const MAX_SPEED = 150;
-      const ACCELERATION = 100;
       const FRICTION = 70;
       const ROTATION_SPEED = Math.PI;
 
-      const STORAGE_KEY = "spaceSectorState_v2";
+      const STORAGE_KEY = "spaceFighterSaveData";
       const MONEY_PER_TARGET = 10;
 
       // Weapons definitions
@@ -87,7 +98,7 @@
         damage: 5,
         base_speed: 100,
         acceleration: 10,
-        max_speed: 200,
+        speed: 200,
         turning_speed_deg: 120,
         life_span: 20.0,
         spread: 3.0,
@@ -135,6 +146,7 @@
         e.preventDefault();
         e.stopPropagation(); // important if anything listens higher up
         cycleShipSkin();     // ONLY this
+        saveState();
       });
 
       const SHIP_ASSET_BASE = "/spaceFighter/assets/";
@@ -309,8 +321,8 @@
             angle,
             homing: !!weapon.homing,
             speed: speed,
-            accel: weapon.acceleration || 0,
-            maxSpeed: weapon.max_speed || weapon.base_speed || 0,
+            accel: weapon.spaceshipStats.acceleration || 0,
+            maxSpeed: weapon.spaceshipStats.speed || weapon.base_speed || 0,
             turnSpeed: weapon.turn_speed_rad || 0
           });
         }
@@ -487,9 +499,9 @@
 
           let targetSpeed;
           if (dist > 200) {
-            targetSpeed = MAX_SPEED * 0.7;
+            targetSpeed = spaceshipStats.speed * 0.7;
           } else if (dist > 50) {
-            targetSpeed = MAX_SPEED * 0.3;
+            targetSpeed = spaceshipStats.speed * 0.3;
           } else {
             targetSpeed = 30; // near 50px, slowdown
           }
@@ -510,8 +522,8 @@
           let speed = Math.hypot(state.vx, state.vy);
 
           if (input.thrust) {
-            const ax = Math.cos(state.angle) * ACCELERATION;
-            const ay = Math.sin(state.angle) * ACCELERATION;
+            const ax = Math.cos(state.angle) * spaceshipStats.acceleration;
+            const ay = Math.sin(state.angle) * spaceshipStats.acceleration;
             state.vx += ax * dt;
             state.vy += ay * dt;
           }
@@ -532,7 +544,7 @@
           }
 
           if (input.brake && speed > 0) {
-            const decel = ACCELERATION * dt;
+            const decel = spaceshipStats.acceleration * dt;
             speed = Math.max(0, speed - decel);
             if (speed === 0) {
               state.vx = 0;
@@ -546,8 +558,8 @@
         }
 
         const newSpeed = Math.hypot(state.vx, state.vy);
-        if (newSpeed > MAX_SPEED) {
-          const factor = MAX_SPEED / newSpeed;
+        if (newSpeed > spaceshipStats.speed) {
+          const factor = spaceshipStats.speed / newSpeed;
           state.vx *= factor;
           state.vy *= factor;
         }
