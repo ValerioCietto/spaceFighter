@@ -94,7 +94,7 @@ const SHIPS = {
   },
 
   // Jared
-  "jared-zuque": {
+  jared_zuque: {
     speed: 145,
     acceleration: 115,
     turningSpeedRad: Math.PI * 1.15,
@@ -134,7 +134,7 @@ const SHIPS = {
   },
 
   // Technicians
-  "technician-spike-razor-upgraded": {
+  technician_spike_razor_upgraded: {
     speed: 170,
     acceleration: 150,
     turningSpeedRad: Math.PI * 1.65,
@@ -147,7 +147,7 @@ const SHIPS = {
     weaponGunCoords: [{ x: 0.86, y: 0.40 }, { x: 0.86, y: 0.60 }],
   },
 
-  "technician-spike-razor": {
+  technician_spike_razor: {
     speed: 160,
     acceleration: 135,
     turningSpeedRad: Math.PI * 1.55,
@@ -253,12 +253,32 @@ const DEFAULT_STATS = {
 };
 
 /**
- * shipName can be:
- * - full filename (e.g. "human_zeus.png")
- * - key without extension (e.g. "human_zeus")
- * - dashed names (e.g. "jared-zuque.png")
+ * shipName must be snake_case (optionally with ".png").
+ * Examples:
+ * - "human_zeus"
+ * - "human_zeus.png"
  */
 function getStats(shipName) {
-  const key = String(shipName || "").replace(/\.png$/i, "");
-  return SHIPS[key] ? structuredClone(SHIPS[key]) : structuredClone(DEFAULT_STATS);
+  const raw = String(shipName || "").trim();
+  const key = raw.replace(/\.png$/i, "");
+
+  // enforce snake_case only
+  const isSnakeCase = /^[a-z0-9]+(?:_[a-z0-9]+)*$/.test(key);
+
+  if (!isSnakeCase) {
+    console.warn(
+      `[ship-stat-provider] Non snake_case shipName '${raw}'. Using DEFAULT_STATS. Expected snake_case like 'human_zeus' or 'human_zeus.png'.`
+    );
+    return structuredClone(DEFAULT_STATS);
+  }
+
+  const stats = SHIPS[key];
+  if (!stats) {
+    console.warn(
+      `[ship-stat-provider] Unknown ship '${key}'. Using DEFAULT_STATS.`
+    );
+    return structuredClone(DEFAULT_STATS);
+  }
+
+  return structuredClone(stats);
 }
