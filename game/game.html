@@ -75,22 +75,13 @@
       </div>
     </div>
   </div>
-<script src="station-manager.js"></script>
+  <script src="station-manager.js"></script>
   <script src="input.js"></script>
+  <script src="shipStatProvider.js"></script>
 
   <script>
 
     (function () {
-      const SECTOR_SIZE = 6000;
-      const STAR_DIAMETER = 300;
-      const STAR_RADIUS_WORLD = 100;
-      const STAR_X = 3000;
-      const STAR_Y = 3000;
-
-      const STATION_X = STAR_X + 450;
-      const STATION_Y = STAR_Y - 200;
-      const STATION_RADIUS = 80;
-      const STATION_ROT_SPEED = Math.PI / 32; // rad/sec
 
       const SystemInfo = {
         name: "Solar",
@@ -104,8 +95,28 @@
           }
         ],
         planets: [],
-        stations: []
+        stations: [
+          {
+           name: "H1N17 - Tarazed Shipyards",
+           position_x: 3450,
+           position_y: 2800,
+           station_radius: 80,
+           station_rot_speed: Math.PI / 32
+          }
+        ]
       };
+      
+      const STAR_DIAMETER = 300;
+      const STAR_RADIUS_WORLD = 100;
+      const STAR_X = 3000;
+      const STAR_Y = 3000;
+
+      const STATION_X = STAR_X + 450;
+      const STATION_Y = STAR_Y - 200;
+      const STATION_RADIUS = 80;
+      const STATION_ROT_SPEED = Math.PI / 32; // rad/sec
+
+
 
       const MAX_SPEED = 150;
       const ACCELERATION = 100;
@@ -269,8 +280,8 @@
       let minimapScale = 0;
 
       const state = {
-        x: SECTOR_SIZE / 2,
-        y: SECTOR_SIZE / 2,
+        x: SystemInfo.size / 2,
+        y: SystemInfo.size / 2,
         vx: 0,
         vy: 0,
         angle: -Math.PI / 2,
@@ -294,8 +305,8 @@
       let stationDialogOpen = false;
 
       function spawnTarget() {
-        const centerX = SECTOR_SIZE / 2;
-        const centerY = SECTOR_SIZE / 2;
+        const centerX = SystemInfo.size / 2;
+        const centerY = SystemInfo.size / 2;
         const maxR = 500;
         const angle = Math.random() * Math.PI * 2;
         const r = Math.random() * maxR;
@@ -465,8 +476,8 @@
           const stars = [];
           for (let s = 0; s < STARS_PER_LAYER; s++) {
             stars.push({
-              x: Math.random() * SECTOR_SIZE * 2 - SECTOR_SIZE,
-              y: Math.random() * SECTOR_SIZE * 2 - SECTOR_SIZE
+              x: Math.random() * SystemInfo.size * 2 - SystemInfo.size,
+              y: Math.random() * SystemInfo.size * 2 - SystemInfo.size
             });
           }
           starLayers.push({ factor, stars });
@@ -492,7 +503,7 @@
         minimapCanvas.height = minimapSize * dpr;
         minimapCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        minimapScale = (minimapSize * 0.8) / SECTOR_SIZE;
+        minimapScale = (minimapSize * 0.8) / SystemInfo.size;
       }
 
       window.addEventListener("resize", resize);
@@ -606,8 +617,8 @@
         state.x += state.vx * dt;
         state.y += state.vy * dt;
 
-        state.x = Math.max(0, Math.min(SECTOR_SIZE, state.x));
-        state.y = Math.max(0, Math.min(SECTOR_SIZE, state.y));
+        state.x = Math.max(0, Math.min(SystemInfo.size, state.x));
+        state.y = Math.max(0, Math.min(SystemInfo.size, state.y));
 
         // Completamento docking: quando centrata
         if (dockingActive && !stationDialogOpen) {
@@ -690,12 +701,12 @@
           const size = 2 + idx;
 
           stars.forEach((star) => {
-            const sx = (star.x - camX * factor) % (SECTOR_SIZE * 2);
-            const sy = (star.y - camY * factor) % (SECTOR_SIZE * 2);
+            const sx = (star.x - camX * factor) % (SystemInfo.size * 2);
+            const sy = (star.y - camY * factor) % (SystemInfo.size * 2);
             let x = sx;
             let y = sy;
-            if (x < -SECTOR_SIZE) x += SECTOR_SIZE * 2;
-            if (y < -SECTOR_SIZE) y += SECTOR_SIZE * 2;
+            if (x < -SystemInfo.size) x += SystemInfo.size * 2;
+            if (y < -SystemInfo.size) y += SystemInfo.size * 2;
 
             const screenX = width / 2 + x * 0.1;
             const screenY = height / 2 + y * 0.1;
@@ -931,7 +942,7 @@
         minimapCtx.save();
         minimapCtx.translate(w / 2, h / 2);
 
-        const hexRadius = (SECTOR_SIZE / 2) * minimapScale;
+        const hexRadius = (SystemInfo.size / 2) * minimapScale;
         minimapCtx.beginPath();
         for (let i = 0; i < 6; i++) {
           const a = (Math.PI / 3) * i - Math.PI / 2;
@@ -955,24 +966,24 @@
         minimapCtx.fill();
 
         // Station as small grey dot
-        const stx = (STATION_X - SECTOR_SIZE / 2) * minimapScale;
-        const sty = (STATION_Y - SECTOR_SIZE / 2) * minimapScale;
+        const stx = (STATION_X - SystemInfo.size / 2) * minimapScale;
+        const sty = (STATION_Y - SystemInfo.size / 2) * minimapScale;
         minimapCtx.beginPath();
         minimapCtx.arc(stx, sty, 3, 0, Math.PI * 2);
         minimapCtx.fillStyle = "#bbbbbb";
         minimapCtx.fill();
 
         if (target) {
-          const tx = (target.x - SECTOR_SIZE / 2) * minimapScale;
-          const ty = (target.y - SECTOR_SIZE / 2) * minimapScale;
+          const tx = (target.x - SystemInfo.size / 2) * minimapScale;
+          const ty = (target.y - SystemInfo.size / 2) * minimapScale;
           minimapCtx.beginPath();
           minimapCtx.arc(tx, ty, 2.5, 0, Math.PI * 2);
           minimapCtx.fillStyle = "#ff5252";
           minimapCtx.fill();
         }
 
-        const sx = (state.x - SECTOR_SIZE / 2) * minimapScale;
-        const sy = (state.y - SECTOR_SIZE / 2) * minimapScale;
+        const sx = (state.x - SystemInfo.size / 2) * minimapScale;
+        const sy = (state.y - SystemInfo.size / 2) * minimapScale;
 
         minimapCtx.save();
         minimapCtx.translate(sx, sy);
