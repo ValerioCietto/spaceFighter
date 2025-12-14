@@ -321,8 +321,8 @@
             angle,
             homing: !!weapon.homing,
             speed: speed,
-            accel: weapon.spaceshipStats.acceleration || 0,
-            maxSpeed: weapon.spaceshipStats.speed || weapon.base_speed || 0,
+            accel: weapon.acceleration || 0,
+            maxSpeed: weapon.speed || weapon.base_speed || 0,
             turnSpeed: weapon.turn_speed_rad || 0
           });
         }
