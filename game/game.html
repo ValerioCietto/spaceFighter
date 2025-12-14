@@ -80,16 +80,6 @@
   <script src="shipStatProvider.js"></script>
 
   <script>
-    (() => {
-      const changeShipBtn = document.getElementById("change-ship-button");
-      if (!changeShipBtn) return;
-
-      changeShipBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation(); // important if anything listens higher up
-        cycleShipSkin();     // ONLY this
-      });
-    })();
     (function () {
 
       const SystemInfo = {
@@ -219,6 +209,15 @@
       const stationExitBtn = document.getElementById("station-exit-btn");
       const stationTabButtons = document.querySelectorAll(".station-tab-btn");
       const stationTabContentEl = document.getElementById("station-tab-content");
+
+      const changeShipBtn = document.getElementById("change-ship-button");
+      if (!changeShipBtn) return;
+
+      changeShipBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // important if anything listens higher up
+        cycleShipSkin();     // ONLY this
+      });
 
       const SHIP_ASSET_BASE = "/spaceFighter/assets/";
 
