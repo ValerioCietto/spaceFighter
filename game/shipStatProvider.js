@@ -38,7 +38,7 @@
 
 const SHIPS = {
   // Humans
-  human_berseker: {
+  human_hermes: {
     speed: 135,
     acceleration: 125,
     turningSpeedRad: Math.PI * 1.35,
@@ -94,7 +94,7 @@ const SHIPS = {
     weaponGunCoords: [{ x: 0.84, y: 0.47 }, { x: 0.84, y: 0.53 }],
   },
 
-  human_starfighter: {
+  human_perseus: {
     speed: 150,
     acceleration: 120,
     turningSpeedRad: Math.PI * 1.25,
@@ -108,7 +108,7 @@ const SHIPS = {
     weaponGunCoords: [{ x: 0.83, y: 0.45 }, { x: 0.83, y: 0.55 }],
   },
 
-  human_toad: {
+  human_demeter: {
     speed: 95,
     acceleration: 110,
     turningSpeedRad: Math.PI * 1.05,

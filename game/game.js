@@ -44,7 +44,7 @@
         engineFlareType: "triangular",
         engineFlareWidth: 16,
         engineFlareLength: 48,
-        image: "human_starfigther.png",
+        image: "human_starfighter.png",
         shieldDiameterPx: 90,
         shipCenter: { x: 0.5, y: 0.5 },
         engineCoords: [{ x: 0.20, y: 0.50 }],
@@ -151,6 +151,16 @@
 
       const SHIP_ASSET_BASE = "/spaceFighter/assets/";
 
+      const shipNames = [
+        "human_hermes",
+        "human_gunship",
+        "human_icarus",
+        "human_mercury",
+        "human_perseus",
+        "human_demeter",
+        "human_zeus",
+      ];
+
       const shipSkins = [
         "human_berseker.png",
         "human_gunship.png",
@@ -213,7 +223,9 @@
         vx: 0,
         vy: 0,
         angle: -Math.PI / 2,
-        money: 0
+        money: 0,
+        shipName: "human_starfighter",
+        systemName: "Solar"
       };
 
       const input = {
