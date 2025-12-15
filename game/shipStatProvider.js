@@ -3,24 +3,30 @@
 
 // starfighter perseus
 // icarus
-// berseker
-// gunship
+// hermes berseker
+// theseus gunship
 // diamond fortress athena
 // diamond fortress spike
 // mercury
 // spinal weapon platform ares
-// toad
+// apollo drone carrier
+// demeter toad
+// hestia big cargo
 // capital zeus
 
 // jared
 
-// zuque
+// zhuque
 // razor
-// three eyes
-// three eyes spike hybrid
-// gold guard
-// * reaper 
-// capital queen
+// longma three eyes
+// huli jing three eyes spike hybrid
+// xuanwu gold guard
+// * kui ox cargo small
+// * fenghuang cargo big
+// * taotie
+// * baihu dreadnought drone carrier
+// * qilin dreadnought reaper 
+// capital sun tzu queen
 
 // technician
 
