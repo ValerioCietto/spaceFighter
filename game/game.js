@@ -22,20 +22,6 @@
           }
         ]
       };
-      
-      const STAR_DIAMETER = 300;
-      const STAR_RADIUS_WORLD = 100;
-      const STAR_X = 3000;
-      const STAR_Y = 3000;
-
-      const STATION_X = STAR_X + 450;
-      const STATION_Y = STAR_Y - 200;
-      const STATION_RADIUS = 80;
-      const STATION_ROT_SPEED = Math.PI / 32; // rad/sec
-
-      const STATION_ASSET = "/spaceFighter/assets/space_station.png";
-      const stationImg = new Image();
-      stationImg.src = STATION_ASSET;
 
       const spaceshipStats = {
         speed: 150,
@@ -50,6 +36,44 @@
         engineCoords: [{ x: 0.20, y: 0.50 }],
         weaponGunCoords: [{ x: 0.83, y: 0.50 }],
       }
+      const state = {
+        x: SystemInfo.size / 2,
+        y: SystemInfo.size / 2,
+        vx: 0,
+        vy: 0,
+        angle: -Math.PI / 2,
+        money: 0,
+        shipName: "human_starfighter",
+        systemName: "Solar"
+      };
+
+      function applyShip(shipName) {
+        state.shipName = shipName;                 // e.g. "human_zeus"
+        state.shipStats = getStats(state.shipName);
+      
+        // ensure the sprite matches the stats image
+        const imgFile = state.shipStats?.image;    // e.g. "human_zeus.png"
+        if (imgFile) {
+          shipSkinIndex = Math.max(0, shipSkins.indexOf(imgFile));
+          currentShipImg = loadShipImage(imgFile);
+        }
+      }
+
+  
+      const STAR_DIAMETER = 300;
+      const STAR_RADIUS_WORLD = 100;
+      const STAR_X = 3000;
+      const STAR_Y = 3000;
+
+      const STATION_X = STAR_X + 450;
+      const STATION_Y = STAR_Y - 200;
+      const STATION_RADIUS = 80;
+      const STATION_ROT_SPEED = Math.PI / 32; // rad/sec
+
+      const STATION_ASSET = "/spaceFighter/assets/space_station.png";
+      const stationImg = new Image();
+      stationImg.src = STATION_ASSET;
+
 
       const FRICTION = 70;
       const ROTATION_SPEED = Math.PI;
@@ -207,8 +231,9 @@
       let currentShipImg = loadShipImage(shipSkins[shipSkinIndex]);
       
       function cycleShipSkin() {
-        shipSkinIndex = (shipSkinIndex + 1) % shipSkins.length;
-        currentShipImg = loadShipImage(shipSkins[shipSkinIndex]);
+        const currentIdx = Math.max(0, shipNames.indexOf(state.shipName));
+        const nextIdx = (currentIdx + 1) % shipNames.length;
+        applyShip(shipNames[nextIdx]);
       }
 
       let width = 0;
@@ -217,16 +242,7 @@
       let minimapSize = 0;
       let minimapScale = 0;
 
-      const state = {
-        x: SystemInfo.size / 2,
-        y: SystemInfo.size / 2,
-        vx: 0,
-        vy: 0,
-        angle: -Math.PI / 2,
-        money: 0,
-        shipName: "human_starfighter",
-        systemName: "Solar"
-      };
+
 
       const input = {
         left: false,
@@ -462,11 +478,8 @@
 
           // shipName (string)
           if (typeof saved.shipName === "string" && saved.shipName.trim()) {
-            state.shipName = saved.shipName.trim();
-
-            // apply stats for this ship
-            // (expects getStats to be in scope / imported)
-            state.shipStats = getStats(state.shipName);
+            const name = saved.shipName.trim();
+            if (shipNames.includes(name)) applyShip(name);
           }
 
           // galaxySystemName (string)
@@ -500,16 +513,16 @@
 
           const desiredAngle = Math.atan2(dy, dx);
           let diff = normalizeAngleDiff(desiredAngle - state.angle);
-          const maxTurn = ROTATION_SPEED * dt;
+          const maxTurn = state.shipStats.turningSpeedRad * dt;
           if (diff > maxTurn) diff = maxTurn;
           if (diff < -maxTurn) diff = -maxTurn;
           state.angle += diff;
 
           let targetSpeed;
           if (dist > 200) {
-            targetSpeed = spaceshipStats.speed * 0.7;
+            targetSpeed = state.shipStats.speed * 0.7;
           } else if (dist > 50) {
-            targetSpeed = spaceshipStats.speed * 0.3;
+            targetSpeed = state.shipStats.speed * 0.3;
           } else {
             targetSpeed = 30; // near 50px, slowdown
           }
@@ -521,17 +534,17 @@
         } else {
           // CONTROLLO MANUALE
           if (input.left) {
-            state.angle -= ROTATION_SPEED * dt;
+            state.angle -= state.shipStats.turningSpeedRad * dt;
           }
           if (input.right) {
-            state.angle += ROTATION_SPEED * dt;
+            state.angle += state.shipStats.turningSpeedRad * dt;
           }
 
           let speed = Math.hypot(state.vx, state.vy);
 
           if (input.thrust) {
-            const ax = Math.cos(state.angle) * spaceshipStats.acceleration;
-            const ay = Math.sin(state.angle) * spaceshipStats.acceleration;
+            const ax = Math.cos(state.angle) * state.shipStats.turningSpeedRad;
+            const ay = Math.sin(state.angle) * state.shipStats.turningSpeedRad;
             state.vx += ax * dt;
             state.vy += ay * dt;
           }
@@ -552,7 +565,7 @@
           }
 
           if (input.brake && speed > 0) {
-            const decel = spaceshipStats.acceleration * dt;
+            const decel = state.shipStats.acceleration * dt;
             speed = Math.max(0, speed - decel);
             if (speed === 0) {
               state.vx = 0;
@@ -566,8 +579,8 @@
         }
 
         const newSpeed = Math.hypot(state.vx, state.vy);
-        if (newSpeed > spaceshipStats.speed) {
-          const factor = spaceshipStats.speed / newSpeed;
+        if (newSpeed > state.shipStats.speed) {
+          const factor = state.shipStats.speed / newSpeed;
           state.vx *= factor;
           state.vy *= factor;
         }
@@ -1042,6 +1055,7 @@
         loadState();
         spawnTarget();
         updateLockButtonVisual();
+        applyShip(state.shipName || shipNames[0]);
         // Station manager: gli passo info di sistema e un getter dello state giocatore
         StationManager.init({
           systemInfo: SystemInfo,
