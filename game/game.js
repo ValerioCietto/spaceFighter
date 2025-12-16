@@ -543,8 +543,8 @@
           let speed = Math.hypot(state.vx, state.vy);
 
           if (input.thrust) {
-            const ax = Math.cos(state.angle) * state.shipStats.turningSpeedRad;
-            const ay = Math.sin(state.angle) * state.shipStats.turningSpeedRad;
+            const ax = Math.cos(state.angle) * state.shipStats.acceleration;
+            const ay = Math.sin(state.angle) * state.shipStats.acceleration;
             state.vx += ax * dt;
             state.vy += ay * dt;
           }
