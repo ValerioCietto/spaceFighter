@@ -76,7 +76,6 @@
 
 
       const FRICTION = 70;
-      const ROTATION_SPEED = Math.PI;
 
       const STORAGE_KEY = "spaceFighterSaveData";
       const MONEY_PER_TARGET = 10;
