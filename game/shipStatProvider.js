@@ -6,7 +6,7 @@
 // hermes berseker
 // theseus gunship
 // diamond fortress athena
-// diamond fortress spike
+// sniper artemis
 // mercury
 // spinal weapon platform ares
 // apollo drone carrier
@@ -38,6 +38,13 @@
 
 const SHIPS = {
   // Humans
+  human_artemis: {
+    speed: 240,
+    acceleration: 80,
+    turningSpeedRad: Math.PI * 0.25,
+    image: "human_gunship.png",
+  },
+
   human_hermes: {
     speed: 135,
     acceleration: 125,
