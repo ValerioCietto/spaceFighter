@@ -175,6 +175,7 @@
       const SHIP_ASSET_BASE = "/spaceFighter/assets/";
 
       const shipNames = [
+        "human_artemis",
         "human_hermes",
         "human_gunship",
         "human_icarus",
