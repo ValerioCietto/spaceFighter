@@ -244,7 +244,7 @@ const DEFAULT_STATS = {
   engineFlareType: "triangular",
   engineFlareWidth: 16,
   engineFlareLength: 48,
-  image: "human_starfigther.png",
+  image: "human_starfighter.png",
   shieldDiameterPx: 90,
   shipCenter: { x: 0.5, y: 0.5 },
   engineCoords: [{ x: 0.20, y: 0.50 }],
