@@ -42,7 +42,14 @@ const SHIPS = {
     speed: 240,
     acceleration: 80,
     turningSpeedRad: Math.PI * 0.25,
-    image: "human_gunship.png",
+    image: "human_artemis.png",
+    engineFlareType: "fire",
+    engineFlareWidth: 18,
+    engineFlareLength: 42,
+    shieldDiameterPx: 88,
+    shipCenter: { x: 0.5, y: 0.5 }, // normalized (0..1) relative to sprite
+    engineCoords: [{ x: 0.18, y: 0.50 }, { x: 0.18, y: 0.58 }],
+    weaponGunCoords: [{ x: 0.78, y: 0.44 }, { x: 0.78, y: 0.56 }],
   },
 
   human_hermes: {
