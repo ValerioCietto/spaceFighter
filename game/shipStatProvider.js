@@ -67,7 +67,7 @@ const SHIPS = {
   },
 
   human_icarus: {
-    speed: 160,
+    speed: 200,
     acceleration: 140,
     turningSpeedRad: Math.PI * 1.55,
     engineFlareType: "triangular",
@@ -81,9 +81,9 @@ const SHIPS = {
   },
 
   human_mercury: {
-    speed: 175,
-    acceleration: 155,
-    turningSpeedRad: Math.PI * 1.75,
+    speed: 275,
+    acceleration: 195,
+    turningSpeedRad: Math.PI * 1.85,
     engineFlareType: "sphere",
     engineFlareWidth: 12,
     engineFlareLength: 46,
@@ -96,7 +96,7 @@ const SHIPS = {
 
   human_perseus: {
     speed: 150,
-    acceleration: 120,
+    acceleration: 180,
     turningSpeedRad: Math.PI * 1.25,
     engineFlareType: "triangular",
     engineFlareWidth: 16,
@@ -110,8 +110,8 @@ const SHIPS = {
 
   human_demeter: {
     speed: 95,
-    acceleration: 110,
-    turningSpeedRad: Math.PI * 1.05,
+    acceleration: 150,
+    turningSpeedRad: Math.PI * 0.95,
     engineFlareType: "fire",
     engineFlareWidth: 30,
     engineFlareLength: 35,
@@ -125,7 +125,7 @@ const SHIPS = {
   human_zeus: {
     speed: 120,
     acceleration: 105,
-    turningSpeedRad: Math.PI * 0.95,
+    turningSpeedRad: Math.PI * 0.75,
     engineFlareType: "flagellum",
     engineFlareWidth: 22,
     engineFlareLength: 60,
