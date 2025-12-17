@@ -23,19 +23,6 @@
         ]
       };
 
-      const spaceshipStats = {
-        speed: 150,
-        acceleration: 120,
-        turningSpeedRad: Math.PI * 1.25,
-        engineFlareType: "triangular",
-        engineFlareWidth: 16,
-        engineFlareLength: 48,
-        image: "human_starfighter.png",
-        shieldDiameterPx: 90,
-        shipCenter: { x: 0.5, y: 0.5 },
-        engineCoords: [{ x: 0.20, y: 0.50 }],
-        weaponGunCoords: [{ x: 0.83, y: 0.50 }],
-      }
       const state = {
         x: SystemInfo.size / 2,
         y: SystemInfo.size / 2,
