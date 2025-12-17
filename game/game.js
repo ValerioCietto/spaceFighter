@@ -94,14 +94,14 @@
 
       const WeaponSniper = {
         name: "Sniper",
-        damage: 10,
+        damage: 5,
         base_speed: 1000,
         life_span: 5.0,
         spread: 0.0,
         projectiles: 1,
         aspect: "line",
-        auto_aim: 1.0,
-        delay_ms: 500
+        auto_aim: 0.5,
+        delay_ms: 300
       };
 
       const WeaponShotgun = {
@@ -287,8 +287,8 @@
         const weapon = weapons[currentWeaponIndex];
         const now = performance.now();
         const last = weaponLastFire[currentWeaponIndex] || 0;
-
-        if (now - last < weapon.delay_ms) {
+        const firerateMult = state.shipStats.firerateMult || 1.0;
+        if (now - last < ( weapon.delay_ms * firerateMult)) {
           return;
         }
         weaponLastFire[currentWeaponIndex] = now;
@@ -640,7 +640,8 @@
             const dist = Math.hypot(dx, dy);
             if (dist <= target.radius) {
               const damage = p.damage || 1;
-              target.hp -= damage;
+              const damageMult = state.shipStats.damageMult || 1;
+              target.hp -= (damage * damageMult);
               remove = true;
               if (target.hp <= 0) {
                 state.money += MONEY_PER_TARGET;
