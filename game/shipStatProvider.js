@@ -42,7 +42,7 @@ const SHIPS = {
     speed: 240,
     acceleration: 80,
     turningSpeedRad: Math.PI * 0.25,
-    image: "human_artemis.png",
+    image: "human_artemis_v2.png",
     engineFlareType: "fire",
     engineFlareWidth: 18,
     engineFlareLength: 42,
