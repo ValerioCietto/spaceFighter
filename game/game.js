@@ -279,7 +279,7 @@
         if (now - last < ( weapon.delay_ms * firerateMult)) {
           return;
         }
-        state.weaponLastFire[weaponIndex] = now
+        state.weaponLastFire[state.weaponIndex] = now
 
         let baseAngle = state.angle;
         if (weapon.auto_aim && target) {
