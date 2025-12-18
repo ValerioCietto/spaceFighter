@@ -277,9 +277,13 @@
         const last = state.weaponLastFire[state.weaponIndex] || 0;
         const firerateMult = state.shipStats.firerateMult || 1.0;
         if (now - last < ( weapon.delay_ms * firerateMult)) {
+          console.log("denied fire, weapon in cooldown");
+          console.log(now-last);
+          console.log( weapon.delay_ms * firerateMult);
           return;
         }
         state.weaponLastFire[state.weaponIndex] = now
+        console.log(state.weaponLastFire[state.weaponIndex]);
 
         let baseAngle = state.angle;
         if (weapon.auto_aim && target) {
