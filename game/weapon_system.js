@@ -11,12 +11,22 @@ function fireWeaponManager(entity, weapons, target, projectiles, now = performan
   console.log(projectiles);
   console.log(now);
   const weapon = weapons[entity.weaponIndex];
-  if (!weapon) return false;
+  if (!weapon){
+    console.log("no fire because no weapon.");
+    return false;
+  } 
 
   const last = entity.weaponLastFire?.[entity.weaponIndex] || 0;
   const firerateMult = entity.shipStats?.firerateMult || 1.0;
 
-  if (now - last < weapon.delay_ms * firerateMult) return false;
+  if (now - last < weapon.delay_ms * firerateMult){
+    console.log("reload still not complete");
+    console.log("now: " + now);
+    console.log("last: " + last);
+    console.log("delay: " + weapon.delay_ms);
+    console.log("firerateMult: " + firerateMult);
+    return false;
+  } 
 
   if (!entity.weaponLastFire) entity.weaponLastFire = {};
   entity.weaponLastFire[entity.weaponIndex] = now;

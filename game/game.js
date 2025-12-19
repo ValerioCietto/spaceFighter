@@ -265,8 +265,8 @@
 
       function attemptFireWeapon() {
         console.log("attemptFireWeapon");
-        const tempProjectiles = fireWeaponManager(state.shipStats, weapons, target, projectiles, performance.now());
-        console.log(tempProjectiles);
+        const hasFired = fireWeaponManager(state.shipStats, weapons, target, projectiles, performance.now());
+        console.log(hasFired);
       }
 
       function cycleWeapon() {
@@ -975,7 +975,7 @@
       }
 
       function init() {
-        console.log("v0.1");
+        console.log("v0.2");
         resize();
         initStarfield();
         loadState();
