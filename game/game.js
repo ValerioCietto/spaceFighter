@@ -31,12 +31,15 @@
         angle: -Math.PI / 2,
         money: 0,
         shipName: "human_starfighter",
-        systemName: "Solar"
+        systemName: "Solar",
+        weaponIndex: 0,
+        weaponLastFire: [0, 0, 0, 0]
       };
 
       function applyShip(shipName) {
         state.shipName = shipName;                 // e.g. "human_zeus"
         state.shipStats = getStats(state.shipName);
+        state.weaponIndex = 0;
       
         // ensure the sprite matches the stats image
         const imgFile = state.shipStats?.image;    // e.g. "human_zeus.png"
@@ -126,8 +129,6 @@
         WeaponShotgun,
         WeaponHomingMissiles
       ];
-      let currentWeaponIndex = 0;
-      const weaponLastFire = [0, 0, 0, 0];
 
       const canvas = document.getElementById("game-canvas");
       const ctx = canvas.getContext("2d");
@@ -271,14 +272,18 @@
       }
 
       function attemptFireWeapon() {
-        const weapon = weapons[currentWeaponIndex];
+        const weapon = weapons[state.weaponIndex];
         const now = performance.now();
-        const last = weaponLastFire[currentWeaponIndex] || 0;
+        const last = state.weaponLastFire[state.weaponIndex] || 0;
         const firerateMult = state.shipStats.firerateMult || 1.0;
         if (now - last < ( weapon.delay_ms * firerateMult)) {
+          console.log("denied fire, weapon in cooldown");
+          console.log(now-last);
+          console.log( weapon.delay_ms * firerateMult);
           return;
         }
-        weaponLastFire[currentWeaponIndex] = now;
+        state.weaponLastFire[state.weaponIndex] = now
+        console.log(state.weaponLastFire[state.weaponIndex]);
 
         let baseAngle = state.angle;
         if (weapon.auto_aim && target) {
@@ -340,7 +345,7 @@
       }
 
       function cycleWeapon() {
-        currentWeaponIndex = (currentWeaponIndex + 1) % weapons.length;
+        state.weaponIndex = (state.weaponIndex + 1) % weapons.length;
       }
 
       function updateLockButtonVisual() {
@@ -459,7 +464,7 @@
           const saved = JSON.parse(raw);
 
           // numeric state
-          ["x", "y", "vx", "vy", "angle", "money"].forEach((k) => {
+          ["x", "y", "vx", "vy", "angle", "money", "weaponIndex"].forEach((k) => {
             if (typeof saved[k] === "number") state[k] = saved[k];
           });
 
@@ -472,6 +477,13 @@
           // galaxySystemName (string)
           if (typeof saved.galaxySystemName === "string" && saved.galaxySystemName.trim()) {
             state.galaxySystemName = saved.galaxySystemName.trim();
+          }
+
+          // import weaponLastFired array
+          if (typeof saved.weaponLastFired === "array"){
+            state.weaponLastFired = saved.weaponLastFired;
+          } else{
+            state.weaponLastFired = [0,0,0,0];
           }
         } catch (e) {
           console.warn("Impossibile caricare lo stato:", e);
@@ -1058,7 +1070,7 @@
             updateLockButtonVisual();
           },
           cycleWeapon,
-          (idx) => { currentWeaponIndex = idx; },
+          (idx) => { state.weaponIndex = idx; },
           touchButtons,
           startDocking
         );
