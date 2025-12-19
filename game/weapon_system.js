@@ -5,6 +5,11 @@ function normalizeAngleDiff(diff) {
 }
 
 function fireWeaponManager(entity, weapons, target, projectiles, now = performance.now()) {
+  console.log(entity);
+  console.log(weapons);
+  console.log(target);
+  console.log(projectiles);
+  console.log(now);
   const weapon = weapons[entity.weaponIndex];
   if (!weapon) return false;
 
