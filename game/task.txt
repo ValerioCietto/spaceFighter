@@ -1,0 +1,156 @@
+Next step should be extract weapons/weapon_system.js (spawns projectiles) and extract weapons/projectile_system.js (moves + hits). This removes combat logic from your main loop and makes it reusable for AI ships. (Certainty: 90%)
+
+Step 1 — Create weapons/weapon_system.js (single responsibility: fire → projectiles)
+// terminal: npx serve .
+// weapons/weapon_system.js
+
+export function normalizeAngleDiff(diff) {
+  diff = (diff + Math.PI) % (2 * Math.PI);
+  if (diff < 0) diff += 2 * Math.PI;
+  return diff - Math.PI;
+}
+
+export function attemptFireWeapon(entity, weapons, target, projectiles, now = performance.now()) {
+  const weapon = weapons[entity.weaponIndex];
+  if (!weapon) return false;
+
+  const last = entity.weaponLastFire?.[entity.weaponIndex] || 0;
+  const firerateMult = entity.shipStats?.firerateMult || 1.0;
+
+  if (now - last < weapon.delay_ms * firerateMult) return false;
+
+  if (!entity.weaponLastFire) entity.weaponLastFire = {};
+  entity.weaponLastFire[entity.weaponIndex] = now;
+
+  let baseAngle = entity.angle;
+
+  if (weapon.auto_aim && target) {
+    const toTargetAngle = Math.atan2(target.y - entity.y, target.x - entity.x);
+    const diff = normalizeAngleDiff(toTargetAngle - entity.angle);
+    if (Math.abs(diff) <= weapon.auto_aim) baseAngle = toTargetAngle;
+  }
+
+  const spreadRad = (weapon.spread || 0) * Math.PI / 180;
+  const muzzleDistance = 18;
+  const shipSpeedX = entity.vx;
+  const shipSpeedY = entity.vy;
+
+  const count = weapon.projectiles || 1;
+  const damageMult = entity.shipStats?.damageMult || 1.0;
+
+  for (let i = 0; i < count; i++) {
+    const offset = spreadRad > 0 ? (-spreadRad + Math.random() * (2 * spreadRad)) : 0;
+    const angle = baseAngle + offset;
+
+    const dirX = Math.cos(angle);
+    const dirY = Math.sin(angle);
+
+    const startX = entity.x + dirX * muzzleDistance;
+    const startY = entity.y + dirY * muzzleDistance;
+
+    let vx, vy, speed;
+
+    speed = weapon.base_speed;
+    if (weapon.homing) {
+      vx = dirX * speed;
+      vy = dirY * speed;
+    } else {
+      vx = shipSpeedX + dirX * speed;
+      vy = shipSpeedY + dirY * speed;
+    }
+
+    projectiles.push({
+      ownerId: entity.id || "player",
+      x: startX, y: startY,
+      vx, vy,
+      age: 0,
+      life: weapon.life_span,
+      damage: (weapon.damage || 1) * damageMult,
+      aspect: weapon.aspect,
+      angle,
+      homing: !!weapon.homing,
+      speed,
+      accel: weapon.acceleration || 0,
+      maxSpeed: weapon.speed || weapon.base_speed || 0,
+      turnSpeed: weapon.turn_speed_rad || 0,
+    });
+  }
+
+  return true;
+}
+
+Integrate (replace your old attemptFireWeapon() body)
+
+In main:
+
+import { attemptFireWeapon as fireWeapon } from "./weapons/weapon_system.js";
+
+// inside setupInput callback:
+() => fireWeapon(state, weapons, target, projectiles)
+
+Step 2 — Create weapons/projectile_system.js (single responsibility: update projectiles)
+// terminal: npx serve .
+// weapons/projectile_system.js
+
+import { normalizeAngleDiff } from "./weapon_system.js";
+
+export function updateProjectiles(dt, projectiles, target, onTargetKilled) {
+  for (let i = projectiles.length - 1; i >= 0; i--) {
+    const p = projectiles[i];
+    p.age += dt;
+
+    if (p.homing && target) {
+      const desiredAngle = Math.atan2(target.y - p.y, target.x - p.x);
+      let diff = normalizeAngleDiff(desiredAngle - p.angle);
+      const maxTurn = (p.turnSpeed || 0) * dt;
+      if (diff > maxTurn) diff = maxTurn;
+      if (diff < -maxTurn) diff = -maxTurn;
+      p.angle += diff;
+
+      const accel = p.accel || 0;
+      const maxSpeed = p.maxSpeed || p.speed;
+      p.speed = Math.min(maxSpeed, p.speed + accel * dt);
+
+      p.vx = Math.cos(p.angle) * p.speed;
+      p.vy = Math.sin(p.angle) * p.speed;
+    }
+
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+
+    let remove = false;
+
+    if (p.age > (p.life || 3.0)) remove = true;
+
+    if (!remove && target) {
+      const dx = p.x - target.x;
+      const dy = p.y - target.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist <= target.radius) {
+        target.hp -= (p.damage || 1);
+        remove = true;
+        if (target.hp <= 0) onTargetKilled?.();
+      }
+    }
+
+    if (remove) projectiles.splice(i, 1);
+  }
+}
+
+Integrate
+
+In update(dt) remove the projectile loop and replace with:
+
+import { updateProjectiles } from "./weapons/projectile_system.js";
+
+updateProjectiles(dt, projectiles, target, () => {
+  state.money += MONEY_PER_TARGET;
+  moneyValueEl.textContent = `${state.money.toFixed(0)}§`;
+  spawnTarget();
+});
+
+Why this is the right “next”
+
+After this, adding AI ships is straightforward: create enemyEntity with its own weaponIndex/weaponLastFire, then call fireWeapon(enemyEntity, ...).
+
+Your main file becomes orchestration only, not the place where all mechanics live.
