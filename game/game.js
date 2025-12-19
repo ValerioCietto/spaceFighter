@@ -32,6 +32,7 @@
         money: 0,
         shipName: "human_starfighter",
         systemName: "Solar",
+        shipStats: getStats("human_starfighter"),
         weaponIndex: 0,
         weaponLastFire: [0, 0, 0, 0]
       };
@@ -265,83 +266,8 @@
         };
       }
 
-      function normalizeAngleDiff(diff) {
-        diff = (diff + Math.PI) % (2 * Math.PI);
-        if (diff < 0) diff += 2 * Math.PI;
-        return diff - Math.PI;
-      }
-
       function attemptFireWeapon() {
-        const weapon = weapons[state.weaponIndex];
-        const now = performance.now();
-        const last = state.weaponLastFire[state.weaponIndex] || 0;
-        const firerateMult = state.shipStats.firerateMult || 1.0;
-        if (now - last < ( weapon.delay_ms * firerateMult)) {
-          console.log("denied fire, weapon in cooldown");
-          console.log(now-last);
-          console.log( weapon.delay_ms * firerateMult);
-          return;
-        }
-        state.weaponLastFire[state.weaponIndex] = now
-        console.log(state.weaponLastFire[state.weaponIndex]);
-
-        let baseAngle = state.angle;
-        if (weapon.auto_aim && target) {
-          const toTargetAngle = Math.atan2(target.y - state.y, target.x - state.x);
-          let diff = normalizeAngleDiff(toTargetAngle - state.angle);
-          if (Math.abs(diff) <= weapon.auto_aim) {
-            baseAngle = toTargetAngle;
-          }
-        }
-
-        const spreadRad = (weapon.spread || 0) * Math.PI / 180;
-        const muzzleDistance = 18;
-        const shipSpeedX = state.vx;
-        const shipSpeedY = state.vy;
-
-        const count = weapon.projectiles || 1;
-
-        for (let i = 0; i < count; i++) {
-          const offset = spreadRad > 0
-            ? (-spreadRad + Math.random() * (2 * spreadRad))
-            : 0;
-
-          const angle = baseAngle + offset;
-          const dirX = Math.cos(angle);
-          const dirY = Math.sin(angle);
-
-          let vx, vy, speed;
-
-          if (weapon.homing) {
-            speed = weapon.base_speed;
-            vx = dirX * speed;
-            vy = dirY * speed;
-          } else {
-            speed = weapon.base_speed;
-            vx = shipSpeedX + dirX * weapon.base_speed;
-            vy = shipSpeedY + dirY * weapon.base_speed;
-          }
-
-          const startX = state.x + dirX * muzzleDistance;
-          const startY = state.y + dirY * muzzleDistance;
-
-          projectiles.push({
-            x: startX,
-            y: startY,
-            vx,
-            vy,
-            age: 0,
-            life: weapon.life_span,
-            damage: weapon.damage,
-            aspect: weapon.aspect,
-            angle,
-            homing: !!weapon.homing,
-            speed: speed,
-            accel: weapon.acceleration || 0,
-            maxSpeed: weapon.speed || weapon.base_speed || 0,
-            turnSpeed: weapon.turn_speed_rad || 0
-          });
-        }
+        fireWeaponManager(state.shipStats, weapons, target, projectiles, performance.now())
       }
 
       function cycleWeapon() {

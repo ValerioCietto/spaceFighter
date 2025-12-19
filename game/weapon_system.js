@@ -4,7 +4,7 @@ function normalizeAngleDiff(diff) {
   return diff - Math.PI;
 }
 
-function attemptFireWeapon(entity, weapons, target, projectiles, now = performance.now()) {
+function fireWeaponManager(entity, weapons, target, projectiles, now = performance.now()) {
   const weapon = weapons[entity.weaponIndex];
   if (!weapon) return false;
 
