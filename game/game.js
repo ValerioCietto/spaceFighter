@@ -32,7 +32,7 @@
         money: 0,
         shipName: "human_starfighter",
         systemName: "Solar",
-        shipStats: getStats("human_starfighter"),
+        shipStats: {},
         weaponIndex: 0,
         weaponLastFire: [0, 0, 0, 0]
       };
@@ -194,7 +194,6 @@
       // sprite cache
       const shipImages = new Map();
       let shipSkinIndex = 0;
-      let shipImgReady = false;
       
       function loadShipImage(filename) {
         shipImgReady = false;
@@ -231,8 +230,6 @@
       let minimapSize = 0;
       let minimapScale = 0;
 
-
-
       const input = {
         left: false,
         right: false,
@@ -267,6 +264,7 @@
       }
 
       function attemptFireWeapon() {
+        console.log("attemptFireWeapon");
         fireWeaponManager(state.shipStats, weapons, target, projectiles, performance.now())
       }
 
