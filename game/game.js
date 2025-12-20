@@ -24,23 +24,29 @@
       };
 
       const state = {
-        
-        x: SystemInfo.size / 2,
-        y: SystemInfo.size / 2,
-        vx: 0,
-        vy: 0,
-        angle: -Math.PI / 2,
-        money: 0,
-        shipName: "human_starfighter",
-        systemName: "Solar"
+        player: {
+          x: SystemInfo.size / 2,
+          y: SystemInfo.size / 2,
+          vx: 0,
+          vy: 0,
+          angle: -Math.PI / 2,
+          money: 0,
+          shipName: "human_starfighter",
+          systemName: "Solar"
+        },
+        enemies:{},
+        neutralPassive:{},
+        allies:{},
+        target:{}
       };
 
       function applyShip(shipName) {
-        state.shipName = shipName;                 // e.g. "human_zeus"
-        state.shipStats = getStats(state.shipName);
+        console.log("applying ship name: "+shipName);
+        state.player.shipName = shipName;                 // e.g. "human_zeus"
+        state.player.shipStats = getStats(state.player.shipName);
       
         // ensure the sprite matches the stats image
-        const imgFile = state.shipStats?.image;    // e.g. "human_zeus.png"
+        const imgFile = state.player.shipStats?.image;    // e.g. "human_zeus.png"
         if (imgFile) {
           shipSkinIndex = Math.max(0, shipSkins.indexOf(imgFile));
           currentShipImg = loadShipImage(imgFile);
@@ -48,10 +54,10 @@
       }
 
   
-      const STAR_DIAMETER = 300;
-      const STAR_RADIUS_WORLD = 100;
-      const STAR_X = 3000;
-      const STAR_Y = 3000;
+      const STAR_DIAMETER = SystemInfo.stars[0].radius+200;
+      const STAR_RADIUS_WORLD = SystemInfo.stars[0].radius;
+      const STAR_X = SystemInfo.size/2;
+      const STAR_Y = SystemInfo.size/2;
 
       const STATION_X = STAR_X + 450;
       const STATION_Y = STAR_Y - 200;
@@ -215,7 +221,7 @@
       let currentShipImg = loadShipImage(shipSkins[shipSkinIndex]);
       
       function cycleShipSkin() {
-        const currentIdx = Math.max(0, shipNames.indexOf(state.shipName));
+        const currentIdx = Math.max(0, shipNames.indexOf(state.player.shipName));
         const nextIdx = (currentIdx + 1) % shipNames.length;
         applyShip(shipNames[nextIdx]);
       }
@@ -265,16 +271,16 @@
         const weapon = weapons[currentWeaponIndex];
         const now = performance.now();
         const last = weaponLastFire[currentWeaponIndex] || 0;
-        const firerateMult = state.shipStats.firerateMult || 1.0;
+        const firerateMult = state.player.shipStats.firerateMult || 1.0;
         if (now - last < ( weapon.delay_ms * firerateMult)) {
           return;
         }
         weaponLastFire[currentWeaponIndex] = now;
 
-        let baseAngle = state.angle;
+        let baseAngle = state.player.angle;
         if (weapon.auto_aim && target) {
-          const toTargetAngle = Math.atan2(target.y - state.y, target.x - state.x);
-          let diff = normalizeAngleDiff(toTargetAngle - state.angle);
+          const toTargetAngle = Math.atan2(target.y - state.player.y, target.x - state.player.x);
+          let diff = normalizeAngleDiff(toTargetAngle - state.player.angle);
           if (Math.abs(diff) <= weapon.auto_aim) {
             baseAngle = toTargetAngle;
           }
@@ -282,8 +288,8 @@
 
         const spreadRad = (weapon.spread || 0) * Math.PI / 180;
         const muzzleDistance = 18;
-        const shipSpeedX = state.vx;
-        const shipSpeedY = state.vy;
+        const shipSpeedX = state.player.vx;
+        const shipSpeedY = state.player.vy;
 
         const count = weapon.projectiles || 1;
 
@@ -308,8 +314,8 @@
             vy = shipSpeedY + dirY * weapon.base_speed;
           }
 
-          const startX = state.x + dirX * muzzleDistance;
-          const startY = state.y + dirY * muzzleDistance;
+          const startX = state.player.x + dirX * muzzleDistance;
+          const startY = state.player.y + dirY * muzzleDistance;
 
           projectiles.push({
             x: startX,
@@ -451,24 +457,25 @@
 
           // numeric state
           ["x", "y", "vx", "vy", "angle", "money"].forEach((k) => {
-            if (typeof saved[k] === "number") state[k] = saved[k];
+            if (typeof saved?.player[k] === "number") state.player[k] = saved.player[k];
           });
+          console.log(state.player)
 
           // shipName (string)
-          if (typeof saved.shipName === "string" && saved.shipName.trim()) {
-            const name = saved.shipName.trim();
+          if (typeof saved.player.shipName === "string" && saved.player.shipName.trim()) {
+            const name = saved.player.shipName.trim();
             if (shipNames.includes(name)) applyShip(name);
           }
 
           // galaxySystemName (string)
-          if (typeof saved.galaxySystemName === "string" && saved.galaxySystemName.trim()) {
-            state.galaxySystemName = saved.galaxySystemName.trim();
+          if (typeof saved.player.systemName === "string" && saved.player.systemName.trim()) {
+            state.player.systemName = saved.player.systemName.trim();
           }
         } catch (e) {
           console.warn("Impossibile caricare lo stato:", e);
         }
 
-        moneyValueEl.textContent = `${state.money.toFixed(0)}§`;
+        moneyValueEl.textContent = `${state.player.money.toFixed(0)}§`;
       }
 
       function saveState() {
@@ -485,46 +492,46 @@
         // Movimento nave: manuale o docking autopilot
         if (dockingActive && !stationDialogOpen) {
           // AUTOPILOT verso stazione
-          const dx = STATION_X - state.x;
-          const dy = STATION_Y - state.y;
+          const dx = STATION_X - state.player.x;
+          const dy = STATION_Y - state.player.y;
           const dist = Math.hypot(dx, dy);
 
           const desiredAngle = Math.atan2(dy, dx);
-          let diff = normalizeAngleDiff(desiredAngle - state.angle);
-          const maxTurn = state.shipStats.turningSpeedRad * dt;
+          let diff = normalizeAngleDiff(desiredAngle - state.player.angle);
+          const maxTurn = state.player.shipStats.turningSpeedRad * dt;
           if (diff > maxTurn) diff = maxTurn;
           if (diff < -maxTurn) diff = -maxTurn;
-          state.angle += diff;
+          state.player.angle += diff;
 
           let targetSpeed;
           if (dist > 200) {
-            targetSpeed = state.shipStats.speed * 0.7;
+            targetSpeed = state.player.shipStats.speed * 0.7;
           } else if (dist > 50) {
-            targetSpeed = state.shipStats.speed * 0.3;
+            targetSpeed = state.player.shipStats.speed * 0.3;
           } else {
             targetSpeed = 30; // near 50px, slowdown
           }
 
-          const dirX = Math.cos(state.angle);
-          const dirY = Math.sin(state.angle);
-          state.vx = dirX * targetSpeed;
-          state.vy = dirY * targetSpeed;
+          const dirX = Math.cos(state.player.angle);
+          const dirY = Math.sin(state.player.angle);
+          state.player.vx = dirX * targetSpeed;
+          state.player.vy = dirY * targetSpeed;
         } else {
           // CONTROLLO MANUALE
           if (input.left) {
-            state.angle -= state.shipStats.turningSpeedRad * dt;
+            state.player.angle -= state.player.shipStats.turningSpeedRad * dt;
           }
           if (input.right) {
-            state.angle += state.shipStats.turningSpeedRad * dt;
+            state.player.angle += state.player.shipStats.turningSpeedRad * dt;
           }
 
-          let speed = Math.hypot(state.vx, state.vy);
+          let speed = Math.hypot(state.player.vx, state.player.vy);
 
           if (input.thrust) {
-            const ax = Math.cos(state.angle) * state.shipStats.acceleration;
-            const ay = Math.sin(state.angle) * state.shipStats.acceleration;
-            state.vx += ax * dt;
-            state.vy += ay * dt;
+            const ax = Math.cos(state.player.angle) * state.player.shipStats.acceleration;
+            const ay = Math.sin(state.player.angle) * state.player.shipStats.acceleration;
+            state.player.vx += ax * dt;
+            state.player.vy += ay * dt;
           }
 
           if (!input.thrust) {
@@ -532,53 +539,53 @@
               const decel = FRICTION * dt;
               speed = Math.max(0, speed - decel);
               if (speed === 0) {
-                state.vx = 0;
-                state.vy = 0;
+                state.player.vx = 0;
+                state.player.vy = 0;
               } else {
-                const factor = speed / Math.hypot(state.vx, state.vy);
-                state.vx *= factor;
-                state.vy *= factor;
+                const factor = speed / Math.hypot(state.player.vx, state.player.vy);
+                state.player.vx *= factor;
+                state.player.vy *= factor;
               }
             }
           }
 
           if (input.brake && speed > 0) {
-            const decel = state.shipStats.acceleration * dt;
+            const decel = state.player.shipStats.acceleration * dt;
             speed = Math.max(0, speed - decel);
             if (speed === 0) {
-              state.vx = 0;
-              state.vy = 0;
+              state.player.vx = 0;
+              state.player.vy = 0;
             } else {
-              const factor = speed / Math.hypot(state.vx, state.vy);
-              state.vx *= factor;
-              state.vy *= factor;
+              const factor = speed / Math.hypot(state.player.vx, state.player.vy);
+              state.player.vx *= factor;
+              state.player.vy *= factor;
             }
           }
         }
 
-        const newSpeed = Math.hypot(state.vx, state.vy);
-        if (newSpeed > state.shipStats.speed) {
-          const factor = state.shipStats.speed / newSpeed;
-          state.vx *= factor;
-          state.vy *= factor;
+        const newSpeed = Math.hypot(state.player.vx, state.player.vy);
+        if (newSpeed > state.player.shipStats.speed) {
+          const factor = state.player.shipStats.speed / newSpeed;
+          state.player.vx *= factor;
+          state.player.vy *= factor;
         }
 
-        state.x += state.vx * dt;
-        state.y += state.vy * dt;
+        state.player.x += state.player.vx * dt;
+        state.player.y += state.player.vy * dt;
 
-        state.x = Math.max(0, Math.min(SystemInfo.size, state.x));
-        state.y = Math.max(0, Math.min(SystemInfo.size, state.y));
+        state.player.x = Math.max(0, Math.min(SystemInfo.size, state.player.x));
+        state.player.y = Math.max(0, Math.min(SystemInfo.size, state.player.y));
 
         // Completamento docking: quando centrata
         if (dockingActive && !stationDialogOpen) {
-          const dx2 = STATION_X - state.x;
-          const dy2 = STATION_Y - state.y;
+          const dx2 = STATION_X - state.player.x;
+          const dy2 = STATION_Y - state.player.y;
           const dist2 = Math.hypot(dx2, dy2);
           if (dist2 < 5) {
-            state.x = STATION_X;
-            state.y = STATION_Y;
-            state.vx = 0;
-            state.vy = 0;
+            state.player.x = STATION_X;
+            state.player.y = STATION_Y;
+            state.player.vx = 0;
+            state.player.vy = 0;
             dockingActive = false;
             openStationDialog();
           }
@@ -618,12 +625,12 @@
             const dist = Math.hypot(dx, dy);
             if (dist <= target.radius) {
               const damage = p.damage || 1;
-              const damageMult = state.shipStats.damageMult || 1;
+              const damageMult = state.player.shipStats.damageMult || 1;
               target.hp -= (damage * damageMult);
               remove = true;
               if (target.hp <= 0) {
-                state.money += MONEY_PER_TARGET;
-                moneyValueEl.textContent = `${state.money.toFixed(0)}§`;
+                state.player.money += MONEY_PER_TARGET;
+                moneyValueEl.textContent = `${state.player.money.toFixed(0)}§`;
                 spawnTarget();
               }
             }
@@ -635,7 +642,7 @@
         }
 
         speedValueEl.textContent = newSpeed.toFixed(1);
-        posValueEl.textContent = `${state.x.toFixed(0)}, ${state.y.toFixed(0)}`;
+        posValueEl.textContent = `${state.player.x.toFixed(0)}, ${state.player.y.toFixed(0)}`;
       }
 
       function drawStarfield() {
@@ -643,8 +650,8 @@
         ctx.fillStyle = "#020309";
         ctx.fillRect(0, 0, width, height);
 
-        const camX = state.x;
-        const camY = state.y;
+        const camX = state.player.x;
+        const camY = state.player.y;
 
         starLayers.forEach((layer, idx) => {
           const { factor, stars } = layer;
@@ -675,8 +682,8 @@
       }
 
       function drawMainStar() {
-        const screenX = width / 2 + (STAR_X - state.x);
-        const screenY = height / 2 + (STAR_Y - state.y);
+        const screenX = width / 2 + (STAR_X - state.player.x);
+        const screenY = height / 2 + (STAR_Y - state.player.y);
 
         const radius = STAR_RADIUS_WORLD;
 
@@ -702,8 +709,8 @@
       }
 
       function drawStation() {
-        const screenX = width / 2 + (STATION_X - state.x);
-        const screenY = height / 2 + (STATION_Y - state.y);
+        const screenX = width / 2 + (STATION_X - state.player.x);
+        const screenY = height / 2 + (STATION_Y - state.player.y);
       
         ctx.save();
         ctx.translate(screenX, screenY);
@@ -740,8 +747,8 @@
       function drawTarget() {
         if (!target) return;
 
-        const screenX = width / 2 + (target.x - state.x);
-        const screenY = height / 2 + (target.y - state.y);
+        const screenX = width / 2 + (target.x - state.player.x);
+        const screenY = height / 2 + (target.y - state.player.y);
 
         ctx.save();
         ctx.beginPath();
@@ -773,8 +780,8 @@
 
         const shipX = width / 2;
         const shipY = height / 2;
-        const targetX = width / 2 + (target.x - state.x);
-        const targetY = height / 2 + (target.y - state.y);
+        const targetX = width / 2 + (target.x - state.player.x);
+        const targetY = height / 2 + (target.y - state.player.y);
 
         const dx = targetX - shipX;
         const dy = targetY - shipY;
@@ -810,8 +817,8 @@
         ctx.save();
 
         projectiles.forEach((p) => {
-          const screenX = width / 2 + (p.x - state.x);
-          const screenY = height / 2 + (p.y - state.y);
+          const screenX = width / 2 + (p.x - state.player.x);
+          const screenY = height / 2 + (p.y - state.player.y);
 
           const aspect = p.aspect || "bullet";
 
@@ -871,7 +878,7 @@
         ctx.translate(width / 2, height / 2);
 
         // sprite loaded need rotation 90° clockwise
-        ctx.rotate(state.angle + Math.PI / 2);
+        ctx.rotate(state.player.angle + Math.PI / 2);
 
         // --- ENGINE FLARE (when accelerating) ---
         // Engine flare anchor in SHIP-LOCAL coords (after rotation). Tweak these.
@@ -975,12 +982,12 @@
           minimapCtx.fill();
         }
 
-        const sx = (state.x - SystemInfo.size / 2) * minimapScale;
-        const sy = (state.y - SystemInfo.size / 2) * minimapScale;
+        const sx = (state.player.x - SystemInfo.size / 2) * minimapScale;
+        const sy = (state.player.y - SystemInfo.size / 2) * minimapScale;
 
         minimapCtx.save();
         minimapCtx.translate(sx, sy);
-        minimapCtx.rotate(state.angle);
+        minimapCtx.rotate(state.player.angle);
 
         minimapCtx.beginPath();
         minimapCtx.moveTo(6, 0);
@@ -1034,7 +1041,7 @@
         loadState();
         spawnTarget();
         updateLockButtonVisual();
-        applyShip(state.shipName || shipNames[0]);
+        applyShip(state.player.shipName || shipNames[0]);
         // Station manager: gli passo info di sistema e un getter dello state giocatore
         StationManager.init({
           systemInfo: SystemInfo,
