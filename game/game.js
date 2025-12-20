@@ -268,7 +268,7 @@
         const weapon = weapons[state.weaponIndex];
         const last = state.shipStats.weaponLastFire?.[weaponIndex] || 0;
         const firerateMult = state.shipStats?.firerateMult || 1.0;
-        
+
         const hasFired = fireWeaponManager(state.shipStats, weapon, target, projectiles, performance.now());
         if(hasFired){
 
@@ -982,7 +982,7 @@
       }
 
       function init() {
-        console.log("v0.2");
+        console.log("v0.3");
         resize();
         initStarfield();
         loadState();
