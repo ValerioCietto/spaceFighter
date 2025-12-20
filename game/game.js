@@ -57,7 +57,7 @@
       const STATION_RADIUS = 80;
       const STATION_ROT_SPEED = Math.PI / 32; // rad/sec
 
-      const STATION_ASSET = "/spaceFighter/assets/space_station.png";
+      const STATION_ASSET = window.BASE_PATH + "/assets/space_station.png";
       const stationImg = new Image();
       stationImg.src = STATION_ASSET;
 
@@ -159,7 +159,7 @@
         saveState();
       });
 
-      const SHIP_ASSET_BASE = "/spaceFighter/assets/";
+      const SHIP_ASSET_BASE = window.BASE_PATH + "/assets/";
 
       const shipNames = [
         "human_artemis",

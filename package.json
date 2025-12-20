@@ -1,0 +1,30 @@
+{
+  "name": "spacefighter",
+  "version": "1.0.0",
+  "description": "Space exploration game",
+  "keywords": [
+    "space",
+    "exploration",
+    "game",
+    "rpg"
+  ],
+  "homepage": "https://github.com/ValerioCietto/spaceFighter#readme",
+  "bugs": {
+    "url": "https://github.com/ValerioCietto/spaceFighter/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ValerioCietto/spaceFighter.git"
+  },
+  "license": "ISC",
+  "author": "Valerio Cietto",
+  "type": "commonjs",
+  "main": "main.js",
+  "directories": {
+    "doc": "docs",
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "test.js"
+  }
+}
