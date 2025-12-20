@@ -31,16 +31,12 @@
         angle: -Math.PI / 2,
         money: 0,
         shipName: "human_starfighter",
-        systemName: "Solar",
-        shipStats: {},
-        weaponIndex: 0,
-        weaponLastFire: [0, 0, 0, 0]
+        systemName: "Solar"
       };
 
       function applyShip(shipName) {
         state.shipName = shipName;                 // e.g. "human_zeus"
         state.shipStats = getStats(state.shipName);
-        state.weaponIndex = 0;
       
         // ensure the sprite matches the stats image
         const imgFile = state.shipStats?.image;    // e.g. "human_zeus.png"
@@ -130,6 +126,8 @@
         WeaponShotgun,
         WeaponHomingMissiles
       ];
+      let currentWeaponIndex = 0;
+      const weaponLastFire = [0, 0, 0, 0];
 
       const canvas = document.getElementById("game-canvas");
       const ctx = canvas.getContext("2d");
@@ -194,6 +192,7 @@
       // sprite cache
       const shipImages = new Map();
       let shipSkinIndex = 0;
+      let shipImgReady = false;
       
       function loadShipImage(filename) {
         shipImgReady = false;
@@ -230,6 +229,8 @@
       let minimapSize = 0;
       let minimapScale = 0;
 
+
+
       const input = {
         left: false,
         right: false,
@@ -264,20 +265,76 @@
       }
 
       function attemptFireWeapon() {
-        console.log("attemptFireWeapon");
-        const weapon = weapons[state.weaponIndex];
-        const last = state.shipStats.weaponLastFire?.[state.weaponIndex] || 0;
-        const firerateMult = state.shipStats?.firerateMult || 1.0;
-
-        const hasFired = fireWeaponManager(state.shipStats, weapon, target, projectiles, performance.now());
-        if(hasFired){
-
+        const weapon = weapons[currentWeaponIndex];
+        const now = performance.now();
+        const last = weaponLastFire[currentWeaponIndex] || 0;
+        const firerateMult = state.shipStats.firerateMult || 1.0;
+        if (now - last < ( weapon.delay_ms * firerateMult)) {
+          return;
         }
-        console.log(hasFired);
+        weaponLastFire[currentWeaponIndex] = now;
+
+        let baseAngle = state.angle;
+        if (weapon.auto_aim && target) {
+          const toTargetAngle = Math.atan2(target.y - state.y, target.x - state.x);
+          let diff = normalizeAngleDiff(toTargetAngle - state.angle);
+          if (Math.abs(diff) <= weapon.auto_aim) {
+            baseAngle = toTargetAngle;
+          }
+        }
+
+        const spreadRad = (weapon.spread || 0) * Math.PI / 180;
+        const muzzleDistance = 18;
+        const shipSpeedX = state.vx;
+        const shipSpeedY = state.vy;
+
+        const count = weapon.projectiles || 1;
+
+        for (let i = 0; i < count; i++) {
+          const offset = spreadRad > 0
+            ? (-spreadRad + Math.random() * (2 * spreadRad))
+            : 0;
+
+          const angle = baseAngle + offset;
+          const dirX = Math.cos(angle);
+          const dirY = Math.sin(angle);
+
+          let vx, vy, speed;
+
+          if (weapon.homing) {
+            speed = weapon.base_speed;
+            vx = dirX * speed;
+            vy = dirY * speed;
+          } else {
+            speed = weapon.base_speed;
+            vx = shipSpeedX + dirX * weapon.base_speed;
+            vy = shipSpeedY + dirY * weapon.base_speed;
+          }
+
+          const startX = state.x + dirX * muzzleDistance;
+          const startY = state.y + dirY * muzzleDistance;
+
+          projectiles.push({
+            x: startX,
+            y: startY,
+            vx,
+            vy,
+            age: 0,
+            life: weapon.life_span,
+            damage: weapon.damage,
+            aspect: weapon.aspect,
+            angle,
+            homing: !!weapon.homing,
+            speed: speed,
+            accel: weapon.acceleration || 0,
+            maxSpeed: weapon.speed || weapon.base_speed || 0,
+            turnSpeed: weapon.turn_speed_rad || 0
+          });
+        }
       }
 
       function cycleWeapon() {
-        state.weaponIndex = (state.weaponIndex + 1) % weapons.length;
+        currentWeaponIndex = (currentWeaponIndex + 1) % weapons.length;
       }
 
       function updateLockButtonVisual() {
@@ -396,7 +453,7 @@
           const saved = JSON.parse(raw);
 
           // numeric state
-          ["x", "y", "vx", "vy", "angle", "money", "weaponIndex"].forEach((k) => {
+          ["x", "y", "vx", "vy", "angle", "money"].forEach((k) => {
             if (typeof saved[k] === "number") state[k] = saved[k];
           });
 
@@ -409,13 +466,6 @@
           // galaxySystemName (string)
           if (typeof saved.galaxySystemName === "string" && saved.galaxySystemName.trim()) {
             state.galaxySystemName = saved.galaxySystemName.trim();
-          }
-
-          // import weaponLastFired array
-          if (typeof saved.weaponLastFired === "array"){
-            state.weaponLastFired = saved.weaponLastFired;
-          } else{
-            state.weaponLastFired = [0,0,0,0];
           }
         } catch (e) {
           console.warn("Impossibile caricare lo stato:", e);
@@ -982,7 +1032,6 @@
       }
 
       function init() {
-        console.log("v0.3");
         resize();
         initStarfield();
         loadState();
@@ -1003,7 +1052,7 @@
             updateLockButtonVisual();
           },
           cycleWeapon,
-          (idx) => { state.weaponIndex = idx; },
+          (idx) => { currentWeaponIndex = idx; },
           touchButtons,
           startDocking
         );
