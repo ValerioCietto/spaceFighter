@@ -4,17 +4,16 @@ function normalizeAngleDiff(diff) {
   return diff - Math.PI;
 }
 
-function fireWeaponManager(entity, weapons, target, projectiles, now = performance.now()) {
+function fireWeaponManager(entity, weapon, target, projectiles, now = performance.now()) {
   console.log(entity);
   console.log(weapons);
   console.log(target);
   console.log(projectiles);
   console.log(now);
-  const weapon = weapons[entity.weaponIndex];
   if (!weapon){
     console.log("no fire because no weapon.");
     return false;
-  } 
+  }
 
   const last = entity.weaponLastFire?.[entity.weaponIndex] || 0;
   const firerateMult = entity.shipStats?.firerateMult || 1.0;

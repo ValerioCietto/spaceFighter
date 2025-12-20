@@ -265,7 +265,14 @@
 
       function attemptFireWeapon() {
         console.log("attemptFireWeapon");
-        const hasFired = fireWeaponManager(state.shipStats, weapons, target, projectiles, performance.now());
+        const weapon = weapons[state.weaponIndex];
+        const last = state.shipStats.weaponLastFire?.[weaponIndex] || 0;
+        const firerateMult = state.shipStats?.firerateMult || 1.0;
+        
+        const hasFired = fireWeaponManager(state.shipStats, weapon, target, projectiles, performance.now());
+        if(hasFired){
+
+        }
         console.log(hasFired);
       }
 
