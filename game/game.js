@@ -34,10 +34,10 @@
           shipName: "human_starfighter",
           systemName: "Solar"
         },
-        enemies:{},
-        neutralPassive:{},
-        allies:{},
-        target:{}
+        enemies:[],
+        neutralPassive:[],
+        allies:[],
+        targets:[],
       };
 
       function applyShip(shipName) {
@@ -71,67 +71,7 @@
       const FRICTION = 70;
       const MONEY_PER_TARGET = 10;
 
-      // Weapons definitions
-      const WeaponSpaceBullet = {
-        name: "Space Bullet",
-        damage: 1,
-        base_speed: 250,
-        life_span: 3.0,
-        spread: 0.15,
-        projectiles: 1,
-        aspect: "round_bullet",
-        delay_ms: 50
-      };
-
-      const WeaponSniper = {
-        name: "Sniper",
-        damage: 5,
-        base_speed: 1000,
-        life_span: 5.0,
-        spread: 0.0,
-        projectiles: 1,
-        aspect: "line",
-        auto_aim: 0.5,
-        delay_ms: 300
-      };
-
-      const WeaponShotgun = {
-        name: "Shotgun",
-        damage: 2,
-        base_speed: 350,
-        acceleration: -75,
-        life_span: 2.0,
-        spread: 5.0,
-        projectiles: 5,
-        aspect: "bullet",
-        delay_ms: 200
-      };
-
-      const WeaponHomingMissiles = {
-        name: "Homing missiles",
-        damage: 5,
-        base_speed: 100,
-        acceleration: 10,
-        speed: 200,
-        turning_speed_deg: 120,
-        life_span: 20.0,
-        spread: 3.0,
-        projectiles: 1,
-        aspect: "missile",
-        delay_ms: 1000,
-        homing: true
-      };
-      WeaponHomingMissiles.turn_speed_rad =
-        WeaponHomingMissiles.turning_speed_deg * Math.PI / 180;
-
-      const weapons = [
-        WeaponSpaceBullet,
-        WeaponSniper,
-        WeaponShotgun,
-        WeaponHomingMissiles
-      ];
-      let currentWeaponIndex = 0;
-      const weaponLastFire = [0, 0, 0, 0];
+     
 
       const canvas = document.getElementById("game-canvas");
       const ctx = canvas.getContext("2d");
