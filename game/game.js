@@ -24,6 +24,7 @@
       };
 
       const state = {
+        
         x: SystemInfo.size / 2,
         y: SystemInfo.size / 2,
         vx: 0,
@@ -61,10 +62,7 @@
       const stationImg = new Image();
       stationImg.src = STATION_ASSET;
 
-
       const FRICTION = 70;
-
-      const STORAGE_KEY = "spaceFighterSaveData";
       const MONEY_PER_TARGET = 10;
 
       // Weapons definitions
@@ -159,7 +157,6 @@
         saveState();
       });
 
-      const SHIP_ASSET_BASE = window.BASE_PATH + "/assets/";
 
       const shipNames = [
         "human_artemis",
