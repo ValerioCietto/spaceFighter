@@ -6,7 +6,6 @@ function normalizeAngleDiff(diff) {
 
 function fireWeaponManager(entity, weapon, target, projectiles, now = performance.now()) {
   console.log(entity);
-  console.log(weapons);
   console.log(target);
   console.log(projectiles);
   console.log(now);
