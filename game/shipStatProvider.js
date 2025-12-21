@@ -34,11 +34,15 @@
 // spike razor
 // spike razor upgraded
 // * capital hivemind
+const ENEMY_TYPES = ["jared_zuque", "jared_three_eyes", "jared_three_eyes_spike_hybrid"];
 
 
 const SHIPS = {
   // Humans
   human_artemis: {
+    cost: 50000,
+    shield: 450,
+    hull: 250,
     speed: 240,
     acceleration: 80,
     turningSpeedRad: Math.PI * 0.25,
@@ -55,6 +59,9 @@ const SHIPS = {
   },
 
   human_hermes: {
+    cost: 30000,
+    shield: 150,
+    hull: 125,
     speed: 135,
     acceleration: 125,
     turningSpeedRad: Math.PI * 1.35,
@@ -71,6 +78,9 @@ const SHIPS = {
   },
 
   human_gunship: {
+    cost: 40000,
+    shield: 300,
+    hull: 250,
     speed: 105,
     acceleration: 90,
     turningSpeedRad: Math.PI * 0.85,
@@ -87,6 +97,9 @@ const SHIPS = {
   },
 
   human_icarus: {
+    cost: 25000,
+    shield: 150,
+    hull: 120,
     speed: 200,
     acceleration: 140,
     turningSpeedRad: Math.PI * 1.55,
@@ -102,6 +115,9 @@ const SHIPS = {
   },
 
   human_mercury: {
+    cost: 15000,
+    shield: 75,
+    hull: 70,
     speed: 275,
     acceleration: 195,
     turningSpeedRad: Math.PI * 1.85,
@@ -117,6 +133,9 @@ const SHIPS = {
   },
 
   human_perseus: {
+    cost: 10000,
+    shield: 100,
+    hull: 50,
     speed: 150,
     acceleration: 180,
     turningSpeedRad: Math.PI * 1.25,
@@ -131,6 +150,9 @@ const SHIPS = {
   },
 
   human_demeter: {
+    cost: 15000,
+    shield: 300,
+    hull: 240,
     speed: 95,
     acceleration: 150,
     turningSpeedRad: Math.PI * 0.95,
@@ -146,6 +168,9 @@ const SHIPS = {
   },
 
   human_zeus: {
+    cost: 100000,
+    shield: 500,
+    hull: 300,
     speed: 120,
     acceleration: 105,
     turningSpeedRad: Math.PI * 0.75,
@@ -163,6 +188,9 @@ const SHIPS = {
 
   // Jared
   jared_zuque: {
+    cost: 9400,
+    shield: 70,
+    hull: 80,
     speed: 145,
     acceleration: 115,
     turningSpeedRad: Math.PI * 1.15,
@@ -178,6 +206,9 @@ const SHIPS = {
   },
 
   jared_three_eyes: {
+    cost: 44000,
+    shield: 160, 
+    hull: 140,
     speed: 155,
     acceleration: 130,
     turningSpeedRad: Math.PI * 1.35,
@@ -193,6 +224,9 @@ const SHIPS = {
   },
 
   jared_three_eyes_spike_hybrid: {
+    cost: 49000,
+    shield: 200,
+    hull: 220,
     speed: 165,
     acceleration: 145,
     turningSpeedRad: Math.PI * 1.45,
@@ -266,6 +300,9 @@ const SHIPS = {
 };
 
 const DEFAULT_STATS = {
+  cost: 10000,
+  shield: 100,
+  hull: 50,
   speed: 150,
   acceleration: 120,
   turningSpeedRad: Math.PI * 1.25,

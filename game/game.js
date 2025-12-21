@@ -20,8 +20,16 @@
            station_radius: 80,
            station_rot_speed: Math.PI / 32
           }
-        ]
+        ],
+        max_enemy_number:2,
+        spawn_rate:4,
       };
+      const ENEMY_SPAWN_R_MIN = 1500;
+      const ENEMY_SPAWN_R_MAX = 2500;
+
+      const ENEMY_SHIELD_REGEN_PER_SEC = 1; // 1 hp/s
+      const ENEMY_DESPAWN_R = 4000; // optional safety: if too far from player
+
 
       const state = {
         player: {
@@ -205,6 +213,59 @@
           radius,
           hp: targetHp
         };
+      }
+
+      function spawnEnemy() {
+        const centerX = SystemInfo.size / 2;
+        const centerY = SystemInfo.size / 2;
+
+        const a = Math.random() * Math.PI * 2;
+        const r = ENEMY_SPAWN_R_MIN + Math.random() * (ENEMY_SPAWN_R_MAX - ENEMY_SPAWN_R_MIN);
+
+        const shipName = ENEMY_TYPES[(Math.random() * ENEMY_TYPES.length) | 0];
+        const shipStats = getStats(shipName);
+
+        // basic hp model (prefer stats if you have them)
+        const maxShield = shipStats?.shieldHp ?? 20;
+        const maxHull = shipStats?.hullHp ?? 20;
+
+        const weapon = pickEnemyWeapon();
+
+        const enemy = {
+          id: enemyIdSeq++,
+          shipName,
+          shipStats,
+          img: shipStats.image,
+
+          x: centerX + Math.cos(a) * r,
+          y: centerY + Math.sin(a) * r,
+          vx: 0,
+          vy: 0,
+          angle: 0,
+
+          weapon,
+          lastFire: 0,
+
+          shield: maxShield,
+          maxShield,
+          hull: maxHull,
+          maxHull,
+        };
+
+        state.enemies.push(enemy);
+        console.log(enemies);
+      }
+
+      function updateEnemySpawning(dt) {
+        const maxN = SystemInfo.max_enemy_number || 0;
+        const rate = SystemInfo.spawn_rate || 0;
+        if (maxN <= 0 || rate <= 0) return;
+
+        enemySpawnAcc += dt;
+        if (enemySpawnAcc < rate) return;
+        enemySpawnAcc = 0;
+
+        if (state.enemies.length < maxN) spawnEnemy();
       }
 
       function attemptFireWeapon() {
@@ -425,6 +486,7 @@
           console.warn("Impossibile salvare lo stato:", e);
         }
       }
+
 
       function update(dt) {
         stationAngle += STATION_ROT_SPEED * dt;
