@@ -253,9 +253,12 @@
         };
 
         state.enemies.push(enemy);
-        console.log(enemies);
+        console.log(state.enemies);
       }
 
+      let enemySpawnAcc = 0;
+      let enemyIdSeq = 0;
+      state.enemies = [];
       function updateEnemySpawning(dt) {
         const maxN = SystemInfo.max_enemy_number || 0;
         const rate = SystemInfo.spawn_rate || 0;
@@ -265,7 +268,12 @@
         if (enemySpawnAcc < rate) return;
         enemySpawnAcc = 0;
 
-        if (state.enemies.length < maxN) spawnEnemy();
+        if (state?.enemies ){
+          if(state?.enemies.length < maxN){
+            spawnEnemy();
+          }
+        }
+        
       }
 
       function attemptFireWeapon() {
@@ -486,6 +494,148 @@
           console.warn("Impossibile salvare lo stato:", e);
         }
       }
+
+      function moveEnemies(dt){
+        if(state.enemies.length > 0){
+          // move every enemy toward the player if they haven't reached the engagement range
+          
+          // for every enemy
+          state.enemies.forEach(enemy => {
+            const stats = enemy.shipStats || getStats(enemy.shipName);
+
+            const turnSpeed = stats?.turningSpeedRad ?? (Math.PI / 2); // rad/sec fallback
+            const maxSpeed = stats?.speed ?? 220;
+            const accel = stats?.acceleration ?? 120;
+
+            const engageRange = enemy.weapon?.engage_range ?? 500;
+
+            const dx = state.player.x - enemy.x;
+            const dy = state.player.y - enemy.y;
+            const dist = Math.hypot(dx, dy) || 1;
+
+            // 1) turn toward player (bounded by turning speed)
+            const desiredAngle = Math.atan2(dy, dx);
+            let diff = normalizeAngleDiff(desiredAngle - enemy.angle);
+            const maxTurn = turnSpeed * dt;
+            if (diff > maxTurn) diff = maxTurn;
+            if (diff < -maxTurn) diff = -maxTurn;
+            enemy.angle += diff;
+
+            // 2) compute target speed: full chase outside engage range, slower inside
+            const targetSpeed = dist > engageRange ? maxSpeed : maxSpeed * 0.5;
+
+            // 3) accelerate/decelerate enemy velocity toward targetSpeed along facing direction
+            const dirX = Math.cos(enemy.angle);
+            const dirY = Math.sin(enemy.angle);
+
+            const curSpeed = Math.hypot(enemy.vx || 0, enemy.vy || 0);
+            let newSpeed = curSpeed;
+
+            if (curSpeed < targetSpeed) {
+              newSpeed = Math.min(targetSpeed, curSpeed + accel * dt);
+            } else if (curSpeed > targetSpeed) {
+              newSpeed = Math.max(targetSpeed, curSpeed - accel * dt);
+            }
+
+            enemy.vx = dirX * newSpeed;
+            enemy.vy = dirY * newSpeed;
+
+            // 4) apply movement
+            enemy.x += enemy.vx * dt;
+            enemy.y += enemy.vy * dt;
+
+            // (optional) clamp to world bounds like player
+            enemy.x = Math.max(0, Math.min(SystemInfo.size, enemy.x));
+            enemy.y = Math.max(0, Math.min(SystemInfo.size, enemy.y));
+          });
+        }
+      }
+
+      function drawEnemies() {
+  if (!state.enemies || state.enemies.length === 0) return;
+
+      state.enemies.forEach((enemy) => {
+        const stats = enemy.shipStats;
+        const imgFile = stats?.image;
+        if (!imgFile) return;
+
+        if (!enemy._imgFile || enemy._imgFile !== imgFile || !enemy._img) {
+          enemy._imgFile = imgFile;
+          enemy._img = loadShipImage(imgFile);
+        }
+
+        const img = enemy._img;
+        if (!img || !img.complete || img.naturalWidth <= 0) return;
+
+        // world -> screen
+        const screenX = width / 2 + (enemy.x - state.player.x);
+        const screenY = height / 2 + (enemy.y - state.player.y);
+
+        // --- draw ship sprite ---
+        ctx.save();
+        ctx.translate(screenX, screenY);
+        ctx.rotate((enemy.angle || 0) + Math.PI / 2);
+
+        const targetW = 52;
+        const scale = targetW / img.naturalWidth;
+        const w = img.naturalWidth * scale;
+        const h = img.naturalHeight * scale;
+
+        ctx.drawImage(img, -w / 2, -h / 2, w, h);
+        ctx.restore();
+
+        // --- indicator circles (hull + shield), target-like arcs ---
+        const hullMax = enemy.maxHull ?? enemy.hull ?? 1;
+        const shieldMax = enemy.maxShield ?? enemy.shield ?? 1;
+
+        const hullRatio = Math.max(0, Math.min(1, (enemy.hull ?? 0) / hullMax));
+        const shieldRatio = Math.max(0, Math.min(1, (enemy.shield ?? 0) / shieldMax));
+
+        // ring radii (tweak to taste)
+        const hullR = 22;
+        const shieldR = 28;
+
+        // base full circles (subtle)
+        ctx.save();
+        ctx.lineWidth = 3;
+
+        // HULL (grey)
+        ctx.beginPath();
+        ctx.strokeStyle = "rgba(180,180,180,0.25)";
+        ctx.arc(screenX, screenY, hullR, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.strokeStyle = "rgba(180,180,180,0.95)";
+        ctx.arc(
+          screenX,
+          screenY,
+          hullR,
+          -Math.PI / 2,
+          -Math.PI / 2 + hullRatio * Math.PI * 2
+        );
+        ctx.stroke();
+
+        // SHIELD (light blue)
+        ctx.beginPath();
+        ctx.strokeStyle = "rgba(120,200,255,0.20)";
+        ctx.arc(screenX, screenY, shieldR, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.strokeStyle = "rgba(120,200,255,0.95)";
+        ctx.arc(
+          screenX,
+          screenY,
+          shieldR,
+          -Math.PI / 2,
+          -Math.PI / 2 + shieldRatio * Math.PI * 2
+        );
+        ctx.stroke();
+
+        ctx.restore();
+      });
+    }
 
 
       function update(dt) {
@@ -979,9 +1129,21 @@
           const tx = (target.x - SystemInfo.size / 2) * minimapScale;
           const ty = (target.y - SystemInfo.size / 2) * minimapScale;
           minimapCtx.beginPath();
-          minimapCtx.arc(tx, ty, 2.5, 0, Math.PI * 2);
+          minimapCtx.arc(tx, ty, 1.5, 0, Math.PI * 2);
           minimapCtx.fillStyle = "#ff5252";
           minimapCtx.fill();
+        }
+
+        if(state.enemies && state.enemies.length > 0){
+          // draw the enemies in minimap
+          state.enemies.forEach(enemy => {
+            const ex = (enemy.x - SystemInfo.size / 2) * minimapScale;
+            const ey = (enemy.y - SystemInfo.size / 2) * minimapScale;
+            minimapCtx.beginPath();
+            minimapCtx.arc(ex, ey, 2.5, 0, Math.PI * 2);
+            minimapCtx.fillStyle = "#ff5252";
+            minimapCtx.fill();
+          });
         }
 
         const sx = (state.player.x - SystemInfo.size / 2) * minimapScale;
@@ -1010,12 +1172,15 @@
         lastTime = now;
 
         update(dt);
+        updateEnemySpawning(dt);
+        moveEnemies(dt);
         drawStarfield();
         drawMainStar();
         drawStation();
         drawTarget();
         drawTargetLine();
         drawProjectiles();
+        drawEnemies();
         drawShip();
         drawMinimap();
 
