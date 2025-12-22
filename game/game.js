@@ -226,8 +226,8 @@
         const shipStats = getStats(shipName);
 
         // basic hp model (prefer stats if you have them)
-        const maxShield = shipStats?.shieldHp ?? 20;
-        const maxHull = shipStats?.hullHp ?? 20;
+        const maxShield = shipStats?.shield ?? 20;
+        const maxHull = shipStats?.hull ?? 20;
 
         const weapon = pickEnemyWeapon();
 
@@ -637,6 +637,33 @@
       });
     }
 
+      let enemyShieldRegenAcc = 0;
+
+      // call this inside update(dt)
+      function regenEnemyShields(dt) {
+        enemyShieldRegenAcc += dt;
+
+        // run at 1Hz, but frame-rate independent
+        while (enemyShieldRegenAcc >= 1) {
+          enemyShieldRegenAcc -= 1;
+
+          if (!state.enemies || state.enemies.length === 0) continue;
+
+          state.enemies.forEach((enemy) => {
+            if (!enemy || !enemy.shipStats) return;
+
+            const regen = Math.max(1, Number(enemy.shipStats.shieldRegen) || 0);
+            const maxShield =
+              Number(enemy.maxShield ?? enemy.shipStats.shieldHp ?? enemy.shield ?? 0);
+
+            if (!Number.isFinite(maxShield) || maxShield <= 0) return;
+
+            enemy.maxShield = maxShield;
+            enemy.shield = Math.min(maxShield, (Number(enemy.shield) || 0) + regen);
+          });
+        }
+      }
+
 
       function update(dt) {
         stationAngle += STATION_ROT_SPEED * dt;
@@ -788,6 +815,40 @@
             }
           }
 
+          if(!remove && state.enemies && state.enemies.length > 0){
+            state.enemies.forEach(enemy => {
+              const dx = p.x - enemy.x;
+              const dy = p.y - enemy.y;
+              const dist = Math.hypot(dx, dy);
+              if (dist <= enemy.shipStats.shieldDiameterPx){
+                const damage = p.damage || 1;
+                const damageMult = state.player.shipStats.damageMult || 1;
+                let totalDamage = damage * damageMult;
+
+                // consume projectile on hit
+                remove = true;
+
+                // 1) shield absorbs first
+                if (enemy.shield > 0 && totalDamage > 0) {
+                  const absorbed = Math.min(enemy.shield, totalDamage);
+                  enemy.shield -= absorbed;
+                  totalDamage -= absorbed;
+                }
+
+                // 2) remaining goes to hull
+                if (enemy.hull > 0 && totalDamage > 0) {
+                  enemy.hull -= totalDamage;
+                  totalDamage = 0;
+                }
+
+                // 3) destroy if hull depleted
+                if (enemy.hull <= 0) {
+                  destroyEnemyById(enemy.id);
+                }
+              }
+            });
+          }
+
           if (remove) {
             projectiles.splice(i, 1);
           }
@@ -795,6 +856,20 @@
 
         speedValueEl.textContent = newSpeed.toFixed(1);
         posValueEl.textContent = `${state.player.x.toFixed(0)}, ${state.player.y.toFixed(0)}`;
+      }
+
+      function destroyEnemyById(id) {
+        const idx = state.enemies.findIndex(e => e && e.id === id);
+        if (idx < 0) return false;
+
+        const enemy = state.enemies[idx];
+        const cost = Number(enemy?.shipStats?.cost) || 0;
+
+        state.player.money += (cost / 1000);
+        moneyValueEl.textContent = `${state.player.money.toFixed(0)}§`;
+
+        state.enemies.splice(idx, 1);
+        return true;
       }
 
       function drawStarfield() {
@@ -1174,6 +1249,7 @@
         update(dt);
         updateEnemySpawning(dt);
         moveEnemies(dt);
+        regenEnemyShields(dt);
         drawStarfield();
         drawMainStar();
         drawStation();
