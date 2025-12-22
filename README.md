@@ -29,4 +29,6 @@ Avionics systems that allow the spaceship to do standard manouvers given an hotk
 Built in software allows for standard operations, but combat pilots may like to have the weapons to change toward the best one considering range and damage, or a missile with appropriate speed to catch-up with target.
 Merchant pilots may like automations to establish trade routes, with auto docking, auto buy cheapest stocks and then take off to a target system.
 
+How to start 
+live-server . --port=8080
 
