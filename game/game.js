@@ -193,6 +193,7 @@
       let stationAngle = 0;
 
       const projectiles = [];
+      const enemyProjectiles = [];
       let target = null;
 
       let dockingActive = false;
@@ -274,6 +275,85 @@
           }
         }
         
+      }
+
+      function updateMakeEnemiesToFire(dt) {
+        const now = performance.now();
+        if (!state.enemies || state.enemies.length === 0) return;
+
+        state.enemies.forEach((enemy) => {
+
+          if (!enemy || !enemy.weapon || !enemy.shipStats) return;
+
+          const firerateMult = Number(enemy.shipStats.firerateMult) || 1.0;
+          const minDelayMs = Math.max(1, Number(enemy.weapon.delay_ms) || 0) * firerateMult;
+
+          const last = Number(enemy.lastFire) || 0;
+          if (now - last < minDelayMs) return;
+
+          // only mark as fired if we actually shoot (and are in range)
+          if (enemyFireWeapon(enemy)) {
+            enemy.lastFire = now;
+          }
+        });
+      }
+
+      function enemyFireWeapon(enemy) {
+        const w = enemy.weapon;
+        if (!w) return false;
+
+        // range check
+        const dx = state.player.x - enemy.x;
+        const dy = state.player.y - enemy.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist > (w.engage_range || 0)) return false;
+
+        // aim at player
+        const angle = Math.atan2(dy, dx);
+
+        const spreadRad = (w.spread || 0) * Math.PI / 180;
+        const muzzleDistance = 18;
+
+        const count = w.projectiles || 1;
+
+        for (let i = 0; i < count; i++) {
+          const offset = spreadRad > 0
+            ? (-spreadRad + Math.random() * (2 * spreadRad))
+            : 0;
+
+          const a = angle + offset;
+          const dirX = Math.cos(a);
+          const dirY = Math.sin(a);
+
+          const speed = Number(w.base_speed) || 0;
+
+          const startX = enemy.x + dirX * muzzleDistance;
+          const startY = enemy.y + dirY * muzzleDistance;
+
+          enemyProjectiles.push({
+            owner: "enemy",
+            enemyId: enemy.id,
+
+            x: startX,
+            y: startY,
+            vx: dirX * speed,
+            vy: dirY * speed,
+
+            age: 0,
+            life: w.life_span,
+            damage: w.damage,
+            aspect: w.aspect || "line",
+            angle: a,
+
+            homing: !!w.homing,
+            speed,
+            accel: w.acceleration || 0,
+            maxSpeed: w.speed || w.base_speed || 0,
+            turnSpeed: w.turn_speed_rad || 0
+          });
+        }
+
+        return true;
       }
 
       function attemptFireWeapon() {
@@ -665,198 +745,307 @@
       }
 
 
-      function update(dt) {
-        stationAngle += STATION_ROT_SPEED * dt;
+    function update(dt) {
+      stationAngle += STATION_ROT_SPEED * dt;
 
-        // Movimento nave: manuale o docking autopilot
-        if (dockingActive && !stationDialogOpen) {
-          // AUTOPILOT verso stazione
-          const dx = STATION_X - state.player.x;
-          const dy = STATION_Y - state.player.y;
-          const dist = Math.hypot(dx, dy);
+      playerMoveUpdate(dt);
+      playerDockingUpdate(dt);
+      updatePlayerProjectiles(dt);
+      updateEnemyProjectiles(dt);
 
-          const desiredAngle = Math.atan2(dy, dx);
-          let diff = normalizeAngleDiff(desiredAngle - state.player.angle);
-          const maxTurn = state.player.shipStats.turningSpeedRad * dt;
-          if (diff > maxTurn) diff = maxTurn;
-          if (diff < -maxTurn) diff = -maxTurn;
-          state.player.angle += diff;
+      const newSpeed = Math.hypot(state.player.vx, state.player.vy);
+      speedValueEl.textContent = newSpeed.toFixed(1);
+      posValueEl.textContent = `${state.player.x.toFixed(0)}, ${state.player.y.toFixed(0)}`;
+    }
 
-          let targetSpeed;
-          if (dist > 200) {
-            targetSpeed = state.player.shipStats.speed * 0.7;
-          } else if (dist > 50) {
-            targetSpeed = state.player.shipStats.speed * 0.3;
-          } else {
-            targetSpeed = 30; // near 50px, slowdown
-          }
-
-          const dirX = Math.cos(state.player.angle);
-          const dirY = Math.sin(state.player.angle);
-          state.player.vx = dirX * targetSpeed;
-          state.player.vy = dirY * targetSpeed;
-        } else {
-          // CONTROLLO MANUALE
-          if (input.left) {
-            state.player.angle -= state.player.shipStats.turningSpeedRad * dt;
-          }
-          if (input.right) {
-            state.player.angle += state.player.shipStats.turningSpeedRad * dt;
-          }
-
-          let speed = Math.hypot(state.player.vx, state.player.vy);
-
-          if (input.thrust) {
-            const ax = Math.cos(state.player.angle) * state.player.shipStats.acceleration;
-            const ay = Math.sin(state.player.angle) * state.player.shipStats.acceleration;
-            state.player.vx += ax * dt;
-            state.player.vy += ay * dt;
-          }
-
-          if (!input.thrust) {
-            if (speed > 0) {
-              const decel = FRICTION * dt;
-              speed = Math.max(0, speed - decel);
-              if (speed === 0) {
-                state.player.vx = 0;
-                state.player.vy = 0;
-              } else {
-                const factor = speed / Math.hypot(state.player.vx, state.player.vy);
-                state.player.vx *= factor;
-                state.player.vy *= factor;
-              }
-            }
-          }
-
-          if (input.brake && speed > 0) {
-            const decel = state.player.shipStats.acceleration * dt;
-            speed = Math.max(0, speed - decel);
-            if (speed === 0) {
-              state.player.vx = 0;
-              state.player.vy = 0;
-            } else {
-              const factor = speed / Math.hypot(state.player.vx, state.player.vy);
-              state.player.vx *= factor;
-              state.player.vy *= factor;
-            }
-          }
-        }
-
-        const newSpeed = Math.hypot(state.player.vx, state.player.vy);
-        if (newSpeed > state.player.shipStats.speed) {
-          const factor = state.player.shipStats.speed / newSpeed;
-          state.player.vx *= factor;
-          state.player.vy *= factor;
-        }
-
-        state.player.x += state.player.vx * dt;
-        state.player.y += state.player.vy * dt;
-
-        state.player.x = Math.max(0, Math.min(SystemInfo.size, state.player.x));
-        state.player.y = Math.max(0, Math.min(SystemInfo.size, state.player.y));
-
-        // Completamento docking: quando centrata
-        if (dockingActive && !stationDialogOpen) {
-          const dx2 = STATION_X - state.player.x;
-          const dy2 = STATION_Y - state.player.y;
-          const dist2 = Math.hypot(dx2, dy2);
-          if (dist2 < 5) {
-            state.player.x = STATION_X;
-            state.player.y = STATION_Y;
-            state.player.vx = 0;
-            state.player.vy = 0;
-            dockingActive = false;
-            openStationDialog();
-          }
-        }
-
-        // Update projectiles
-        for (let i = projectiles.length - 1; i >= 0; i--) {
-          const p = projectiles[i];
-          p.age += dt;
-
-          if (p.homing && target) {
-            const desiredAngle = Math.atan2(target.y - p.y, target.x - p.x);
-            let diff = normalizeAngleDiff(desiredAngle - p.angle);
-            const maxTurn = p.turnSpeed * dt;
-            if (diff > maxTurn) diff = maxTurn;
-            if (diff < -maxTurn) diff = -maxTurn;
-            p.angle += diff;
-
-            p.speed = Math.min(p.maxSpeed || p.speed, p.speed + p.accel * dt);
-
-            p.vx = Math.cos(p.angle) * p.speed;
-            p.vy = Math.sin(p.angle) * p.speed;
-          }
-
-          p.x += p.vx * dt;
-          p.y += p.vy * dt;
-
-          let remove = false;
-
-          if (p.age > (p.life || 3.0)) {
-            remove = true;
-          }
-
-          if (!remove && target) {
-            const dx = p.x - target.x;
-            const dy = p.y - target.y;
-            const dist = Math.hypot(dx, dy);
-            if (dist <= target.radius) {
-              const damage = p.damage || 1;
-              const damageMult = state.player.shipStats.damageMult || 1;
-              target.hp -= (damage * damageMult);
-              remove = true;
-              if (target.hp <= 0) {
-                state.player.money += MONEY_PER_TARGET;
-                moneyValueEl.textContent = `${state.player.money.toFixed(0)}§`;
-                spawnTarget();
-              }
-            }
-          }
-
-          if(!remove && state.enemies && state.enemies.length > 0){
-            state.enemies.forEach(enemy => {
-              const dx = p.x - enemy.x;
-              const dy = p.y - enemy.y;
-              const dist = Math.hypot(dx, dy);
-              if (dist <= enemy.shipStats.shieldDiameterPx){
-                const damage = p.damage || 1;
-                const damageMult = state.player.shipStats.damageMult || 1;
-                let totalDamage = damage * damageMult;
-
-                // consume projectile on hit
-                remove = true;
-
-                // 1) shield absorbs first
-                if (enemy.shield > 0 && totalDamage > 0) {
-                  const absorbed = Math.min(enemy.shield, totalDamage);
-                  enemy.shield -= absorbed;
-                  totalDamage -= absorbed;
-                }
-
-                // 2) remaining goes to hull
-                if (enemy.hull > 0 && totalDamage > 0) {
-                  enemy.hull -= totalDamage;
-                  totalDamage = 0;
-                }
-
-                // 3) destroy if hull depleted
-                if (enemy.hull <= 0) {
-                  destroyEnemyById(enemy.id);
-                }
-              }
-            });
-          }
-
-          if (remove) {
-            projectiles.splice(i, 1);
-          }
-        }
-
-        speedValueEl.textContent = newSpeed.toFixed(1);
-        posValueEl.textContent = `${state.player.x.toFixed(0)}, ${state.player.y.toFixed(0)}`;
+    /** Moves + rotates player (manual or docking autopilot), clamps speed, integrates position */
+    function playerMoveUpdate(dt) {
+      if (dockingActive && !stationDialogOpen) {
+        playerDockingAutopilotMove(dt);
+      } else {
+        playerManualMove(dt);
       }
+
+      clampPlayerSpeed();
+      integratePlayerPosition(dt);
+      clampPlayerToWorld();
+    }
+
+    function playerDockingAutopilotMove(dt) {
+      const dx = STATION_X - state.player.x;
+      const dy = STATION_Y - state.player.y;
+      const dist = Math.hypot(dx, dy);
+
+      const desiredAngle = Math.atan2(dy, dx);
+      rotatePlayerToward(desiredAngle, dt);
+
+      let targetSpeed;
+      if (dist > 200) targetSpeed = state.player.shipStats.speed * 0.7;
+      else if (dist > 50) targetSpeed = state.player.shipStats.speed * 0.3;
+      else targetSpeed = 30;
+
+      const dirX = Math.cos(state.player.angle);
+      const dirY = Math.sin(state.player.angle);
+      state.player.vx = dirX * targetSpeed;
+      state.player.vy = dirY * targetSpeed;
+    }
+
+    function playerManualMove(dt) {
+      if (input.left) state.player.angle -= state.player.shipStats.turningSpeedRad * dt;
+      if (input.right) state.player.angle += state.player.shipStats.turningSpeedRad * dt;
+
+      let speed = Math.hypot(state.player.vx, state.player.vy);
+
+      if (input.thrust) {
+        const ax = Math.cos(state.player.angle) * state.player.shipStats.acceleration;
+        const ay = Math.sin(state.player.angle) * state.player.shipStats.acceleration;
+        state.player.vx += ax * dt;
+        state.player.vy += ay * dt;
+        return;
+      }
+
+      // friction when not thrusting
+      if (speed > 0) {
+        const decel = FRICTION * dt;
+        speed = Math.max(0, speed - decel);
+        applySpeedToVelocity(speed);
+      }
+
+      // brake
+      if (input.brake && speed > 0) {
+        const decel = state.player.shipStats.acceleration * dt;
+        speed = Math.max(0, speed - decel);
+        applySpeedToVelocity(speed);
+      }
+    }
+
+    function rotatePlayerToward(desiredAngle, dt) {
+      let diff = normalizeAngleDiff(desiredAngle - state.player.angle);
+      const maxTurn = state.player.shipStats.turningSpeedRad * dt;
+      if (diff > maxTurn) diff = maxTurn;
+      if (diff < -maxTurn) diff = -maxTurn;
+      state.player.angle += diff;
+    }
+
+    function applySpeedToVelocity(speed) {
+      if (speed === 0) {
+        state.player.vx = 0;
+        state.player.vy = 0;
+        return;
+      }
+      const cur = Math.hypot(state.player.vx, state.player.vy) || 1;
+      const factor = speed / cur;
+      state.player.vx *= factor;
+      state.player.vy *= factor;
+    }
+
+    function clampPlayerSpeed() {
+      const s = Math.hypot(state.player.vx, state.player.vy);
+      const max = state.player.shipStats.speed;
+      if (s <= max) return;
+      const factor = max / s;
+      state.player.vx *= factor;
+      state.player.vy *= factor;
+    }
+
+    function integratePlayerPosition(dt) {
+      state.player.x += state.player.vx * dt;
+      state.player.y += state.player.vy * dt;
+    }
+
+    function clampPlayerToWorld() {
+      state.player.x = Math.max(0, Math.min(SystemInfo.size, state.player.x));
+      state.player.y = Math.max(0, Math.min(SystemInfo.size, state.player.y));
+    }
+
+    /** Handles docking completion + dialog open */
+    function playerDockingUpdate(dt) {
+      if (!dockingActive || stationDialogOpen) return;
+
+      const dx = STATION_X - state.player.x;
+      const dy = STATION_Y - state.player.y;
+      const dist = Math.hypot(dx, dy);
+
+      if (dist >= 5) return;
+
+      state.player.x = STATION_X;
+      state.player.y = STATION_Y;
+      state.player.vx = 0;
+      state.player.vy = 0;
+      dockingActive = false;
+      openStationDialog();
+    }
+
+    /** Updates player projectiles, collisions vs target and enemies */
+    function updatePlayerProjectiles(dt) {
+      for (let i = projectiles.length - 1; i >= 0; i--) {
+        const p = projectiles[i];
+        p.age += dt;
+
+        updateHomingProjectile(p, dt);
+
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+
+        let remove = projectileExpired(p);
+        if (!remove) remove = projectileHitTarget(p);
+        if (!remove) remove = projectileHitAnyEnemy(p);
+
+        if (remove) projectiles.splice(i, 1);
+      }
+    }
+
+    function updateEnemyProjectiles(dt){
+      for (let i = enemyProjectiles.length - 1; i >= 0; i--) {
+        const p = enemyProjectiles[i];
+        p.age += dt;
+
+        updateEnemyHomingProjectile(p, dt);
+
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+
+        // no need for dedicated logic
+        let remove = projectileExpired(p);
+
+        if (!remove) remove = projectileHitPlayer(p);
+
+        if (remove) enemyProjectiles.splice(i, 1);
+      }
+    }
+
+
+    function updateEnemyHomingProjectile(p, dt){
+      // enemy projectiles home into player!
+      if (!p.homing || !state.player) return;
+
+      const desiredAngle = Math.atan2(target.y - p.y, target.x - p.x);
+      let diff = normalizeAngleDiff(desiredAngle - p.angle);
+      const maxTurn = (p.turnSpeed || 0) * dt;
+      if (diff > maxTurn) diff = maxTurn;
+      if (diff < -maxTurn) diff = -maxTurn;
+      p.angle += diff;
+
+      p.speed = Math.min(p.maxSpeed || p.speed, p.speed + (p.accel || 0) * dt);
+      p.vx = Math.cos(p.angle) * p.speed;
+      p.vy = Math.sin(p.angle) * p.speed;
+    }
+
+    function updateHomingProjectile(p, dt) {
+      if (!p.homing || !target) return;
+
+      const desiredAngle = Math.atan2(target.y - p.y, target.x - p.x);
+      let diff = normalizeAngleDiff(desiredAngle - p.angle);
+      const maxTurn = (p.turnSpeed || 0) * dt;
+      if (diff > maxTurn) diff = maxTurn;
+      if (diff < -maxTurn) diff = -maxTurn;
+      p.angle += diff;
+
+      p.speed = Math.min(p.maxSpeed || p.speed, p.speed + (p.accel || 0) * dt);
+      p.vx = Math.cos(p.angle) * p.speed;
+      p.vy = Math.sin(p.angle) * p.speed;
+    }
+
+    function projectileExpired(p) {
+      return p.age > (p.life || 3.0);
+    }
+
+    function projectileHitPlayer(p){
+      if (!state.player) return false;
+
+      const dx = p.x - state.player.x;
+      const dy = p.y - state.player.y;
+      const dist = Math.hypot(dx, dy);
+
+      if (dist > state.player.shipStats.shieldDiameterPx) return false;
+
+      applyDamageToPlayer(p);
+      return true;
+    }
+
+    function applyDamageToPlayer(p){
+      const projectile = p;
+      const damage = projectile.damage || 1;
+      let totalDamage = damage;
+
+      if (state.player.shield > 0 && totalDamage > 0) {
+        const absorbed = Math.min(enemy.shield, totalDamage);
+        state.player.shield -= absorbed;
+        totalDamage -= absorbed;
+      }
+
+      if (state.player.hull > 0 && totalDamage > 0) {
+        state.player.hull -= totalDamage;
+        totalDamage = 0;
+      }
+
+      if (state.player.hull <= 0) {
+        console.log("DESTROYED");
+      }
+    }
+
+    function projectileHitTarget(p) {
+      if (!target) return false;
+
+      const dx = p.x - target.x;
+      const dy = p.y - target.y;
+      const dist = Math.hypot(dx, dy);
+
+      if (dist > target.radius) return false;
+
+      const damage = p.damage || 1;
+      const damageMult = state.player.shipStats.damageMult || 1;
+      target.hp -= damage * damageMult;
+
+      if (target.hp <= 0) {
+        state.player.money += MONEY_PER_TARGET;
+        moneyValueEl.textContent = `${state.player.money.toFixed(0)}§`;
+        spawnTarget();
+      }
+      return true;
+    }
+
+    function projectileHitAnyEnemy(p) {
+      if (!state.enemies || state.enemies.length === 0) return false;
+
+      for (let e = 0; e < state.enemies.length; e++) {
+        const enemy = state.enemies[e];
+        if (!enemy || !enemy.shipStats) continue;
+
+        const dx = p.x - enemy.x;
+        const dy = p.y - enemy.y;
+        const dist = Math.hypot(dx, dy);
+
+        if (dist > enemy.shipStats.shieldDiameterPx) continue;
+
+        applyDamageToEnemy(enemy, p);
+        return true; // projectile consumed
+      }
+      return false;
+    }
+
+
+
+    function applyDamageToEnemy(enemy, projectile) {
+      const damage = projectile.damage || 1;
+      const damageMult = state.player.shipStats.damageMult || 1;
+      let totalDamage = damage * damageMult;
+
+      if (enemy.shield > 0 && totalDamage > 0) {
+        const absorbed = Math.min(enemy.shield, totalDamage);
+        enemy.shield -= absorbed;
+        totalDamage -= absorbed;
+      }
+
+      if (enemy.hull > 0 && totalDamage > 0) {
+        enemy.hull -= totalDamage;
+        totalDamage = 0;
+      }
+
+      if (enemy.hull <= 0) {
+        destroyEnemyById(enemy.id);
+      }
+    }
 
       function destroyEnemyById(id) {
         const idx = state.enemies.findIndex(e => e && e.id === id);
@@ -1035,6 +1224,69 @@
         ctx.moveTo(startX, startY);
         ctx.lineTo(endX, endY);
         ctx.stroke();
+        ctx.restore();
+      }
+
+      
+      function drawEnemyProjectiles() {
+        if (!enemyProjectiles.length) return;
+
+        ctx.save();
+
+        enemyProjectiles.forEach((p) => {
+          const screenX = width / 2 + (p.x - state.player.x);
+          const screenY = height / 2 + (p.y - state.player.y);
+
+          const aspect = p.aspect || "bullet";
+
+          if (aspect === "line") {
+            const len = 10;
+            const ax = Math.cos(p.angle) * len;
+            const ay = Math.sin(p.angle) * len;
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(screenX, screenY);
+            ctx.lineTo(screenX + ax, screenY + ay);
+            ctx.stroke();
+          } else if (aspect === "missile") {
+            ctx.save();
+            ctx.translate(screenX, screenY);
+            ctx.rotate(p.angle);
+
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath();
+            ctx.moveTo(8, 0);
+            ctx.lineTo(-6, -3);
+            ctx.lineTo(-4, 0);
+            ctx.lineTo(-6, 3);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = "#ff5252";
+            ctx.beginPath();
+            ctx.moveTo(-4, -3);
+            ctx.lineTo(-8, -5);
+            ctx.lineTo(-4, -1);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(-4, 3);
+            ctx.lineTo(-8, 5);
+            ctx.lineTo(-4, 1);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.restore();
+          } else {
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, 3, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        });
+
         ctx.restore();
       }
 
@@ -1250,11 +1502,13 @@
         updateEnemySpawning(dt);
         moveEnemies(dt);
         regenEnemyShields(dt);
+        updateMakeEnemiesToFire(dt);
         drawStarfield();
         drawMainStar();
         drawStation();
         drawTarget();
         drawTargetLine();
+        drawEnemyProjectiles();
         drawProjectiles();
         drawEnemies();
         drawShip();
