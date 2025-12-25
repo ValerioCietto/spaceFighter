@@ -632,90 +632,90 @@
       }
 
       function drawEnemies() {
-  if (!state.enemies || state.enemies.length === 0) return;
+    if (!state.enemies || state.enemies.length === 0) return;
 
-      state.enemies.forEach((enemy) => {
-        const stats = enemy.shipStats;
-        const imgFile = stats?.image;
-        if (!imgFile) return;
+        state.enemies.forEach((enemy) => {
+          const stats = enemy.shipStats;
+          const imgFile = stats?.image;
+          if (!imgFile) return;
 
-        if (!enemy._imgFile || enemy._imgFile !== imgFile || !enemy._img) {
-          enemy._imgFile = imgFile;
-          enemy._img = loadShipImage(imgFile);
-        }
+          if (!enemy._imgFile || enemy._imgFile !== imgFile || !enemy._img) {
+            enemy._imgFile = imgFile;
+            enemy._img = loadShipImage(imgFile);
+          }
 
-        const img = enemy._img;
-        if (!img || !img.complete || img.naturalWidth <= 0) return;
+          const img = enemy._img;
+          if (!img || !img.complete || img.naturalWidth <= 0) return;
 
-        // world -> screen
-        const screenX = width / 2 + (enemy.x - state.player.x);
-        const screenY = height / 2 + (enemy.y - state.player.y);
+          // world -> screen
+          const screenX = width / 2 + (enemy.x - state.player.x);
+          const screenY = height / 2 + (enemy.y - state.player.y);
 
-        // --- draw ship sprite ---
-        ctx.save();
-        ctx.translate(screenX, screenY);
-        ctx.rotate((enemy.angle || 0) + Math.PI / 2);
+          // --- draw ship sprite ---
+          ctx.save();
+          ctx.translate(screenX, screenY);
+          ctx.rotate((enemy.angle || 0) + Math.PI / 2);
 
-        const targetW = 52;
-        const scale = targetW / img.naturalWidth;
-        const w = img.naturalWidth * scale;
-        const h = img.naturalHeight * scale;
+          const targetW = enemy.shipStats.shieldDiameterPx;
+          const scale = targetW / img.naturalWidth;
+          const w = img.naturalWidth * scale;
+          const h = img.naturalHeight * scale;
 
-        ctx.drawImage(img, -w / 2, -h / 2, w, h);
-        ctx.restore();
+          ctx.drawImage(img, -w / 2, -h / 2, w, h);
+          ctx.restore();
 
-        // --- indicator circles (hull + shield), target-like arcs ---
-        const hullMax = enemy.maxHull ?? enemy.hull ?? 1;
-        const shieldMax = enemy.maxShield ?? enemy.shield ?? 1;
+          // --- indicator circles (hull + shield), target-like arcs ---
+          const hullMax = enemy.maxHull ?? enemy.hull ?? 1;
+          const shieldMax = enemy.maxShield ?? enemy.shield ?? 1;
 
-        const hullRatio = Math.max(0, Math.min(1, (enemy.hull ?? 0) / hullMax));
-        const shieldRatio = Math.max(0, Math.min(1, (enemy.shield ?? 0) / shieldMax));
+          const hullRatio = Math.max(0, Math.min(1, (enemy.hull ?? 0) / hullMax));
+          const shieldRatio = Math.max(0, Math.min(1, (enemy.shield ?? 0) / shieldMax));
 
-        // ring radii (tweak to taste)
-        const hullR = 22;
-        const shieldR = 28;
+          // ring radii (tweak to taste)
+          const hullR = enemy.shipStats.shieldDiameterPx-6; // 22
+          const shieldR = enemy.shipStats.shieldDiameterPx; // 28
 
-        // base full circles (subtle)
-        ctx.save();
-        ctx.lineWidth = 3;
+          // base full circles (subtle)
+          ctx.save();
+          ctx.lineWidth = 3;
 
-        // HULL (grey)
-        ctx.beginPath();
-        ctx.strokeStyle = "rgba(180,180,180,0.25)";
-        ctx.arc(screenX, screenY, hullR, 0, Math.PI * 2);
-        ctx.stroke();
+          // HULL (grey)
+          ctx.beginPath();
+          ctx.strokeStyle = "rgba(180,180,180,0.25)";
+          ctx.arc(screenX, screenY, hullR, 0, Math.PI * 2);
+          ctx.stroke();
 
-        ctx.beginPath();
-        ctx.strokeStyle = "rgba(180,180,180,0.95)";
-        ctx.arc(
-          screenX,
-          screenY,
-          hullR,
-          -Math.PI / 2,
-          -Math.PI / 2 + hullRatio * Math.PI * 2
-        );
-        ctx.stroke();
+          ctx.beginPath();
+          ctx.strokeStyle = "rgba(180,180,180,0.95)";
+          ctx.arc(
+            screenX,
+            screenY,
+            hullR,
+            -Math.PI / 2,
+            -Math.PI / 2 + hullRatio * Math.PI * 2
+          );
+          ctx.stroke();
 
-        // SHIELD (light blue)
-        ctx.beginPath();
-        ctx.strokeStyle = "rgba(120,200,255,0.20)";
-        ctx.arc(screenX, screenY, shieldR, 0, Math.PI * 2);
-        ctx.stroke();
+          // SHIELD (light blue)
+          ctx.beginPath();
+          ctx.strokeStyle = "rgba(120,200,255,0.20)";
+          ctx.arc(screenX, screenY, shieldR, 0, Math.PI * 2);
+          ctx.stroke();
 
-        ctx.beginPath();
-        ctx.strokeStyle = "rgba(120,200,255,0.95)";
-        ctx.arc(
-          screenX,
-          screenY,
-          shieldR,
-          -Math.PI / 2,
-          -Math.PI / 2 + shieldRatio * Math.PI * 2
-        );
-        ctx.stroke();
+          ctx.beginPath();
+          ctx.strokeStyle = "rgba(120,200,255,0.95)";
+          ctx.arc(
+            screenX,
+            screenY,
+            shieldR,
+            -Math.PI / 2,
+            -Math.PI / 2 + shieldRatio * Math.PI * 2
+          );
+          ctx.stroke();
 
-        ctx.restore();
-      });
-    }
+          ctx.restore();
+        });
+      }
 
       let enemyShieldRegenAcc = 0;
 
@@ -743,6 +743,8 @@
           });
         }
       }
+
+
 
 
     function update(dt) {
@@ -1061,42 +1063,6 @@
         return true;
       }
 
-      function drawStarfield() {
-        ctx.save();
-        ctx.fillStyle = "#020309";
-        ctx.fillRect(0, 0, width, height);
-
-        const camX = state.player.x;
-        const camY = state.player.y;
-
-        starLayers.forEach((layer, idx) => {
-          const { factor, stars } = layer;
-          const size = 2 + idx;
-
-          stars.forEach((star) => {
-            const sx = (star.x - camX * factor) % (SystemInfo.size * 2);
-            const sy = (star.y - camY * factor) % (SystemInfo.size * 2);
-            let x = sx;
-            let y = sy;
-            if (x < -SystemInfo.size) x += SystemInfo.size * 2;
-            if (y < -SystemInfo.size) y += SystemInfo.size * 2;
-
-            const screenX = width / 2 + x * 0.1;
-            const screenY = height / 2 + y * 0.1;
-
-            if (screenX < -20 || screenX > width + 20 || screenY < -20 || screenY > height + 20) return;
-
-            const alpha = 0.3 + layer.factor * 0.5;
-            ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-            ctx.beginPath();
-            ctx.arc(screenX, screenY, size * 0.4, 0, Math.PI * 2);
-            ctx.fill();
-          });
-        });
-
-        ctx.restore();
-      }
-
       function drawMainStar() {
         const screenX = width / 2 + (STAR_X - state.player.x);
         const screenY = height / 2 + (STAR_Y - state.player.y);
@@ -1399,7 +1365,7 @@
 
         // --- IMAGE SHIP (preferred) ---
         if (currentShipImg && currentShipImg.complete && currentShipImg.naturalWidth > 0) {
-          const targetW = 52; // tweak to taste
+          const targetW = state.player.shipStats.shieldDiameterPx; // tweak to taste
           const scale = targetW / currentShipImg.naturalWidth;
           const w = currentShipImg.naturalWidth * scale;
           const h = currentShipImg.naturalHeight * scale;
@@ -1503,7 +1469,8 @@
         moveEnemies(dt);
         regenEnemyShields(dt);
         updateMakeEnemiesToFire(dt);
-        drawStarfield();
+        drawStarfield(ctx, width, height, starLayers, state.player.x, state.player.y, SystemInfo.size);
+
         drawMainStar();
         drawStation();
         drawTarget();
