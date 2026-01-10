@@ -94,6 +94,11 @@
       const touchButtons = document.querySelectorAll(".touch-btn");
       const lockButton = document.querySelector('.touch-btn[data-action="lock"]');
       const dockButtonEl = document.getElementById("dock-button");
+      const solarSystemEl = document.getElementById("solar-system-value");
+    
+      const shieldValueEl = document.getElementById("shield-value");
+      const hullValueEl = document.getElementById("hull-value");
+      const energyValueEl = document.getElementById("energy-value");
 
       const dockingMessageEl = document.getElementById("docking-message");
       const stationOverlayEl = document.getElementById("station-overlay");
@@ -758,6 +763,10 @@
       const newSpeed = Math.hypot(state.player.vx, state.player.vy);
       speedValueEl.textContent = newSpeed.toFixed(1);
       posValueEl.textContent = `${state.player.x.toFixed(0)}, ${state.player.y.toFixed(0)}`;
+      solarSystemEl.textContent = SystemInfo.name;
+      shieldValueEl.textContent = state.player.shipStats.shield;
+      hullValueEl.textContent = state.player.shipStats.hull;
+      energyValueEl.textContent = state.player.shipStats.energy;
     }
 
     /** Moves + rotates player (manual or docking autopilot), clamps speed, integrates position */

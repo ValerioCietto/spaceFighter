@@ -234,7 +234,7 @@ const SHIPS = {
     engineFlareWidth: 14,
     engineFlareLength: 47,
     image: "jared_three_eyes_spike_hybrid.png",
-    shieldDiameterPx: 88,
+    shieldDiameterPx: 50,
     firerateMult: 1.4,
     shipCenter: { x: 0.5, y: 0.5 },
     engineCoords: [{ x: 0.19, y: 0.50 }],
