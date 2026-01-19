@@ -19,15 +19,23 @@ function setupInput(
   window.addEventListener("keydown", (e) => {
     switch (e.key) {
       case "ArrowLeft":
+      case "a":
+      case "A":
         input.left = true;
         break;
       case "ArrowRight":
+      case "d":
+      case "D":
         input.right = true;
         break;
       case "ArrowUp":
+      case "w":
+      case "W":
         input.thrust = true;
         break;
       case "ArrowDown":
+      case "s":
+      case "S":
         input.brake = true;
         break;
       case " ":
@@ -60,15 +68,23 @@ function setupInput(
   window.addEventListener("keyup", (e) => {
     switch (e.key) {
       case "ArrowLeft":
+      case "a":
+      case "A":
         input.left = false;
         break;
       case "ArrowRight":
+      case "d":
+      case "D":
         input.right = false;
         break;
       case "ArrowUp":
+      case "w":
+      case "W":
         input.thrust = false;
         break;
       case "ArrowDown":
+      case "s":
+      case "S":
         input.brake = false;
         break;
       case "Tab":
