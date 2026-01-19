@@ -46,6 +46,10 @@
         neutralPassive:[],
         allies:[],
         targets:[],
+        ui:{
+         mode: "game", // states can be "galaxyMap", "station", "game"
+         deathModal: false, // if true, deathModal will show a choice to continue with a last save or last station
+        }
       };
 
       function applyShip(shipName) {
