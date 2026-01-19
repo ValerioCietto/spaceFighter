@@ -451,6 +451,7 @@
      }
 
       function startDocking() {
+        console.log('start docking');
         if (stationDialogOpen) return;
         dockingActive = true;
         dockingMessageEl.classList.add("visible");
@@ -459,6 +460,7 @@
       function openStationDialog() {
         stationDialogOpen = true;
         dockingActive = false;
+        console.log('opening station panel');
         dockingMessageEl.classList.remove("visible");
         stationOverlayEl.classList.add("open");
       }
@@ -753,12 +755,18 @@
 
 
     function update(dt) {
-      stationAngle += STATION_ROT_SPEED * dt;
+      
+      
+      // if we are in docking mode
+      if(!stationDialogOpen){
+        stationAngle += STATION_ROT_SPEED * dt;
+        playerMoveUpdate(dt);
+        playerDockingUpdate(dt);
+        updatePlayerProjectiles(dt);
+        updateEnemyProjectiles(dt);
+      }
+      
 
-      playerMoveUpdate(dt);
-      playerDockingUpdate(dt);
-      updatePlayerProjectiles(dt);
-      updateEnemyProjectiles(dt);
 
       const newSpeed = Math.hypot(state.player.vx, state.player.vy);
       speedValueEl.textContent = newSpeed.toFixed(1);
@@ -979,18 +987,18 @@
       const damage = projectile.damage || 1;
       let totalDamage = damage;
 
-      if (state.player.shield > 0 && totalDamage > 0) {
-        const absorbed = Math.min(enemy.shield, totalDamage);
-        state.player.shield -= absorbed;
+      if (state.player.shipStats.shield > 0 && totalDamage > 0) {
+        const absorbed = Math.min(state.player.shipStats.shield, totalDamage);
+        state.player.shipStats.shield -= absorbed;
         totalDamage -= absorbed;
       }
 
-      if (state.player.hull > 0 && totalDamage > 0) {
-        state.player.hull -= totalDamage;
+      if (state.player.shipStats.hull > 0 && totalDamage > 0) {
+        state.player.shipStats.hull -= totalDamage;
         totalDamage = 0;
       }
 
-      if (state.player.hull <= 0) {
+      if (state.player.shipStats.hull <= 0) {
         console.log("DESTROYED");
       }
     }

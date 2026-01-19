@@ -9,7 +9,7 @@ const WeaponSpaceBullet = {
   spread: 0.15,
   projectiles: 1,
   aspect: "round_bullet",
-  delay_ms: 50,
+  delay_ms: 500,
   energy_cost: 10,
   engage_range: 700,
 };
@@ -24,7 +24,7 @@ const WeaponSniper = {
   projectiles: 1,
   aspect: "line",
   auto_aim: 0.5,
-  delay_ms: 300,
+  delay_ms: 3000,
   energy_cost: 100,
   engage_range: 5000,
 };
@@ -39,7 +39,7 @@ const WeaponShotgun = {
   spread: 10.0,
   projectiles: 5,
   aspect: "bullet",
-  delay_ms: 200,
+  delay_ms: 2000,
   energy_cost: 50,
   engage_range: 500,
 };
@@ -56,7 +56,7 @@ const WeaponHomingMissiles = {
   spread: 3.0,
   projectiles: 1,
   aspect: "missile",
-  delay_ms: 1000,
+  delay_ms: 10000,
   homing: true,
   energy_cost: 5,
   engage_range: 2000,
@@ -76,7 +76,7 @@ const WeaponLazyMissiles = {
   spread: 3.0,
   projectiles: 2,
   aspect: "missile",
-  delay_ms: 500,
+  delay_ms: 5000,
   homing: true,
   energy_cost: 20,
   engage_range: 3000,
@@ -94,7 +94,7 @@ const WeaponShockwave = {
   spread: 360.0,
   projectiles: 90,
   aspect: "line",
-  delay_ms: 200,
+  delay_ms: 2000,
   energy_cost: 40,
   engage_range: 60,
 };  
