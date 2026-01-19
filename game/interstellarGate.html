@@ -1,54 +1,274 @@
-<!-- Command to launch: npx serve .  then open http://localhost:3000/gate-simple.html -->
+<!-- Command to launch: npx serve .  then open http://localhost:3000/gate.html -->
 <!doctype html>
-<html>
-<body style="margin:0;background:#000">
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Interstellar Gate (Canvas)</title>
+  <style>
+    html, body { height: 100%; margin: 0; background: #05060a; }
+    canvas { display: block; width: 100vw; height: 100vh; }
+  </style>
+</head>
+<body>
 <canvas id="c"></canvas>
 <script>
-const c = document.getElementById("c");
-const ctx = c.getContext("2d");
+(() => {
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d");
 
-function resize() {
-  c.width = innerWidth;
-  c.height = innerHeight;
-}
-addEventListener("resize", resize);
-resize();
-
-let t = 0;
-
-function draw() {
-  t += 0.02;
-  ctx.clearRect(0, 0, c.width, c.height);
-
-  const cx = c.width / 2;
-  const cy = c.height / 2;
-  const r = Math.min(c.width, c.height) * 0.25;
-
-  // Wormhole swirl
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.beginPath();
-  for (let i = 0; i < 120; i++) {
-    const a = i * 0.25 + t;
-    const rr = r * (1 - i / 120);
-    ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+  function resize() {
+    const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    canvas.width = Math.floor(innerWidth * dpr);
+    canvas.height = Math.floor(innerHeight * dpr);
+    canvas.style.width = innerWidth + "px";
+    canvas.style.height = innerHeight + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
-  ctx.strokeStyle = "rgba(120,180,255,0.6)";
-  ctx.lineWidth = 3;
-  ctx.stroke();
-  ctx.restore();
+  window.addEventListener("resize", resize);
+  resize();
 
-  // Metal frame
-  ctx.beginPath();
-  ctx.arc(cx, cy, r + 10, 0, Math.PI * 2);
-  ctx.strokeStyle = "#888";
-  ctx.lineWidth = 14;
-  ctx.stroke();
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
 
-  requestAnimationFrame(draw);
-}
+  function drawBackground(w, h) {
+    ctx.fillStyle = "#05060a";
+    ctx.fillRect(0, 0, w, h);
 
-draw();
+    // simple star noise (deterministic-ish without storing arrays)
+    for (let i = 0; i < 140; i++) {
+      const x = (i * 997) % w;
+      const y = (i * 619) % h;
+      const r = (i % 7 === 0) ? 1.8 : 1.0;
+      ctx.globalAlpha = (i % 11 === 0) ? 0.35 : 0.18;
+      ctx.beginF();
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffffff";
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawMetalFrame(cx, cy, outerR, innerR, t) {
+    ctx.save();
+    ctx.translate(cx, cy);
+
+    // Outer ring body
+    const ringGrad = ctx.createRadialGradient(0, 0, innerR * 0.9, 0, 0, outerR * 1.02);
+    ringGrad.addColorStop(0.00, "rgba(40,48,58,0.95)");
+    ringGrad.addColorStop(0.35, "rgba(90,100,115,0.95)");
+    ringGrad.addColorStop(0.60, "rgba(35,42,52,0.95)");
+    ringGrad.addColorStop(0.85, "rgba(120,132,150,0.95)");
+    ringGrad.addColorStop(1.00, "rgba(22,26,33,0.98)");
+
+    ctx.lineWidth = Math.max(8, (outerR - innerR) * 0.55);
+    ctx.strokeStyle = ringGrad;
+    ctx.beginPath();
+    ctx.arc(0, 0, (outerR + innerR) * 0.5, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Inner bevel highlight
+    const bevelGrad = ctx.createRadialGradient(0, 0, innerR * 0.92, 0, 0, innerR * 1.18);
+    bevelGrad.addColorStop(0.00, "rgba(0,0,0,0)");
+    bevelGrad.addColorStop(0.40, "rgba(255,255,255,0.20)");
+    bevelGrad.addColorStop(1.00, "rgba(0,0,0,0)");
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = bevelGrad;
+    ctx.beginPath();
+    ctx.arc(0, 0, innerR + 2, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Bolts + braces
+    const bolts = 14;
+    for (let i = 0; i < bolts; i++) {
+      const a = (i / bolts) * Math.PI * 2 + 0.15 * Math.sin(t * 0.2);
+      const r = (outerR + innerR) * 0.5;
+      const bx = Math.cos(a) * r;
+      const by = Math.sin(a) * r;
+
+      // bolt base
+      ctx.globalAlpha = 0.95;
+      ctx.fillStyle = "rgba(18,20,24,0.9)";
+      ctx.beginPath();
+      ctx.arc(bx, by, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // bolt head
+      const hg = ctx.createRadialGradient(bx - 2, by - 2, 1, bx, by, 7);
+      hg.addColorStop(0, "rgba(230,235,245,0.85)");
+      hg.addColorStop(0.5, "rgba(110,120,135,0.9)");
+      hg.addColorStop(1, "rgba(20,24,30,0.95)");
+      ctx.fillStyle = hg;
+      ctx.beginPath();
+      ctx.arc(bx, by, 4.6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // small brace segment
+      ctx.globalAlpha = 0.7;
+      ctx.strokeStyle = "rgba(210,220,240,0.25)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, 0, r, a - 0.08, a + 0.08);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    // Subtle moving specular sweep
+    const sweepA = (t * 0.25) % (Math.PI * 2);
+    ctx.strokeStyle = "rgba(255,255,255,0.12)";
+    ctx.lineWidth = Math.max(10, (outerR - innerR) * 0.45);
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.arc(0, 0, (outerR + innerR) * 0.5, sweepA - 0.18, sweepA + 0.18);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function drawWormhole(cx, cy, r, t) {
+    ctx.save();
+    ctx.translate(cx, cy);
+
+    // Soft glow halo
+    const halo = ctx.createRadialGradient(0, 0, r * 0.2, 0, 0, r * 1.05);
+    halo.addColorStop(0.00, "rgba(60,140,255,0.10)");
+    halo.addColorStop(0.40, "rgba(140,90,255,0.12)");
+    halo.addColorStop(0.75, "rgba(0,0,0,0.00)");
+    halo.addColorStop(1.00, "rgba(0,0,0,0.00)");
+    ctx.fillStyle = halo;
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 1.02, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Portal interior base
+    const inner = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
+    inner.addColorStop(0.0, "rgba(0,0,0,0.85)");
+    inner.addColorStop(0.35, "rgba(15,18,30,0.85)");
+    inner.addColorStop(0.75, "rgba(10,12,22,0.95)");
+    inner.addColorStop(1.0, "rgba(0,0,0,1)");
+    ctx.fillStyle = inner;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Clip to portal circle so swirls stay inside
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.985, 0, Math.PI * 2);
+    ctx.clip();
+
+    // Swirly vortex ribbons
+    const ribbons = 7;
+    for (let k = 0; k < ribbons; k++) {
+      const phase = (k / ribbons) * Math.PI * 2;
+      const turns = 3.0 + 0.25 * Math.sin(t * 0.25);
+      const steps = 170;
+
+      ctx.beginPath();
+      for (let i = 0; i <= steps; i++) {
+        const u = i / steps; // 0..1
+        const angle = u * Math.PI * 2 * turns + t * 0.9 + phase;
+        const rr = lerp(r * 0.92, r * 0.10, u) + Math.sin(u * 10 + t + phase) * (r * 0.015);
+        const x = Math.cos(angle) * rr;
+        const y = Math.sin(angle) * rr;
+
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+
+      const alpha = 0.22;
+      ctx.strokeStyle = (k % 2 === 0)
+        ? `rgba(90,170,255,${alpha})`
+        : `rgba(180,110,255,${alpha})`;
+      ctx.lineWidth = 2.2;
+      ctx.lineCap = "round";
+      ctx.stroke();
+    }
+
+    // Electric arcs (short, bright curved segments)
+    for (let i = 0; i < 10; i++) {
+      const a = (i * 1.7 + t * 1.2) % (Math.PI * 2);
+      const rr = lerp(r * 0.25, r * 0.88, (i % 5) / 4);
+      const x1 = Math.cos(a) * rr;
+      const y1 = Math.sin(a) * rr;
+      const x2 = Math.cos(a + 0.35) * (rr * 0.82);
+      const y2 = Math.sin(a + 0.35) * (rr * 0.82);
+
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      const mx = (x1 + x2) * 0.5 + Math.cos(a + 1.2) * r * 0.06;
+      const my = (y1 + y2) * 0.5 + Math.sin(a + 1.2) * r * 0.06;
+      ctx.quadraticCurveTo(mx, my, x2, y2);
+      ctx.strokeStyle = "rgba(210,235,255,0.30)";
+      ctx.lineWidth = 1.6;
+      ctx.stroke();
+    }
+
+    // Depth core (dark center + tiny sparkle)
+    const core = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 0.26);
+    core.addColorStop(0.0, "rgba(0,0,0,0.96)");
+    core.addColorStop(0.5, "rgba(0,0,0,0.82)");
+    core.addColorStop(1.0, "rgba(0,0,0,0.0)");
+    ctx.fillStyle = core;
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.26, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Tiny spark at center, pulsing
+    const pulse = 0.35 + 0.25 * Math.sin(t * 2.2);
+    ctx.globalAlpha = pulse;
+    ctx.fillStyle = "rgba(220,240,255,0.65)";
+    ctx.beginPath();
+    ctx.arc(0, 0, 2.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    ctx.restore(); // clip
+    ctx.restore();
+  }
+
+  let last = performance.now();
+  let t = 0;
+
+  function frame(now) {
+    const dt = clamp((now - last) / 1000, 0, 0.05);
+    last = now;
+    t += dt;
+
+    const w = innerWidth;
+    const h = innerHeight;
+    const cx = w * 0.5;
+    const cy = h * 0.5;
+
+    const gateR = Math.min(w, h) * 0.23;
+    const innerR = gateR * 0.86;
+    const outerR = gateR * 1.05;
+
+    drawBackground(w, h);
+
+    // Subtle vignette
+    const vign = ctx.createRadialGradient(cx, cy, Math.min(w, h) * 0.15, cx, cy, Math.min(w, h) * 0.62);
+    vign.addColorStop(0, "rgba(0,0,0,0)");
+    vign.addColorStop(1, "rgba(0,0,0,0.45)");
+    ctx.fillStyle = vign;
+    ctx.fillRect(0, 0, w, h);
+
+    // Wormhole first, then frame above it
+    drawWormhole(cx, cy, innerR, t);
+    drawMetalFrame(cx, cy, outerR, innerR, t);
+
+    // Small caption
+    ctx.globalAlpha = 0.7;
+    ctx.fillStyle = "#cfd6e4";
+    ctx.font = "14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    ctx.fillText("Interstellar Gate — wormhole anomaly contained in a metal frame", 18, h - 18);
+    ctx.globalAlpha = 1;
+
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
 </script>
 </body>
 </html>
