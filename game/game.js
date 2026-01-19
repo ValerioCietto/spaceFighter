@@ -21,6 +21,22 @@
            station_rot_speed: Math.PI / 32
           }
         ],
+        hyperspace_gates: [
+          {
+            name: "H0N17 - Alpha centauri",
+            position_x: 200,
+            position_y: 2900,
+            rotation: 90,
+            width: 50,
+          },
+          {
+            name: "H1N16 - Beta centauri",
+            position_x: 3100,
+            position_y: 80,
+            rotation: 90,
+            width: 50,
+          },
+        ],
         max_enemy_number:2,
         spawn_rate:4,
       };
