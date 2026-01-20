@@ -90,8 +90,15 @@ function setupInput(
       case "Tab":
         e.preventDefault();
         break;
+      case "M":
+        toggleMap();
+        break;
     }
   });
+
+  function toggleMap(){
+    console.log("show map");
+  }
 
   // Touch input
   function bindTouchButton(btn) {
