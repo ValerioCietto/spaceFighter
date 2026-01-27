@@ -1,0 +1,1067 @@
+<!-- Command to launch: npx serve .  then open http://localhost:3000/space-map-editor.html -->
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Space Map Editor (Canvas 2D)</title>
+  <style>
+    :root{
+      --bg:#0b0f19;
+      --panel:#11182a;
+      --panel2:#0f1526;
+      --text:#e8eefc;
+      --muted:#9fb0d1;
+      --accent:#7aa2ff;
+      --danger:#ff5d6c;
+      --ok:#38d39f;
+      --stroke:rgba(255,255,255,.12);
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --r:16px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background: radial-gradient(1200px 600px at 20% 10%, rgba(122,162,255,.14), transparent 55%),
+                  radial-gradient(900px 500px at 80% 30%, rgba(56,211,159,.10), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+    }
+    header{
+      padding:14px 14px 10px;
+      position: sticky;
+      top: 0;
+      backdrop-filter: blur(10px);
+      background: rgba(11,15,25,.55);
+      border-bottom: 1px solid var(--stroke);
+      z-index: 5;
+    }
+    header h1{
+      margin:0;
+      font-size: 16px;
+      letter-spacing:.2px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    header small{ color:var(--muted); font-weight:500; }
+
+    .wrap{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      padding: 12px 12px 18px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(17,24,42,.92), rgba(15,21,38,.92));
+      border: 1px solid var(--stroke);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--stroke);
+    }
+    .card .hd b{ font-size: 13px; letter-spacing:.3px; }
+    .card .bd{ padding: 10px 12px; }
+
+    canvas{
+      width:100%;
+      height: 56vh;
+      min-height: 340px;
+      display:block;
+      background:
+        radial-gradient(circle at 20% 30%, rgba(255,255,255,.06), transparent 35%),
+        radial-gradient(circle at 70% 60%, rgba(255,255,255,.05), transparent 40%),
+        linear-gradient(180deg, rgba(255,255,255,.02), transparent);
+      touch-action: none;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    @media (min-width: 980px){
+      .wrap{ grid-template-columns: 1.2fr .8fr; align-items:start; }
+      canvas{ height: calc(100vh - 160px); min-height: 520px; }
+      .grid{ grid-template-columns: 1fr 1fr; }
+    }
+
+    label{
+      display:block;
+      font-size: 12px;
+      color: var(--muted);
+      margin: 0 0 6px;
+    }
+    input, select, button, textarea{
+      width:100%;
+      border-radius: 12px;
+      border: 1px solid var(--stroke);
+      background: rgba(7,10,18,.55);
+      color: var(--text);
+      padding: 10px 10px;
+      font-size: 14px;
+      outline:none;
+    }
+    textarea{ min-height: 140px; resize: vertical; font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; font-size: 12px; }
+    input::placeholder{ color: rgba(159,176,209,.55); }
+    .row{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .row1{ display:grid; grid-template-columns: 1fr; gap: 10px; }
+    .btns{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    button{
+      cursor:pointer;
+      transition: transform .04s ease, border-color .12s ease, background .12s ease;
+      user-select:none;
+    }
+    button:active{ transform: translateY(1px); }
+    .primary{
+      background: rgba(122,162,255,.18);
+      border-color: rgba(122,162,255,.45);
+    }
+    .ghost{
+      background: rgba(255,255,255,.05);
+    }
+    .danger{
+      background: rgba(255,93,108,.14);
+      border-color: rgba(255,93,108,.40);
+    }
+    .ok{
+      background: rgba(56,211,159,.14);
+      border-color: rgba(56,211,159,.38);
+    }
+    .hint{
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.35;
+      margin-top: 8px;
+    }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .item{
+      border: 1px solid var(--stroke);
+      border-radius: 14px;
+      padding: 10px;
+      background: rgba(255,255,255,.04);
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      justify-content:space-between;
+    }
+    .item .meta{
+      min-width:0;
+    }
+    .item .meta b{
+      display:block;
+      font-size: 13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .item .meta small{
+      display:block;
+      color: var(--muted);
+      margin-top: 2px;
+      font-size: 12px;
+    }
+    .item .actions{
+      display:flex;
+      gap:8px;
+      flex:0 0 auto;
+    }
+    .item .actions button{
+      width:auto;
+      padding: 8px 10px;
+      font-size: 12px;
+      border-radius: 12px;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-size:12px;
+      color: var(--muted);
+      padding: 6px 10px;
+      border: 1px solid var(--stroke);
+      border-radius: 999px;
+      background: rgba(255,255,255,.04);
+    }
+    .legend{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:50%;
+      background:#fff;
+      border: 1px solid rgba(0,0,0,.35);
+      box-shadow: 0 0 0 2px rgba(255,255,255,.06) inset;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>
+    <span>🛰️ Space Map Editor <small>Canvas 2D + localStorage</small></span>
+    <span class="legend">
+      <span class="pill"><span class="dot" style="background:#59c7ff"></span> L5</span>
+      <span class="pill"><span class="dot" style="background:#ffffff"></span> L4</span>
+      <span class="pill"><span class="dot" style="background:#ffd84a"></span> L3</span>
+      <span class="pill"><span class="dot" style="background:#ff8f8f"></span> L2</span>
+      <span class="pill"><span class="dot" style="background:#b10b1e"></span> L1</span>
+    </span>
+  </h1>
+</header>
+
+<main class="wrap">
+  <section class="card">
+    <div class="hd">
+      <b>Mappa</b>
+      <div class="legend">
+        <span class="pill">👆 trascina nodi</span>
+        <span class="pill">🧷 tap/click per selezionare</span>
+      </div>
+    </div>
+    <canvas id="map"></canvas>
+    <div class="bd">
+      <div class="btns">
+        <button class="ghost" id="btnCenter">Centra vista</button>
+        <button class="ghost" id="btnRandomize">Randomizza posizioni</button>
+        <button class="danger" id="btnReset">Reset (cancella tutto)</button>
+      </div>
+      <div class="hint">
+        I sistemi appena creati vengono posizionati in modo casuale; puoi trascinarli.
+        I nodi con service level più alto risultano più grandi.
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="hd"><b>Editor</b></div>
+    <div class="bd">
+      <div class="grid">
+
+        <div class="card" style="background:rgba(255,255,255,.02);border-color:var(--stroke);box-shadow:none;">
+          <div class="hd"><b>System</b></div>
+          <div class="bd">
+            <div class="row1">
+              <div>
+                <label>Nome sistema</label>
+                <input id="sysName" placeholder="es. Tarazed" />
+              </div>
+              <div>
+                <label>Livello servizi</label>
+                <select id="sysLevel">
+                  <option value="5">5 - capital (azzurro)</option>
+                  <option value="4">4 - major hub (bianco)</option>
+                  <option value="3">3 - spaceport (giallo)</option>
+                  <option value="2">2 - trading post (rosso chiaro)</option>
+                  <option value="1">1 - colony (rosso scuro)</option>
+                </select>
+              </div>
+            </div>
+            <div class="btns">
+              <button class="primary" id="btnSysSave">Aggiungi</button>
+              <button class="ghost" id="btnSysCancel" disabled>Annulla edit</button>
+              <button class="danger" id="btnSysDelete" disabled>Elimina</button>
+            </div>
+            <div class="hint" id="sysHint">Suggerimento: per editare, usa “Edit” dalla lista oppure seleziona un nodo.</div>
+          </div>
+        </div>
+
+        <div class="card" style="background:rgba(255,255,255,.02);border-color:var(--stroke);box-shadow:none;">
+          <div class="hd"><b>Hyperspace Link</b></div>
+          <div class="bd">
+            <div class="row">
+              <div>
+                <label>Nome 1</label>
+                <select id="lnA"></select>
+              </div>
+              <div>
+                <label>Nome 2</label>
+                <select id="lnB"></select>
+              </div>
+            </div>
+            <div style="margin-top:10px">
+              <label>Tipo</label>
+              <select id="lnType">
+                <option value="warp">warp (blue)</option>
+                <option value="chaos">chaos (red)</option>
+                <option value="hybrid">hybrid (purple)</option>
+                <option value="hidden">hidden (grey dashed)</option>
+              </select>
+            </div>
+            <div class="btns">
+              <button class="primary" id="btnLnSave">Aggiungi</button>
+              <button class="ghost" id="btnLnCancel" disabled>Annulla edit</button>
+              <button class="danger" id="btnLnDelete" disabled>Elimina</button>
+            </div>
+            <div class="hint">Nota: i link richiedono due sistemi esistenti.</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="card" style="margin-top:12px;background:rgba(255,255,255,.02);border-color:var(--stroke);box-shadow:none;">
+        <div class="hd"><b>Liste</b></div>
+        <div class="bd">
+          <div class="row1">
+            <div>
+              <label>Sistemi</label>
+              <div class="list" id="systemsList"></div>
+            </div>
+            <div style="margin-top:10px">
+              <label>Link</label>
+              <div class="list" id="linksList"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px;background:rgba(255,255,255,.02);border-color:var(--stroke);box-shadow:none;">
+        <div class="hd">
+          <b>Export JSON</b>
+          <button class="ok" id="btnExport" style="width:auto;padding:8px 10px;font-size:12px;border-radius:12px;">Genera JSON</button>
+        </div>
+        <div class="bd">
+          <textarea id="jsonOut" readonly placeholder="Clicca 'Genera JSON'..."></textarea>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const LS_KEY = "space_map_editor_v1";
+
+  const canvas = document.getElementById("map");
+  const ctx = canvas.getContext("2d");
+
+  const el = {
+    sysName: document.getElementById("sysName"),
+    sysLevel: document.getElementById("sysLevel"),
+    btnSysSave: document.getElementById("btnSysSave"),
+    btnSysCancel: document.getElementById("btnSysCancel"),
+    btnSysDelete: document.getElementById("btnSysDelete"),
+    sysHint: document.getElementById("sysHint"),
+
+    lnA: document.getElementById("lnA"),
+    lnB: document.getElementById("lnB"),
+    lnType: document.getElementById("lnType"),
+    btnLnSave: document.getElementById("btnLnSave"),
+    btnLnCancel: document.getElementById("btnLnCancel"),
+    btnLnDelete: document.getElementById("btnLnDelete"),
+
+    systemsList: document.getElementById("systemsList"),
+    linksList: document.getElementById("linksList"),
+
+    btnExport: document.getElementById("btnExport"),
+    jsonOut: document.getElementById("jsonOut"),
+
+    btnCenter: document.getElementById("btnCenter"),
+    btnRandomize: document.getElementById("btnRandomize"),
+    btnReset: document.getElementById("btnReset"),
+  };
+
+  const COLORS_BY_LEVEL = {
+    5: "#59c7ff",   // azzurro
+    4: "#ffffff",   // bianco
+    3: "#ffd84a",   // giallo
+    2: "#ff8f8f",   // rosso chiaro
+    1: "#b10b1e",   // rosso scuro
+  };
+
+  const LINK_STYLE = {
+    warp:   { color: "#2f6bff", dash: [] },
+    chaos:  { color: "#ff3b4d", dash: [] },
+    hybrid: { color: "#b86bff", dash: [] },
+    hidden: { color: "#9aa3b3", dash: [8, 8] },
+  };
+
+  const state = load() ?? {
+    systems: [], // { id, name, level, x, y }
+    links: [],   // { id, aId, bId, type }
+    view: { ox: 0, oy: 0, zoom: 1 },
+    ui: { selectedSystemId: null, selectedLinkId: null }
+  };
+
+  // --- Canvas sizing (HiDPI) ---
+  function resize() {
+    const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = Math.floor(rect.width * dpr);
+    canvas.height = Math.floor(rect.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    draw();
+  }
+  window.addEventListener("resize", resize, { passive: true });
+
+  // --- Helpers ---
+  const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
+
+  function save() {
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+  }
+  function load() {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  }
+
+  function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+
+  function worldToScreen(p){
+    const v = state.view;
+    return { x: (p.x + v.ox) * v.zoom, y: (p.y + v.oy) * v.zoom };
+  }
+  function screenToWorld(p){
+    const v = state.view;
+    return { x: p.x / v.zoom - v.ox, y: p.y / v.zoom - v.oy };
+  }
+
+  function systemRadius(level){
+    // più alto => più grande
+    // level 1..5 -> 9..18
+    return 7 + (Number(level) * 2.2);
+  }
+
+  function getSystemById(id){ return state.systems.find(s => s.id === id) || null; }
+  function getSystemByName(name){
+    const n = (name||"").trim().toLowerCase();
+    return state.systems.find(s => s.name.trim().toLowerCase() === n) || null;
+  }
+
+  function linkLabel(link){
+    const a = getSystemById(link.aId)?.name ?? "?";
+    const b = getSystemById(link.bId)?.name ?? "?";
+    return `${a} ↔ ${b}`;
+  }
+
+  function rebuildSelectOptions() {
+    const opts = state.systems
+      .slice()
+      .sort((x,y)=> x.name.localeCompare(y.name))
+      .map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`)
+      .join("");
+
+    el.lnA.innerHTML = `<option value="">(scegli)</option>` + opts;
+    el.lnB.innerHTML = `<option value="">(scegli)</option>` + opts;
+  }
+
+  function escapeHtml(str){
+    return (str ?? "").replace(/[&<>"']/g, m => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[m]));
+  }
+
+  // --- UI: Systems ---
+  let editingSystemId = null;
+  function setSystemEdit(id) {
+    editingSystemId = id;
+    if (!id) {
+      el.btnSysSave.textContent = "Aggiungi";
+      el.btnSysCancel.disabled = true;
+      el.btnSysDelete.disabled = true;
+      el.sysName.value = "";
+      el.sysLevel.value = "3";
+      el.sysHint.textContent = "Suggerimento: per editare, usa “Edit” dalla lista oppure seleziona un nodo.";
+      return;
+    }
+    const s = getSystemById(id);
+    if (!s) return;
+    el.btnSysSave.textContent = "Salva";
+    el.btnSysCancel.disabled = false;
+    el.btnSysDelete.disabled = false;
+    el.sysName.value = s.name;
+    el.sysLevel.value = String(s.level);
+    el.sysHint.textContent = `Edit system: ${s.name}`;
+  }
+
+  el.btnSysCancel.addEventListener("click", () => {
+    editingSystemId = null;
+    state.ui.selectedSystemId = null;
+    setSystemEdit(null);
+    save(); draw(); renderLists();
+  });
+
+  el.btnSysSave.addEventListener("click", () => {
+    const name = el.sysName.value.trim();
+    const level = Number(el.sysLevel.value);
+    if (!name) return;
+
+    // prevent duplicates by name (case-insensitive), except self
+    const exists = getSystemByName(name);
+    if (exists && exists.id !== editingSystemId) {
+      alert("Esiste già un sistema con questo nome.");
+      return;
+    }
+
+    if (!editingSystemId) {
+      const pos = randomWorldPos();
+      const sys = { id: uid(), name, level, x: pos.x, y: pos.y };
+      state.systems.push(sys);
+      state.ui.selectedSystemId = sys.id;
+      setSystemEdit(sys.id);
+    } else {
+      const s = getSystemById(editingSystemId);
+      if (!s) return;
+      s.name = name;
+      s.level = level;
+    }
+    rebuildSelectOptions();
+    save(); draw(); renderLists();
+  });
+
+  el.btnSysDelete.addEventListener("click", () => {
+    if (!editingSystemId) return;
+    const s = getSystemById(editingSystemId);
+    if (!s) return;
+    const ok = confirm(`Eliminare il sistema "${s.name}" e i link collegati?`);
+    if (!ok) return;
+
+    // remove links referencing this system
+    state.links = state.links.filter(l => l.aId !== s.id && l.bId !== s.id);
+    // remove system
+    state.systems = state.systems.filter(x => x.id !== s.id);
+
+    state.ui.selectedSystemId = null;
+    editingSystemId = null;
+    setSystemEdit(null);
+    rebuildSelectOptions();
+    save(); draw(); renderLists();
+  });
+
+  // --- UI: Links ---
+  let editingLinkId = null;
+  function setLinkEdit(id){
+    editingLinkId = id;
+    if (!id) {
+      el.btnLnSave.textContent = "Aggiungi";
+      el.btnLnCancel.disabled = true;
+      el.btnLnDelete.disabled = true;
+      el.lnA.value = "";
+      el.lnB.value = "";
+      el.lnType.value = "warp";
+      return;
+    }
+    const l = state.links.find(x => x.id === id);
+    if (!l) return;
+    el.btnLnSave.textContent = "Salva";
+    el.btnLnCancel.disabled = false;
+    el.btnLnDelete.disabled = false;
+    el.lnA.value = l.aId;
+    el.lnB.value = l.bId;
+    el.lnType.value = l.type;
+  }
+
+  el.btnLnCancel.addEventListener("click", () => {
+    editingLinkId = null;
+    state.ui.selectedLinkId = null;
+    setLinkEdit(null);
+    save(); draw(); renderLists();
+  });
+
+  function linkExists(aId, bId, exceptId){
+    const key = [aId,bId].sort().join("|");
+    return state.links.some(l => {
+      if (exceptId && l.id === exceptId) return false;
+      const k2 = [l.aId,l.bId].sort().join("|");
+      return k2 === key;
+    });
+  }
+
+  el.btnLnSave.addEventListener("click", () => {
+    const aId = el.lnA.value;
+    const bId = el.lnB.value;
+    const type = el.lnType.value;
+
+    if (!aId || !bId || aId === bId) return;
+    if (!getSystemById(aId) || !getSystemById(bId)) return;
+
+    if (linkExists(aId,bId,editingLinkId)) {
+      alert("Esiste già un link tra questi due sistemi.");
+      return;
+    }
+
+    if (!editingLinkId) {
+      const l = { id: uid(), aId, bId, type };
+      state.links.push(l);
+      state.ui.selectedLinkId = l.id;
+      setLinkEdit(l.id);
+    } else {
+      const l = state.links.find(x => x.id === editingLinkId);
+      if (!l) return;
+      l.aId = aId;
+      l.bId = bId;
+      l.type = type;
+    }
+    save(); draw(); renderLists();
+  });
+
+  el.btnLnDelete.addEventListener("click", () => {
+    if (!editingLinkId) return;
+    const l = state.links.find(x => x.id === editingLinkId);
+    if (!l) return;
+    const ok = confirm(`Eliminare link "${linkLabel(l)}"?`);
+    if (!ok) return;
+    state.links = state.links.filter(x => x.id !== l.id);
+    state.ui.selectedLinkId = null;
+    editingLinkId = null;
+    setLinkEdit(null);
+    save(); draw(); renderLists();
+  });
+
+  // --- Lists ---
+  function renderLists(){
+    // systems
+    const sysHtml = state.systems
+      .slice()
+      .sort((a,b)=> b.level - a.level || a.name.localeCompare(b.name))
+      .map(s => {
+        const sel = (state.ui.selectedSystemId === s.id) ? "border-color: rgba(122,162,255,.55)" : "";
+        return `
+          <div class="item" style="${sel}">
+            <div class="meta">
+              <b>${escapeHtml(s.name)}</b>
+              <small>Service level: ${s.level}</small>
+            </div>
+            <div class="actions">
+              <button class="ghost" data-act="sys-focus" data-id="${s.id}">Focus</button>
+              <button class="primary" data-act="sys-edit" data-id="${s.id}">Edit</button>
+            </div>
+          </div>`;
+      }).join("");
+    el.systemsList.innerHTML = sysHtml || `<div class="hint">Nessun sistema ancora.</div>`;
+
+    // links
+    const lnkHtml = state.links
+      .slice()
+      .sort((a,b)=> linkLabel(a).localeCompare(linkLabel(b)))
+      .map(l => {
+        const sel = (state.ui.selectedLinkId === l.id) ? "border-color: rgba(122,162,255,.55)" : "";
+        const st = LINK_STYLE[l.type] || LINK_STYLE.warp;
+        return `
+          <div class="item" style="${sel}">
+            <div class="meta">
+              <b>${escapeHtml(linkLabel(l))}</b>
+              <small>Type: <span style="color:${st.color}">${escapeHtml(l.type)}</span></small>
+            </div>
+            <div class="actions">
+              <button class="ghost" data-act="ln-focus" data-id="${l.id}">Focus</button>
+              <button class="primary" data-act="ln-edit" data-id="${l.id}">Edit</button>
+            </div>
+          </div>`;
+      }).join("");
+    el.linksList.innerHTML = lnkHtml || `<div class="hint">Nessun link ancora.</div>`;
+
+    // delegation
+    el.systemsList.querySelectorAll("button").forEach(btn => btn.addEventListener("click", onListBtn));
+    el.linksList.querySelectorAll("button").forEach(btn => btn.addEventListener("click", onListBtn));
+  }
+
+  function onListBtn(e){
+    const act = e.currentTarget.dataset.act;
+    const id = e.currentTarget.dataset.id;
+    if (act === "sys-edit") {
+      state.ui.selectedSystemId = id;
+      setSystemEdit(id);
+      save(); draw(); renderLists();
+    }
+    if (act === "sys-focus") {
+      focusSystem(id);
+      state.ui.selectedSystemId = id;
+      setSystemEdit(id);
+      save(); draw(); renderLists();
+    }
+    if (act === "ln-edit") {
+      state.ui.selectedLinkId = id;
+      setLinkEdit(id);
+      save(); draw(); renderLists();
+    }
+    if (act === "ln-focus") {
+      focusLink(id);
+      state.ui.selectedLinkId = id;
+      setLinkEdit(id);
+      save(); draw(); renderLists();
+    }
+  }
+
+  // --- Export JSON ---
+  el.btnExport.addEventListener("click", () => {
+    const payload = exportJson();
+    el.jsonOut.value = JSON.stringify(payload, null, 2);
+  });
+
+  function exportJson(){
+    // stable, readable format
+    return {
+      systems: state.systems
+        .slice()
+        .sort((a,b)=> a.name.localeCompare(b.name))
+        .map(s => ({ name: s.name, serviceLevel: s.level, x: round2(s.x), y: round2(s.y) })),
+      links: state.links
+        .slice()
+        .sort((a,b)=> linkLabel(a).localeCompare(linkLabel(b)))
+        .map(l => ({
+          a: getSystemById(l.aId)?.name ?? null,
+          b: getSystemById(l.bId)?.name ?? null,
+          type: l.type
+        }))
+    };
+  }
+  function round2(n){ return Math.round(n * 100) / 100; }
+
+  // --- Map controls ---
+  el.btnCenter.addEventListener("click", () => { centerView(); save(); draw(); });
+  el.btnRandomize.addEventListener("click", () => {
+    state.systems.forEach(s => {
+      const p = randomWorldPos();
+      s.x = p.x; s.y = p.y;
+    });
+    save(); draw(); renderLists();
+  });
+  el.btnReset.addEventListener("click", () => {
+    const ok = confirm("Cancellare tutto? (localStorage incluso)");
+    if (!ok) return;
+    localStorage.removeItem(LS_KEY);
+    location.reload();
+  });
+
+  function randomWorldPos(){
+    const rect = canvas.getBoundingClientRect();
+    // world coords ~ screen coords initially, keep a margin
+    const margin = 36;
+    return {
+      x: margin + Math.random() * (rect.width - margin*2),
+      y: margin + Math.random() * (rect.height - margin*2),
+    };
+  }
+
+  function centerView(){
+    state.view.ox = 0;
+    state.view.oy = 0;
+    state.view.zoom = 1;
+  }
+
+  function focusSystem(id){
+    const s = getSystemById(id);
+    if (!s) return;
+    // move view so that system is near center (with current zoom)
+    const rect = canvas.getBoundingClientRect();
+    const targetScreen = { x: rect.width/2, y: rect.height/2 };
+    const currentScreen = worldToScreen({ x: s.x, y: s.y });
+    const dx = (targetScreen.x - currentScreen.x) / state.view.zoom;
+    const dy = (targetScreen.y - currentScreen.y) / state.view.zoom;
+    state.view.ox += dx;
+    state.view.oy += dy;
+  }
+
+  function focusLink(id){
+    const l = state.links.find(x => x.id === id);
+    if (!l) return;
+    const a = getSystemById(l.aId), b = getSystemById(l.bId);
+    if (!a || !b) return;
+    const mid = { x: (a.x+b.x)/2, y: (a.y+b.y)/2 };
+    // focus like a system on midpoint
+    const rect = canvas.getBoundingClientRect();
+    const targetScreen = { x: rect.width/2, y: rect.height/2 };
+    const currentScreen = worldToScreen(mid);
+    const dx = (targetScreen.x - currentScreen.x) / state.view.zoom;
+    const dy = (targetScreen.y - currentScreen.y) / state.view.zoom;
+    state.view.ox += dx;
+    state.view.oy += dy;
+  }
+
+  // --- Drawing ---
+  function draw(){
+    const rect = canvas.getBoundingClientRect();
+    ctx.clearRect(0,0,rect.width,rect.height);
+
+    // subtle stars
+    drawStars(rect.width, rect.height);
+
+    // links behind
+    for (const l of state.links){
+      const a = getSystemById(l.aId);
+      const b = getSystemById(l.bId);
+      if (!a || !b) continue;
+      const A = worldToScreen(a);
+      const B = worldToScreen(b);
+      const st = LINK_STYLE[l.type] || LINK_STYLE.warp;
+
+      ctx.save();
+      ctx.lineWidth = (state.ui.selectedLinkId === l.id) ? 3 : 2;
+      ctx.strokeStyle = st.color;
+      ctx.setLineDash(st.dash);
+      ctx.globalAlpha = (l.type === "hidden") ? 0.65 : 0.85;
+
+      ctx.beginPath();
+      ctx.moveTo(A.x, A.y);
+      ctx.lineTo(B.x, B.y);
+      ctx.stroke();
+
+      // small arrow-ish midpoint mark
+      const mx = (A.x+B.x)/2, my=(A.y+B.y)/2;
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 0.55;
+      ctx.fillStyle = st.color;
+      ctx.beginPath();
+      ctx.arc(mx,my,3.2,0,Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // nodes
+    for (const s of state.systems){
+      const P = worldToScreen(s);
+      const r = systemRadius(s.level) * state.view.zoom;
+      const color = COLORS_BY_LEVEL[s.level] || "#fff";
+
+      // halo
+      ctx.save();
+      ctx.globalAlpha = 0.18;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(P.x, P.y, r*1.9, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+
+      // body
+      ctx.save();
+      const selected = state.ui.selectedSystemId === s.id;
+      ctx.fillStyle = color;
+      ctx.strokeStyle = selected ? "rgba(122,162,255,.95)" : "rgba(0,0,0,.55)";
+      ctx.lineWidth = selected ? 3 : 1.5;
+      ctx.beginPath();
+      ctx.arc(P.x, P.y, r, 0, Math.PI*2);
+      ctx.fill();
+      ctx.stroke();
+
+      // label
+      ctx.font = `${selected ? 13 : 12}px system-ui, -apple-system, Segoe UI, Roboto, Arial`;
+      ctx.fillStyle = "rgba(232,238,252,.92)";
+      ctx.textBaseline = "middle";
+      ctx.shadowColor = "rgba(0,0,0,.7)";
+      ctx.shadowBlur = 10;
+      ctx.fillText(s.name, P.x + r + 8, P.y);
+      ctx.restore();
+    }
+
+    // overlay small info
+    ctx.save();
+    ctx.globalAlpha = 0.65;
+    ctx.fillStyle = "rgba(232,238,252,.85)";
+    ctx.font = "12px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
+    ctx.fillText(`Systems: ${state.systems.length}  Links: ${state.links.length}`, 12, 18);
+    ctx.restore();
+  }
+
+  function drawStars(w,h){
+    // deterministic-ish based on counts
+    const n = Math.floor((w*h)/28000);
+    ctx.save();
+    ctx.globalAlpha = 0.12;
+    ctx.fillStyle = "#fff";
+    for (let i=0;i<n;i++){
+      const x = (i*9973) % Math.floor(w);
+      const y = (i*6907) % Math.floor(h);
+      const r = ((i*37)%10===0) ? 1.6 : 1.0;
+      ctx.beginPath();
+      ctx.arc(x,y,r,0,Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // --- Interaction: drag/select + pan + pinch zoom (basic) ---
+  let pointer = {
+    active: false,
+    mode: "none", // "drag-node" | "pan"
+    nodeId: null,
+    start: { x:0,y:0 },
+    startWorld: { x:0,y:0 },
+    startView: { ox:0, oy:0, zoom:1 }
+  };
+
+  function hitTestNode(screenX, screenY){
+    // find nearest node within radius
+    let best = null;
+    let bestD = Infinity;
+    for (const s of state.systems){
+      const P = worldToScreen(s);
+      const r = systemRadius(s.level) * state.view.zoom;
+      const dx = screenX - P.x, dy = screenY - P.y;
+      const d = Math.hypot(dx,dy);
+      if (d <= r + 10 && d < bestD){
+        best = s; bestD = d;
+      }
+    }
+    return best;
+  }
+
+  canvas.addEventListener("pointerdown", (e) => {
+    canvas.setPointerCapture(e.pointerId);
+    const rect = canvas.getBoundingClientRect();
+    const sx = e.clientX - rect.left;
+    const sy = e.clientY - rect.top;
+
+    const hit = hitTestNode(sx, sy);
+    pointer.active = true;
+    pointer.start = { x: sx, y: sy };
+    pointer.startView = { ...state.view };
+
+    if (hit){
+      pointer.mode = "drag-node";
+      pointer.nodeId = hit.id;
+      state.ui.selectedSystemId = hit.id;
+      state.ui.selectedLinkId = null;
+      setSystemEdit(hit.id);
+      setLinkEdit(null);
+      draw(); renderLists();
+      pointer.startWorld = { x: hit.x, y: hit.y };
+    } else {
+      pointer.mode = "pan";
+      pointer.nodeId = null;
+      state.ui.selectedSystemId = null;
+      // keep link selection as-is
+      setSystemEdit(null);
+      draw(); renderLists();
+    }
+  }, { passive: false });
+
+  canvas.addEventListener("pointermove", (e) => {
+    if (!pointer.active) return;
+    const rect = canvas.getBoundingClientRect();
+    const sx = e.clientX - rect.left;
+    const sy = e.clientY - rect.top;
+    const dx = sx - pointer.start.x;
+    const dy = sy - pointer.start.y;
+
+    if (pointer.mode === "drag-node" && pointer.nodeId){
+      const s = getSystemById(pointer.nodeId);
+      if (!s) return;
+      // translate in world units
+      s.x = pointer.startWorld.x + dx / state.view.zoom;
+      s.y = pointer.startWorld.y + dy / state.view.zoom;
+      save(); draw();
+      return;
+    }
+
+    if (pointer.mode === "pan"){
+      state.view.ox = pointer.startView.ox + dx / state.view.zoom;
+      state.view.oy = pointer.startView.oy + dy / state.view.zoom;
+      save(); draw();
+      return;
+    }
+  }, { passive: false });
+
+  canvas.addEventListener("pointerup", (e) => {
+    if (!pointer.active) return;
+    pointer.active = false;
+
+    // click selection for link: if short move and clicked on a link midpoint
+    const rect = canvas.getBoundingClientRect();
+    const sx = e.clientX - rect.left;
+    const sy = e.clientY - rect.top;
+    const moved = Math.hypot(sx - pointer.start.x, sy - pointer.start.y);
+
+    if (moved < 6 && pointer.mode !== "drag-node"){
+      const linkHit = hitTestLinkMidpoint(sx, sy);
+      if (linkHit){
+        state.ui.selectedLinkId = linkHit.id;
+        setLinkEdit(linkHit.id);
+        draw(); renderLists(); save();
+      }
+    }
+
+    pointer.mode = "none";
+    pointer.nodeId = null;
+  }, { passive: true });
+
+  function hitTestLinkMidpoint(sx, sy){
+    let best = null;
+    let bestD = Infinity;
+    for (const l of state.links){
+      const a = getSystemById(l.aId), b = getSystemById(l.bId);
+      if (!a || !b) continue;
+      const A = worldToScreen(a), B = worldToScreen(b);
+      const mx = (A.x+B.x)/2, my=(A.y+B.y)/2;
+      const d = Math.hypot(sx-mx, sy-my);
+      if (d < 14 && d < bestD){ best = l; bestD = d; }
+    }
+    return best;
+  }
+
+  // wheel zoom (desktop)
+  canvas.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const sx = e.clientX - rect.left;
+    const sy = e.clientY - rect.top;
+
+    const before = screenToWorld({ x:sx, y:sy });
+    const factor = Math.exp((-e.deltaY) * 0.0012);
+    state.view.zoom = clamp(state.view.zoom * factor, 0.5, 2.5);
+    const after = screenToWorld({ x:sx, y:sy });
+
+    // keep point under cursor stable
+    state.view.ox += (before.x - after.x);
+    state.view.oy += (before.y - after.y);
+
+    save(); draw();
+  }, { passive:false });
+
+  // --- Init ---
+  function init(){
+    // ensure view defaults
+    state.view = state.view || { ox:0, oy:0, zoom:1 };
+    state.ui = state.ui || { selectedSystemId:null, selectedLinkId:null };
+
+    rebuildSelectOptions();
+    setSystemEdit(null);
+    setLinkEdit(null);
+    renderLists();
+
+    // if existing map and no positions (migration)
+    for (const s of state.systems){
+      if (typeof s.x !== "number" || typeof s.y !== "number"){
+        const p = randomWorldPos();
+        s.x = p.x; s.y = p.y;
+      }
+    }
+    save();
+    resize();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
