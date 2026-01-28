@@ -1,0 +1,417 @@
+{
+  "systems": [
+    {
+      "name": "Alpha Centauri",
+      "serviceLevel": 4,
+      "x": -33.99,
+      "y": 607.31
+    },
+    {
+      "name": "Arachne",
+      "serviceLevel": 5,
+      "x": 871.41,
+      "y": 249.51
+    },
+    {
+      "name": "Arnack",
+      "serviceLevel": 1,
+      "x": 559.35,
+      "y": 237.32
+    },
+    {
+      "name": "Aslan",
+      "serviceLevel": 2,
+      "x": 1064.97,
+      "y": 94.91
+    },
+    {
+      "name": "Dwarf's End",
+      "serviceLevel": 1,
+      "x": -198.24,
+      "y": -159.65
+    },
+    {
+      "name": "Eos",
+      "serviceLevel": 4,
+      "x": 149.92,
+      "y": 166.08
+    },
+    {
+      "name": "Fandango",
+      "serviceLevel": 2,
+      "x": 121.69,
+      "y": 508.93
+    },
+    {
+      "name": "Far space 1",
+      "serviceLevel": 2,
+      "x": -42.95,
+      "y": 935.66
+    },
+    {
+      "name": "Far space 2",
+      "serviceLevel": 1,
+      "x": 39.93,
+      "y": 1217.28
+    },
+    {
+      "name": "Far space 3",
+      "serviceLevel": 1,
+      "x": 563.87,
+      "y": 1421.62
+    },
+    {
+      "name": "Gargantua",
+      "serviceLevel": 1,
+      "x": 314.62,
+      "y": 316.87
+    },
+    {
+      "name": "Glacius",
+      "serviceLevel": 1,
+      "x": -406.94,
+      "y": 657.72
+    },
+    {
+      "name": "Greenfield",
+      "serviceLevel": 3,
+      "x": -240.9,
+      "y": 123.39
+    },
+    {
+      "name": "Ludum",
+      "serviceLevel": 1,
+      "x": 163.78,
+      "y": 366.55
+    },
+    {
+      "name": "Lx 1",
+      "serviceLevel": 2,
+      "x": 730.65,
+      "y": -347.37
+    },
+    {
+      "name": "Lx 2",
+      "serviceLevel": 1,
+      "x": 561.33,
+      "y": -531.97
+    },
+    {
+      "name": "Lx 3",
+      "serviceLevel": 1,
+      "x": 210.81,
+      "y": -682.58
+    },
+    {
+      "name": "Nemo",
+      "serviceLevel": 1,
+      "x": -398.36,
+      "y": 94.55
+    },
+    {
+      "name": "Nimrod",
+      "serviceLevel": 2,
+      "x": 855.51,
+      "y": 604.59
+    },
+    {
+      "name": "Nisil",
+      "serviceLevel": 1,
+      "x": 1136.68,
+      "y": -110.63
+    },
+    {
+      "name": "Numbus",
+      "serviceLevel": 3,
+      "x": 106.2,
+      "y": 6.21
+    },
+    {
+      "name": "Nyx Fall",
+      "serviceLevel": 4,
+      "x": 498.93,
+      "y": 91.31
+    },
+    {
+      "name": "Pillars",
+      "serviceLevel": 2,
+      "x": -5.35,
+      "y": 824.6
+    },
+    {
+      "name": "Resilience",
+      "serviceLevel": 1,
+      "x": -118.64,
+      "y": 713.5
+    },
+    {
+      "name": "Rodam",
+      "serviceLevel": 2,
+      "x": 373.56,
+      "y": 411.21
+    },
+    {
+      "name": "Ry'lie",
+      "serviceLevel": 3,
+      "x": 752.19,
+      "y": -176.96
+    },
+    {
+      "name": "Rys",
+      "serviceLevel": 4,
+      "x": 662.55,
+      "y": 328.06
+    },
+    {
+      "name": "Smuggler's Den",
+      "serviceLevel": 3,
+      "x": 172.12,
+      "y": 769.07
+    },
+    {
+      "name": "Sol",
+      "serviceLevel": 5,
+      "x": -102.35,
+      "y": 339.24
+    },
+    {
+      "name": "Solitude",
+      "serviceLevel": 2,
+      "x": -110.66,
+      "y": 9.1
+    },
+    {
+      "name": "Taknak",
+      "serviceLevel": 3,
+      "x": 953.76,
+      "y": 370.77
+    },
+    {
+      "name": "Tarazed",
+      "serviceLevel": 3,
+      "x": 629.61,
+      "y": 622.02
+    },
+    {
+      "name": "Taurus Horns",
+      "serviceLevel": 2,
+      "x": 107.16,
+      "y": 275.43
+    },
+    {
+      "name": "Tortuga",
+      "serviceLevel": 1,
+      "x": 141.55,
+      "y": 887.47
+    },
+    {
+      "name": "Turtuk",
+      "serviceLevel": 1,
+      "x": 795.92,
+      "y": 428.58
+    },
+    {
+      "name": "Warfield",
+      "serviceLevel": 1,
+      "x": 341.81,
+      "y": 209.91
+    }
+  ],
+  "links": [
+    {
+      "a": "Alpha Centauri",
+      "b": "Fandango",
+      "type": "warp"
+    },
+    {
+      "a": "Alpha Centauri",
+      "b": "Pillars",
+      "type": "warp"
+    },
+    {
+      "a": "Alpha Centauri",
+      "b": "Resilience",
+      "type": "warp"
+    },
+    {
+      "a": "Alpha Centauri",
+      "b": "Smuggler's Den",
+      "type": "hidden"
+    },
+    {
+      "a": "Arachne",
+      "b": "Aslan",
+      "type": "chaos"
+    },
+    {
+      "a": "Arachne",
+      "b": "Nyx Fall",
+      "type": "chaos"
+    },
+    {
+      "a": "Arachne",
+      "b": "Ry'lie",
+      "type": "chaos"
+    },
+    {
+      "a": "Arachne",
+      "b": "Rys",
+      "type": "chaos"
+    },
+    {
+      "a": "Arachne",
+      "b": "Taknak",
+      "type": "chaos"
+    },
+    {
+      "a": "Aslan",
+      "b": "Nisil",
+      "type": "chaos"
+    },
+    {
+      "a": "Eos",
+      "b": "Numbus",
+      "type": "warp"
+    },
+    {
+      "a": "Eos",
+      "b": "Taurus Horns",
+      "type": "warp"
+    },
+    {
+      "a": "Eos",
+      "b": "Warfield",
+      "type": "hybrid"
+    },
+    {
+      "a": "Fandango",
+      "b": "Rodam",
+      "type": "hybrid"
+    },
+    {
+      "a": "Far space 1",
+      "b": "Far space 2",
+      "type": "warp"
+    },
+    {
+      "a": "Far space 2",
+      "b": "Far space 3",
+      "type": "warp"
+    },
+    {
+      "a": "Gargantua",
+      "b": "Rodam",
+      "type": "hybrid"
+    },
+    {
+      "a": "Greenfield",
+      "b": "Nemo",
+      "type": "warp"
+    },
+    {
+      "a": "Greenfield",
+      "b": "Solitude",
+      "type": "warp"
+    },
+    {
+      "a": "Ludum",
+      "b": "Fandango",
+      "type": "hidden"
+    },
+    {
+      "a": "Lx 1",
+      "b": "Lx 2",
+      "type": "chaos"
+    },
+    {
+      "a": "Lx 2",
+      "b": "Lx 3",
+      "type": "chaos"
+    },
+    {
+      "a": "Nisil",
+      "b": "Glacius",
+      "type": "hidden"
+    },
+    {
+      "a": "Pillars",
+      "b": "Far space 1",
+      "type": "hidden"
+    },
+    {
+      "a": "Ry'lie",
+      "b": "Lx 1",
+      "type": "hidden"
+    },
+    {
+      "a": "Rys",
+      "b": "Arnack",
+      "type": "chaos"
+    },
+    {
+      "a": "Rys",
+      "b": "Nimrod",
+      "type": "chaos"
+    },
+    {
+      "a": "Rys",
+      "b": "Rodam",
+      "type": "hybrid"
+    },
+    {
+      "a": "Rys",
+      "b": "Tarazed",
+      "type": "hidden"
+    },
+    {
+      "a": "Sol",
+      "b": "Alpha Centauri",
+      "type": "warp"
+    },
+    {
+      "a": "Sol",
+      "b": "Eos",
+      "type": "warp"
+    },
+    {
+      "a": "Sol",
+      "b": "Glacius",
+      "type": "warp"
+    },
+    {
+      "a": "Sol",
+      "b": "Greenfield",
+      "type": "warp"
+    },
+    {
+      "a": "Solitude",
+      "b": "Dwarf's End",
+      "type": "warp"
+    },
+    {
+      "a": "Taknak",
+      "b": "Nimrod",
+      "type": "chaos"
+    },
+    {
+      "a": "Tortuga",
+      "b": "Smuggler's Den",
+      "type": "warp"
+    },
+    {
+      "a": "Turtuk",
+      "b": "Taknak",
+      "type": "hidden"
+    },
+    {
+      "a": "Warfield",
+      "b": "Gargantua",
+      "type": "hybrid"
+    },
+    {
+      "a": "Warfield",
+      "b": "Nyx Fall",
+      "type": "hybrid"
+    }
+  ]
+}
