@@ -1,0 +1,326 @@
+<!-- Command to launch: npx serve . -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Galaxy Viewer</title>
+  <style>
+    html,body{height:100%;margin:0}
+    body{background:#060914;color:#e8eefc;overflow:hidden;touch-action:none;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    canvas{width:100%;height:100%;display:block;touch-action:none}
+    .hud{
+      position:fixed;left:10px;top:10px;z-index:2;
+      background:rgba(0,0,0,.35);backdrop-filter: blur(8px);
+      border:1px solid rgba(255,255,255,.12);border-radius:14px;
+      padding:8px 10px;font-size:12px;max-width:min(360px,calc(100vw - 20px));
+    }
+    .hud small{opacity:.75;display:block;margin-top:2px;line-height:1.25}
+  </style>
+</head>
+<body>
+  <div class="hud">
+    <b>Galaxy Viewer</b>
+    <small id="status">Loading /spaceFighter/game/galaxy-map.json ...</small>
+    <small>Pan: drag · Zoom: wheel / pinch · Double click/tap: zoom in</small>
+  </div>
+  <canvas id="c"></canvas>
+
+<script>
+(() => {
+  const JSON_URL = "/spaceFighter/game/galaxy-map.json";
+
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d");
+  const statusEl = document.getElementById("status");
+
+  const cam = { x: 0, y: 0, z: 1 }; // world offset + zoom
+  const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+  const DPR = () => Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+
+  let W=0, H=0;
+
+  // Data in your exact schema
+  let systems = []; // {name, serviceLevel, x, y}
+  let links = [];   // {a, b, type}
+  let sysByName = new Map();
+
+  const SERVICE_COLORS = {
+    5:"#59c7ff", 4:"#ffffff", 3:"#ffd84a", 2:"#ff8f8f", 1:"#b10b1e"
+  };
+  const LINK_STYLE = {
+    warp:{ color:"#2f6bff", dash:[] },
+    chaos:{ color:"#ff3b4d", dash:[] },
+    hybrid:{ color:"#b86bff", dash:[] },
+    hidden:{ color:"#9aa3b3", dash:[8,8] }
+  };
+
+  function resize(){
+    const r = canvas.getBoundingClientRect();
+    W = r.width; H = r.height;
+    const dpr = DPR();
+    canvas.width = Math.floor(W * dpr);
+    canvas.height = Math.floor(H * dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    draw();
+  }
+  window.addEventListener("resize", resize, {passive:true});
+
+  // --- transforms (world <-> screen)
+  function worldToScreen(p){ return { x:(p.x + cam.x)*cam.z + W/2, y:(p.y + cam.y)*cam.z + H/2 }; }
+  function screenToWorld(p){ return { x:(p.x - W/2)/cam.z - cam.x, y:(p.y - H/2)/cam.z - cam.y }; }
+
+  function zoomAt(screenPt, factor){
+    const before = screenToWorld(screenPt);
+    cam.z = clamp(cam.z * factor, 0.15, 6.0);
+    const after = screenToWorld(screenPt);
+    cam.x += (before.x - after.x);
+    cam.y += (before.y - after.y);
+    draw();
+  }
+
+  function fitToContent(){
+    if (!systems.length) return;
+    let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+    for (const s of systems){
+      minX=Math.min(minX,s.x); minY=Math.min(minY,s.y);
+      maxX=Math.max(maxX,s.x); maxY=Math.max(maxY,s.y);
+    }
+    const cx=(minX+maxX)/2, cy=(minY+maxY)/2;
+    cam.x = -cx; cam.y = -cy;
+
+    const pad = 180;
+    const spanX = (maxX-minX)+pad;
+    const spanY = (maxY-minY)+pad;
+    const zX = W / Math.max(1, spanX);
+    const zY = H / Math.max(1, spanY);
+    cam.z = clamp(Math.min(zX,zY), 0.2, 1.8);
+  }
+
+  // --- rendering
+  function drawBackground(){
+    ctx.clearRect(0,0,W,H);
+    ctx.save();
+    ctx.globalAlpha = 0.12;
+    ctx.fillStyle = "#fff";
+    const n = Math.floor((W*H)/28000);
+    for (let i=0;i<n;i++){
+      const x = (i*9973) % Math.floor(W);
+      const y = (i*6907) % Math.floor(H);
+      const r = ((i*37)%11===0) ? 1.6 : 1.0;
+      ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function nodeRadius(serviceLevel){
+    // higher service => bigger; keep readable across zoom
+    const base = 7 + (Number(serviceLevel)||3)*2.2; // L1..L5
+    return base * Math.sqrt(cam.z);
+  }
+
+  function draw(){
+    drawBackground();
+
+    if (!systems.length){
+      ctx.save();
+      ctx.fillStyle="rgba(232,238,252,.8)";
+      ctx.font="14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      ctx.fillText("No systems in JSON.", 16, 44);
+      ctx.restore();
+      return;
+    }
+
+    // links
+    for (const l of links){
+      const A = sysByName.get((l.a||"").toLowerCase());
+      const B = sysByName.get((l.b||"").toLowerCase());
+      if (!A || !B) continue;
+
+      const sA = worldToScreen(A);
+      const sB = worldToScreen(B);
+      const st = LINK_STYLE[l.type] || LINK_STYLE.warp;
+
+      ctx.save();
+      ctx.strokeStyle = st.color;
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = (l.type === "hidden") ? 0.55 : 0.85;
+      ctx.setLineDash(st.dash);
+      ctx.beginPath();
+      ctx.moveTo(sA.x, sA.y);
+      ctx.lineTo(sB.x, sB.y);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // nodes + labels
+    for (const s of systems){
+      const p = worldToScreen(s);
+      const r = nodeRadius(s.serviceLevel);
+      const col = SERVICE_COLORS[s.serviceLevel] || "#fff";
+
+      // halo
+      ctx.save();
+      ctx.globalAlpha = 0.16;
+      ctx.fillStyle = col;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r*1.8, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+
+      // body
+      ctx.save();
+      ctx.fillStyle = col;
+      ctx.strokeStyle = "rgba(0,0,0,.55)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r, 0, Math.PI*2);
+      ctx.fill();
+      ctx.stroke();
+
+      // label
+      const fontSize = clamp(10 + cam.z*1.5, 10, 15);
+      ctx.font = `${fontSize}px system-ui, -apple-system, Segoe UI, Roboto, Arial`;
+      ctx.fillStyle = "rgba(232,238,252,.92)";
+      ctx.shadowColor = "rgba(0,0,0,.75)";
+      ctx.shadowBlur = 10;
+      ctx.textBaseline = "middle";
+      ctx.fillText(s.name, p.x + r + 7, p.y);
+      ctx.restore();
+    }
+  }
+
+  // --- input
+  let dragging=false;
+  let last = { x:0, y:0 };
+
+  canvas.addEventListener("pointerdown", (e) => {
+    canvas.setPointerCapture(e.pointerId);
+    dragging = true;
+    last.x = e.clientX; last.y = e.clientY;
+  }, {passive:true});
+
+  canvas.addEventListener("pointermove", (e) => {
+    if (!dragging) return;
+    const dx = e.clientX - last.x;
+    const dy = e.clientY - last.y;
+    last.x = e.clientX; last.y = e.clientY;
+    cam.x += dx / cam.z;
+    cam.y += dy / cam.z;
+    draw();
+  }, {passive:true});
+
+  canvas.addEventListener("pointerup", () => dragging=false, {passive:true});
+  canvas.addEventListener("pointercancel", () => dragging=false, {passive:true});
+
+  // wheel zoom (desktop)
+  canvas.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const pt = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    const factor = Math.exp((-e.deltaY) * 0.0012);
+    zoomAt(pt, factor);
+  }, {passive:false});
+
+  // double click/tap zoom
+  let lastTap = 0;
+  canvas.addEventListener("pointerup", (e) => {
+    const now = performance.now();
+    if (now - lastTap < 280) {
+      const rect = canvas.getBoundingClientRect();
+      const pt = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      zoomAt(pt, 1.35);
+      lastTap = 0;
+    } else {
+      lastTap = now;
+    }
+  }, {passive:true});
+
+  // pinch zoom (2 pointers)
+  const touches = new Map(); // pointerId -> {x,y}
+  let pinchStart = null;     // {dist, mid:{x,y}, z}
+
+  const dist = (a,b)=>Math.hypot(a.x-b.x, a.y-b.y);
+  const mid  = (a,b)=>({x:(a.x+b.x)/2, y:(a.y+b.y)/2});
+
+  canvas.addEventListener("pointerdown", (e) => {
+    touches.set(e.pointerId, { x:e.clientX, y:e.clientY });
+    if (touches.size === 2) {
+      const pts = [...touches.values()];
+      pinchStart = { dist: dist(pts[0], pts[1]), mid: mid(pts[0], pts[1]), z: cam.z };
+    }
+  }, {passive:true});
+
+  canvas.addEventListener("pointermove", (e) => {
+    if (!touches.has(e.pointerId)) return;
+    touches.set(e.pointerId, { x:e.clientX, y:e.clientY });
+
+    if (touches.size === 2 && pinchStart) {
+      const pts = [...touches.values()];
+      const d = dist(pts[0], pts[1]);
+      const m = mid(pts[0], pts[1]);
+
+      const rect = canvas.getBoundingClientRect();
+      const pt = { x: m.x - rect.left, y: m.y - rect.top };
+
+      const before = screenToWorld(pt);
+      const factor = clamp(d / pinchStart.dist, 0.6, 1.7);
+      cam.z = clamp(pinchStart.z * factor, 0.15, 6.0);
+      const after = screenToWorld(pt);
+
+      cam.x += (before.x - after.x);
+      cam.y += (before.y - after.y);
+      draw();
+    }
+  }, {passive:true});
+
+  canvas.addEventListener("pointerup", (e) => {
+    touches.delete(e.pointerId);
+    if (touches.size < 2) pinchStart = null;
+  }, {passive:true});
+
+  canvas.addEventListener("pointercancel", (e) => {
+    touches.delete(e.pointerId);
+    if (touches.size < 2) pinchStart = null;
+  }, {passive:true});
+
+  // --- load
+  async function load(){
+    try{
+      const res = await fetch(JSON_URL, { cache:"no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+
+      systems = (json.systems || []).map(s => ({
+        name: String(s.name),
+        serviceLevel: clamp(Number(s.serviceLevel ?? 3), 1, 5),
+        x: Number(s.x ?? 0),
+        y: Number(s.y ?? 0),
+      }));
+      links = (json.links || []).map(l => ({
+        a: String(l.a),
+        b: String(l.b),
+        type: String(l.type || "warp"),
+      }));
+
+      sysByName = new Map(systems.map(s => [s.name.toLowerCase(), s]));
+
+      // tell if some links are dangling
+      const dangling = links.filter(l => !sysByName.has(l.a.toLowerCase()) || !sysByName.has(l.b.toLowerCase())).length;
+      statusEl.textContent = `Loaded: ${systems.length} systems, ${links.length} links${dangling ? ` (${dangling} dangling)` : ""}`;
+
+      resize();
+      fitToContent();
+      draw();
+    } catch (err){
+      statusEl.textContent = `Failed: ${JSON_URL} (${err.message})`;
+      resize();
+      draw();
+    }
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>
