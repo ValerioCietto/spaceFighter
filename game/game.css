@@ -151,6 +151,70 @@ body {
   transition: opacity 0.2s, border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
 }
 
+#inventory-btn {
+  position: absolute;
+  top: calc(8px + 140px + 8px + 28px + 28px); /* 8px (top minimap) + 140px (minimap height) + 8px margin */
+  right: 8px;
+  width: 140px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--ui-border);
+  background: var(--ui-bg);
+  color: var(--text);
+  font-size: 12px;
+  text-align: center;
+  cursor: pointer;
+  z-index: 11;
+  backdrop-filter: blur(4px);
+  opacity: 0.6;
+  transition: opacity 0.2s, border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+.death-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s;
+  z-index: 2000;
+}
+.death-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.death-dialog {
+  background: #120000;
+  color: #f55;
+  padding: 24px;
+  border: 1px solid #400;
+  border-radius: 10px;
+  text-align: center;
+  width: 420px;
+}
+
+.death-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.death-actions button {
+  padding: 10px 14px;
+  background: #200;
+  color: #fff;
+  border: 1px solid #600;
+  cursor: pointer;
+}
+.death-actions button:hover {
+  background: #400;
+}
+
 #dock-button:hover {
   opacity: 1;
   border-color: var(--accent);
@@ -234,6 +298,48 @@ body {
   background: rgba(79, 195, 247, 0.12);
 }
 
+.inventory-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s;
+  z-index: 1001;
+}
+.inventory-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.inventory-dialog {
+  width: 420px;
+  background: #111;
+  color: #eee;
+  border: 1px solid #333;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.inventory-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  border-bottom: 1px solid #333;
+}
+
+.inventory-body {
+  padding: 16px;
+}
+
+.inventory-stats li {
+  margin-bottom: 8px;
+}
+
 /* RESPONSIVE TWEAKS (game UI) */
 
 @media (min-width: 768px) {
@@ -253,3 +359,5 @@ body {
     font-size: 20px;
   }
 }
+
+
