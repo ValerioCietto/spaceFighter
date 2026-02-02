@@ -170,6 +170,25 @@ body {
   transition: opacity 0.2s, border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
 }
 
+#galaxy-map-btn {
+  position: absolute;
+  top: calc(8px + 140px + 8px + 28px + 28px + 28px); /* 8px (top minimap) + 140px (minimap height) + 8px margin */
+  right: 8px;
+  width: 140px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--ui-border);
+  background: var(--ui-bg);
+  color: var(--text);
+  font-size: 12px;
+  text-align: center;
+  cursor: pointer;
+  z-index: 11;
+  backdrop-filter: blur(4px);
+  opacity: 0.6;
+  transition: opacity 0.2s, border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
 .death-overlay {
   position: fixed;
   inset: 0;
@@ -213,6 +232,54 @@ body {
 }
 .death-actions button:hover {
   background: #400;
+}
+
+.galaxy-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s;
+  z-index: 1500;
+}
+.galaxy-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.galaxy-dialog {
+  width: 90vw;
+  height: 90vh;
+  background: #080808;
+  border: 1px solid #333;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.galaxy-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid #333;
+  color: #0ff;
+}
+
+.galaxy-body {
+  flex: 1;
+  overflow: hidden;
+}
+
+.galaxy-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #000;
 }
 
 #dock-button:hover {

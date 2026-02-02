@@ -141,6 +141,9 @@
 
       inventoryCloseBtn.addEventListener("click", closeInventory);
 
+      const galaxyMapBtn = document.getElementById("galaxy-map-btn");
+      galaxyMapBtn.addEventListener("click", openGalaxyOverlay);
+
       // optional: ESC key
       window.addEventListener("keydown", e => {
         if (e.key === "Escape") closeInventory();
@@ -169,6 +172,24 @@
 
       deathRestartBtn.addEventListener("click", () => {
         alert("Restart from save file not yet implemented");
+      });
+
+      const galaxyOverlayEl = document.getElementById("galaxy-overlay");
+      const galaxyCloseBtn = document.getElementById("galaxy-close-btn");
+
+      function openGalaxyOverlay() {
+        galaxyOverlayEl.classList.add("open");
+      }
+
+      function closeGalaxyOverlay() {
+        galaxyOverlayEl.classList.remove("open");
+      }
+
+      galaxyCloseBtn.addEventListener("click", closeGalaxyOverlay);
+
+      // optional ESC close
+      window.addEventListener("keydown", e => {
+        if (e.key === "Escape") closeGalaxyOverlay();
       });
 
       const changeShipBtn = document.getElementById("change-ship-button");

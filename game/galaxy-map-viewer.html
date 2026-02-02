@@ -29,6 +29,13 @@
 <script>
 (() => {
   const JSON_URL = "/spaceFighter/game/galaxy-map.json";
+  const LOCAL_JSON_URL = "/game/galaxy-map.json";
+
+  const isLocal =
+    location.hostname === "127.0.0.1" ||
+    location.hostname === "localhost";
+
+  const GALAXY_JSON_URL = isLocal ? LOCAL_JSON_URL : JSON_URL;
 
   const canvas = document.getElementById("c");
   const ctx = canvas.getContext("2d");
@@ -287,7 +294,8 @@
   // --- load
   async function load(){
     try{
-      const res = await fetch(JSON_URL, { cache:"no-store" });
+
+      const res = await fetch(GALAXY_JSON_URL, { cache:"no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
 
@@ -313,7 +321,7 @@
       fitToContent();
       draw();
     } catch (err){
-      statusEl.textContent = `Failed: ${JSON_URL} (${err.message})`;
+      statusEl.textContent = `Failed: ${GALAXY_JSON_URL} (${err.message})`;
       resize();
       draw();
     }
