@@ -126,6 +126,51 @@
       const stationTabButtons = document.querySelectorAll(".station-tab-btn");
       const stationTabContentEl = document.getElementById("station-tab-content");
 
+      const inventoryOverlayEl = document.getElementById("inventory-overlay");
+      const inventoryCloseBtn = document.getElementById("inventory-close-btn");
+      const inventoryBtn = document.getElementById("inventory-btn");
+
+      inventoryBtn.addEventListener("click", openInventory);
+      function openInventory() {
+        inventoryOverlayEl.classList.add("open");
+      }
+
+      function closeInventory() {
+        inventoryOverlayEl.classList.remove("open");
+      }
+
+      inventoryCloseBtn.addEventListener("click", closeInventory);
+
+      // optional: ESC key
+      window.addEventListener("keydown", e => {
+        if (e.key === "Escape") closeInventory();
+      });
+
+      const deathOverlayEl = document.getElementById("death-overlay");
+      const deathReloadBtn = document.getElementById("death-reload-btn");
+      const deathRestartBtn = document.getElementById("death-restart-btn");
+
+      function openDeathOverlay() {
+        deathOverlayEl.classList.add("open");
+      }
+
+      function closeDeathOverlay() {
+        deathOverlayEl.classList.remove("open");
+      }
+
+      // Called by game logic when hull <= 0
+      function onPlayerDeath() {
+        openDeathOverlay();
+      }
+
+      deathReloadBtn.addEventListener("click", () => {
+        window.location.reload();
+      });
+
+      deathRestartBtn.addEventListener("click", () => {
+        alert("Restart from save file not yet implemented");
+      });
+
       const changeShipBtn = document.getElementById("change-ship-button");
       if (!changeShipBtn) return;
 
@@ -1020,6 +1065,7 @@
 
       if (state.player.shipStats.hull <= 0) {
         console.log("DESTROYED");
+        onPlayerDeath();
       }
     }
 

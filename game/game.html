@@ -48,7 +48,9 @@
     </div>
     <button id="dock-button" type="button">Dock</button>
     <button id="change-ship-button" type="button">Change ship</button>
-
+    <button id="inventory-btn" class="inventory-btn" type="button">
+      Inventory
+    </button>
     <!-- Docking message -->
     <div id="docking-message" class="docking-message">
       docking with station...
@@ -75,6 +77,41 @@
       </div>
     </div>
 
+    <!-- Inventory overlay -->
+    <div class="inventory-overlay" id="inventory-overlay" aria-hidden="true">
+      <div class="inventory-dialog" role="dialog" aria-modal="true">
+        <div class="inventory-header">
+          <h2>Inventory</h2>
+          <button id="inventory-close-btn" type="button">Close</button>
+        </div>
+
+        <div class="inventory-body">
+          <ul class="inventory-stats">
+            <li><strong>Credits:</strong> <span id="stat-credits">12000</span></li>
+            <li><strong>Hull:</strong> <span id="stat-hull">85%</span></li>
+            <li><strong>Shield:</strong> <span id="stat-shield">60%</span></li>
+            <li><strong>Cargo:</strong> <span id="stat-cargo">12 / 30</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="death-overlay" id="death-overlay" aria-hidden="true">
+      <div class="death-dialog" role="dialog" aria-modal="true">
+        <h2>Ship Destroyed</h2>
+        <p>Your hull integrity reached zero.</p>
+
+        <div class="death-actions">
+          <button id="death-reload-btn" type="button">
+            Reload from last system
+          </button>
+          <button id="death-restart-btn" type="button">
+            Restart from save file
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div id="touch-controls">
       <div class="touch-group">
         <div class="touch-btn" data-action="left">←</div>
@@ -90,6 +127,7 @@
         <div class="touch-btn" data-action="brake">▼</div>
       </div>
     </div>
+
   </div>
   <script src="const.js"></script>
   <script src="station-manager.js"></script>
