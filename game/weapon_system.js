@@ -1,143 +1,66 @@
+// Command to launch: `npx serve .` then open http://localhost:3000/game.html
 
- // Weapons definitions
-const WeaponSpaceBullet = {
-  name: "Space Bullet",
-  cost: 1000,
-  damage: 1,
-  base_speed: 250,
-  life_span: 3.0,
-  spread: 0.15,
-  projectiles: 1,
-  aspect: "round_bullet",
-  delay_ms: 500,
-  energy_cost: 10,
-  engage_range: 700,
-};
+// --- weapons loader (JSON-backed) ---
 
-const WeaponSniper = {
-  name: "Sniper",
-  cost: 2000,
-  damage: 5,
-  base_speed: 1000,
-  life_span: 5.0,
-  spread: 0.0,
-  projectiles: 1,
-  aspect: "line",
-  auto_aim: 0.5,
-  delay_ms: 3000,
-  energy_cost: 100,
-  engage_range: 5000,
-};
+const REMOTE_WEAPONS_URL = "/spaceFighter/game/weapons.json";
+const LOCAL_WEAPONS_URL = "/game/weapons.json";
 
-const WeaponShotgun = {
-  name: "Shotgun",
-  cost: 1500,
-  damage: 2,
-  base_speed: 300,
-  acceleration: -75,
-  life_span: 2.0,
-  spread: 10.0,
-  projectiles: 5,
-  aspect: "bullet",
-  delay_ms: 2000,
-  energy_cost: 50,
-  engage_range: 500,
-};
-
-const WeaponHomingMissiles = {
-  name: "Homing missiles",
-  cost: 2500,
-  damage: 5,
-  base_speed: 100,
-  acceleration: 10,
-  speed: 300,
-  turning_speed_deg: 90,
-  life_span: 10.0,
-  spread: 3.0,
-  projectiles: 1,
-  aspect: "missile",
-  delay_ms: 10000,
-  homing: true,
-  energy_cost: 5,
-  engage_range: 2000,
-};
-WeaponHomingMissiles.turn_speed_rad =
-  WeaponHomingMissiles.turning_speed_deg * Math.PI / 180;
-
-const WeaponLazyMissiles = {
-  name: "Lazy missiles",
-  cost: 1200,
-  damage: 10,
-  base_speed: 10,
-  acceleration: 300,
-  speed: 1000,
-  turning_speed_deg: 10,
-  life_span: 10.0,
-  spread: 3.0,
-  projectiles: 2,
-  aspect: "missile",
-  delay_ms: 5000,
-  homing: true,
-  energy_cost: 20,
-  engage_range: 3000,
-};
-WeaponLazyMissiles.turn_speed_rad =
-  WeaponLazyMissiles.turning_speed_deg * Math.PI / 180;
-
-const WeaponShockwave = {
-  name: "Shockwave",
-  cost: 5500,
-  damage: 2,
-  base_speed: 300,
-  acceleration: -75,
-  life_span: 0.2,
-  spread: 360.0,
-  projectiles: 90,
-  aspect: "line",
-  delay_ms: 2000,
-  energy_cost: 40,
-  engage_range: 60,
-};  
-
-const WeaponMinelayer = {
-  name: "Minelayer",
-  cost: 3000,
-  damage: 1,
-  base_speed: 10,
-  acceleration: 10,
-  life_span: 120.0,
-  speed: 300,
-  spread: 360.0,
-  projectiles: 60,
-  aspect: "bullet",
-  delay_ms: 2000,
-  energy_cost: 15,
-  engage_range: 4000,
+function isLocalhost() {
+  const h = (location.hostname || "").toLowerCase();
+  return h === "127.0.0.1" || h === "localhost" || h === "";
 }
 
-const weapons = [
-  WeaponLazyMissiles,
-  WeaponMinelayer,
-  WeaponSpaceBullet,
-  WeaponSniper,
-  WeaponShotgun,
-  WeaponHomingMissiles,
-  WeaponShockwave
-];
+function getWeaponsUrl() {
+  return isLocalhost() ? LOCAL_WEAPONS_URL : REMOTE_WEAPONS_URL;
+}
 
-const EnemyWeaponPool = [
-  WeaponSpaceBullet,
-  WeaponShockwave,
-  WeaponShotgun
-];
+function withDerivedFields(w) {
+  const out = { ...w };
+
+  // Backward/forward compat: allow either turning_speed_deg or turn_speed_rad in JSON
+  if (typeof out.turn_speed_rad !== "number" && typeof out.turning_speed_deg === "number") {
+    out.turn_speed_rad = (out.turning_speed_deg * Math.PI) / 180;
+  }
+
+  return out;
+}
+
+async function loadWeaponsFromJson() {
+  const url = getWeaponsUrl();
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) throw new Error(`Failed to load weapons JSON (${res.status}) from ${url}`);
+
+  const data = await res.json();
+
+  // Expected shape:
+  // { weapons: [...], enemyWeaponPool: [...] }
+  const weapons = (data.weapons || []).map(withDerivedFields);
+
+  // enemyWeaponPool can be array of weapon names, or full weapon objects
+  let enemyWeaponPool = data.enemyWeaponPool || [];
+  if (enemyWeaponPool.length && typeof enemyWeaponPool[0] === "string") {
+    const byName = new Map(weapons.map((w) => [w.name, w]));
+    enemyWeaponPool = enemyWeaponPool
+      .map((name) => byName.get(name))
+      .filter(Boolean);
+  } else {
+    enemyWeaponPool = enemyWeaponPool.map(withDerivedFields);
+  }
+
+  return { weapons, enemyWeaponPool };
+}
+
+// --- API kept compatible with your current code ---
+
+let weapons = [];
+let EnemyWeaponPool = [];
+
+let currentWeaponIndex = 0;
+let weaponLastFire = []; // sized after load
 
 function pickEnemyWeapon() {
   return EnemyWeaponPool[(Math.random() * EnemyWeaponPool.length) | 0];
 }
-
-let currentWeaponIndex = 0;
-const weaponLastFire = [0, 0, 0, 0, 0, 0, 0];
-
 
 function normalizeAngleDiff(diff) {
   diff = (diff + Math.PI) % (2 * Math.PI);
@@ -145,4 +68,17 @@ function normalizeAngleDiff(diff) {
   return diff - Math.PI;
 }
 
+// Call this once at startup (before gameplay uses weapons)
+async function initWeapons() {
+  const loaded = await loadWeaponsFromJson();
+  weapons = loaded.weapons;
+  EnemyWeaponPool = loaded.enemyWeaponPool;
 
+  weaponLastFire = new Array(weapons.length).fill(0);
+  currentWeaponIndex = 0;
+
+  if (!weapons.length) throw new Error("No weapons loaded from JSON.");
+}
+
+// Example usage (at boot):
+// await initWeapons();
