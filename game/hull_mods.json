@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "currency": "cr",
+  "category": "hull_mod",
+  "illegalRule": "Any mod that reduces hull is illegal; all items below are legal (hull >= 0 delta).",
+  "items": [
+    {
+      "id": "hull_speedster_streamlined_plating",
+      "name": "Streamlined Hull Plating",
+      "legal": true,
+      "price": 9000,
+      "effects": {
+        "speedAdd": 12,
+        "accelerationAdd": 8
+      },
+      "tags": ["speedster", "minmax"],
+      "flavor": "Friction is a lie."
+    },
+    {
+      "id": "hull_speedster_quantum_flow_chassis_premium",
+      "name": "Quantum Flow Chassis",
+      "legal": true,
+      "price": 120000,
+      "tier": "premium",
+      "effects": {
+        "speedAdd": 25,
+        "accelerationAdd": 20,
+        "turningSpeedMult": 1.15
+      },
+      "tags": ["speedster", "premium", "minmax"],
+      "flavor": "Outruns radar. And regrets."
+    },
+    {
+      "id": "hull_turtle_fortified_bulkhead_frame",
+      "name": "Fortified Bulkhead Frame",
+      "legal": true,
+      "price": 10000,
+      "effects": {
+        "hullAdd": 35,
+        "shieldAdd": 30,
+        "speedAdd": -5
+      },
+      "tags": ["turtle", "tank", "minmax"],
+      "flavor": "Still here."
+    },
+    {
+      "id": "hull_turtle_bastion_citadel_hull_premium",
+      "name": "Bastion-Class Citadel Hull",
+      "legal": true,
+      "price": 150000,
+      "tier": "premium",
+      "effects": {
+        "hullAdd": 80,
+        "shieldAdd": 90,
+        "shieldDiameterPxAdd": 12,
+        "speedAdd": -10
+      },
+      "tags": ["turtle", "tank", "premium", "minmax"],
+      "flavor": "A small station with engines."
+    },
+    {
+      "id": "hull_brawler_assault_reinforced_hull",
+      "name": "Assault Reinforced Hull",
+      "legal": true,
+      "price": 11000,
+      "effects": {
+        "hullAdd": 25,
+        "damageMultAdd": 0.1,
+        "accelerationAdd": 5
+      },
+      "tags": ["brawler", "combat", "minmax"],
+      "flavor": "Get closer."
+    },
+    {
+      "id": "hull_brawler_juggernaut_strike_frame_premium",
+      "name": "Juggernaut Strike Frame",
+      "legal": true,
+      "price": 180000,
+      "tier": "premium",
+      "effects": {
+        "hullAdd": 60,
+        "damageMultAdd": 0.2,
+        "firerateMultAdd": 0.1,
+        "accelerationAdd": 10
+      },
+      "tags": ["brawler", "combat", "premium", "minmax"],
+      "flavor": "Wins trades. All of them."
+    },
+    {
+      "id": "hull_sniper_stability_focused_hull",
+      "name": "Stability-Focused Hull",
+      "legal": true,
+      "price": 9500,
+      "effects": {
+        "turningSpeedMult": 0.95,
+        "accuracyMult": 1.1,
+        "firerateMultAdd": 0.05
+      },
+      "tags": ["sniper", "precision", "minmax"],
+      "flavor": "Doesn’t shake."
+    },
+    {
+      "id": "hull_sniper_longsight_artillery_chassis_premium",
+      "name": "LongSight Artillery Chassis",
+      "legal": true,
+      "price": 140000,
+      "tier": "premium",
+      "effects": {
+        "damageMultAdd": 0.15,
+        "firerateMultAdd": 0.15,
+        "accuracyMult": 1.25,
+        "turningSpeedMult": 0.9
+      },
+      "tags": ["sniper", "precision", "premium", "minmax"],
+      "flavor": "One shot. One apology."
+    },
+    {
+      "id": "hull_trader_reinforced_cargo_frame",
+      "name": "Reinforced Cargo Frame",
+      "legal": true,
+      "price": 8000,
+      "effects": {
+        "cargoCapacityMult": 1.2,
+        "hullAdd": 15,
+        "speedAdd": -5
+      },
+      "tags": ["trader", "cargo", "minmax"],
+      "flavor": "Worth it."
+    },
+    {
+      "id": "hull_trader_sovereign_trade_hull_premium",
+      "name": "Sovereign Trade Hull",
+      "legal": true,
+      "price": 160000,
+      "tier": "premium",
+      "effects": {
+        "cargoCapacityMult": 1.4,
+        "shieldAdd": 40,
+        "cpuAdd": 3,
+        "dockRangeBonusPxAdd": 100
+      },
+      "tags": ["trader", "cargo", "premium", "minmax"],
+      "flavor": "Trade like a faction."
+    }
+  ]
+}
