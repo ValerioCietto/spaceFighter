@@ -1,0 +1,328 @@
+{
+  "schemaVersion": 1,
+  "currency": "cr",
+  "items": [
+    {
+      "id": "trade_ai_cheap_mercant",
+      "name": "Cheap Mercant AI",
+      "cpu": 5,
+      "price": 10000,
+      "legal": true,
+      "category": "trade",
+      "effects": {
+        "autoBuyCheapest": true,
+        "autoTravel": true,
+        "autoSell": true,
+        "autoReturn": true,
+        "avoidDangerousSystems": false,
+        "routeOptimizationLevel": 0
+      },
+      "flavor": "It trades fast. Not well."
+    },
+    {
+      "id": "trade_ai_cheap_mercant_sponsored",
+      "name": "KoalaTrade™ Basic AI",
+      "cpu": 6,
+      "price": 5000,
+      "legal": true,
+      "category": "trade",
+      "sponsored": {
+        "adsInHud": true,
+        "notes": "Sponsored version: +1 CPU, -50% price."
+      },
+      "effects": {
+        "autoBuyCheapest": true,
+        "autoTravel": true,
+        "autoSell": true,
+        "autoReturn": true,
+        "avoidDangerousSystems": false,
+        "routeOptimizationLevel": 0
+      },
+      "flavor": "I retired early thanks to KoalaTrade™."
+    },
+    {
+      "id": "trade_ai_advanced_analyzer",
+      "name": "Advanced Trade Route Analyzer",
+      "cpu": 10,
+      "price": 100000,
+      "legal": true,
+      "category": "trade",
+      "requirements": {
+        "minRepMerchant": 0
+      },
+      "effects": {
+        "marketAnalysisRadiusLinks": 3,
+        "findOptimalRoutes": true,
+        "avoidDangerousSystems": true,
+        "routeOptimizationLevel": 1
+      },
+      "flavor": "Math, but profitable."
+    },
+    {
+      "id": "trade_ai_advanced_analyzer_sponsored",
+      "name": "OmniRoute™ Analyzer Pro",
+      "cpu": 11,
+      "price": 50000,
+      "legal": true,
+      "category": "trade",
+      "sponsored": {
+        "adsInHud": true,
+        "notes": "Sponsored version: +1 CPU, -50% price."
+      },
+      "effects": {
+        "marketAnalysisRadiusLinks": 3,
+        "findOptimalRoutes": true,
+        "avoidDangerousSystems": true,
+        "routeOptimizationLevel": 1
+      },
+      "flavor": "Optimal paths, sponsored decisions."
+    },
+    {
+      "id": "trade_ai_cracked",
+      "name": "Cracked Trade AI",
+      "cpu": 11,
+      "price": 25000,
+      "legal": false,
+      "category": "trade",
+      "effects": {
+        "approxEffectivenessVsAdvanced": 0.75,
+        "marketAnalysisRadiusLinks": 3,
+        "findOptimalRoutes": true,
+        "avoidDangerousSystems": true,
+        "routeOptimizationLevel": 1,
+        "jumpFee": 200
+      },
+      "flavor": "Profits leak. Literally."
+    },
+    {
+      "id": "trade_ai_totally_legit",
+      "name": "Totally Legit™ Trade AI",
+      "cpu": 9,
+      "price": 10000,
+      "legal": false,
+      "category": "trade",
+      "effects": {
+        "marketAnalysisRadiusLinks": 3,
+        "findOptimalRoutes": true,
+        "avoidDangerousSystems": false,
+        "routeOptimizationLevel": 1,
+        "damageMult": 0.1
+      },
+      "flavor": "Safe routes guaranteed."
+    },
+    {
+      "id": "miner_crypto_cheap",
+      "name": "Cheap Crypto Miner",
+      "cpu": 1,
+      "price": 10000,
+      "legal": true,
+      "category": "miner",
+      "effects": {
+        "incomePerJump": 1
+      },
+      "flavor": "10 000 jumps and it’s free money."
+    },
+    {
+      "id": "miner_crypto_mercant",
+      "name": "Mercant Crypto Miner",
+      "cpu": 1,
+      "price": 15000,
+      "legal": true,
+      "category": "miner",
+      "effects": {
+        "incomePerJumpPerCargoTon": 1
+      },
+      "flavor": "Your cargo works harder than you."
+    },
+    {
+      "id": "miner_crypto_mercant_cracked",
+      "name": "Cracked Mercant Crypto Miner",
+      "cpu": 1,
+      "price": 3000,
+      "legal": false,
+      "category": "miner",
+      "cracked": {
+        "rule": "CPU = floor(baseCPU*1.5), price = basePrice*0.2",
+        "hackerSiphon": true
+      },
+      "effects": {
+        "incomePerJumpPerCargoTon": 1,
+        "incomeSiphonedToHackerPercent": 30
+      },
+      "flavor": "You mine. Someone else smiles."
+    },
+    {
+      "id": "miner_crypto_combat",
+      "name": "Combat Crypto Miner",
+      "cpu": 1,
+      "price": 20000,
+      "legal": true,
+      "category": "miner",
+      "effects": {
+        "incomePerKill": 100
+      },
+      "flavor": "Violence, monetized."
+    },
+    {
+      "id": "miner_crypto_combat_cracked",
+      "name": "Cracked Combat Crypto Miner",
+      "cpu": 1,
+      "price": 4000,
+      "legal": false,
+      "category": "miner",
+      "cracked": {
+        "rule": "CPU = floor(baseCPU*1.5), price = basePrice*0.2",
+        "hackerSiphon": true
+      },
+      "effects": {
+        "incomePerKill": 100,
+        "incomeSiphonedToHackerPercent": 30
+      },
+      "flavor": "Kills pay. Not you."
+    },
+    {
+      "id": "cargo_optimizer",
+      "name": "Cargo Optimization Algorithm",
+      "cpu": 1,
+      "price": 5000,
+      "legal": true,
+      "category": "cargo",
+      "effects": {
+        "cargoCapacityMult": 1.05
+      },
+      "flavor": "Air is wasted space."
+    },
+    {
+      "id": "cargo_evaluator",
+      "name": "Cargo Evaluator",
+      "cpu": 10,
+      "price": 50000,
+      "legal": true,
+      "category": "cargo",
+      "effects": {
+        "sellPriceMult": 1.25
+      },
+      "flavor": "You didn’t sell more. You sold smarter."
+    },
+    {
+      "id": "cargo_evaluator_cracked",
+      "name": "Cracked Cargo Evaluator",
+      "cpu": 15,
+      "price": 10000,
+      "legal": false,
+      "category": "cargo",
+      "effects": {
+        "sellPriceMult": 1.25
+      },
+      "flavor": "Margins look great. Trust issues too."
+    },
+    {
+      "id": "dock_speed_enhancer_basic",
+      "name": "Basic Docking Speed Enhancer",
+      "cpu": 1,
+      "price": 200,
+      "legal": true,
+      "category": "docking",
+      "effects": {
+        "maxDockSpeedMult": 0.5
+      },
+      "flavor": "Stopping is optional."
+    },
+    {
+      "id": "dock_range_extension_basic",
+      "name": "Basic Docking Range Extension",
+      "cpu": 1,
+      "price": 500,
+      "legal": true,
+      "category": "docking",
+      "effects": {
+        "dockRangeBonusPx": 100
+      },
+      "flavor": "Close enough counts."
+    },
+    {
+      "id": "dock_emergency_authorization",
+      "name": "Basic Docking Emergency Dock Authorization",
+      "cpu": 1,
+      "price": 1000,
+      "legal": true,
+      "category": "docking",
+      "effects": {
+        "allowFullSpeedDock": true,
+        "stationDamageChance": 0.1,
+        "stationDamageCompensation": {
+          "formula": "shipMass * speed"
+        }
+      },
+      "flavor": "Apologize later."
+    },
+    {
+      "id": "dock_advanced_docker_pro",
+      "name": "Advanced Docker Pro",
+      "cpu": 2,
+      "price": 10000,
+      "legal": true,
+      "category": "docking",
+      "requirements": {
+        "minRepMerchant": 20
+      },
+      "effects": {
+        "allowFullSpeedDock": true,
+        "dockRangeBonusPx": 200,
+        "ifSpeedOverHalf": {
+          "chancePayCompensation": 0.05,
+          "compensationFlat": 100
+        }
+      },
+      "flavor": "Certified professional ramming."
+    },
+    {
+      "id": "dock_advanced_docker_pro_cracked",
+      "name": "Cracked Advanced Docker Pro",
+      "cpu": 3,
+      "price": 2000,
+      "legal": false,
+      "category": "docking",
+      "effects": {
+        "allowFullSpeedDock": true,
+        "dockRangeBonusPx": 200,
+        "ifSpeedOverHalf": {
+          "chancePayCompensation": 0.05,
+          "compensationFlat": 100
+        }
+      },
+      "flavor": "Runs as admin. Always."
+    },
+    {
+      "id": "dock_illegal_override_pp",
+      "name": "Illegal Docking Override++",
+      "cpu": 5,
+      "price": 25000,
+      "legal": false,
+      "category": "docking",
+      "effects": {
+        "allowFullSpeedDock": true,
+        "dockRangeBonusPx": 200,
+        "allowDockAtHostileStations": true,
+        "ifSpeedOverHalf": {
+          "chancePayCompensation": 0.05,
+          "compensationFlat": 100
+        }
+      },
+      "flavor": "Diplomacy through velocity."
+    },
+    {
+      "id": "hud_adblocker_illegal",
+      "name": "Ad Blocker",
+      "cpu": 1,
+      "price": 8000,
+      "legal": false,
+      "category": "hud",
+      "effects": {
+        "blockSponsoredAds": true,
+        "blockRate": 1.0
+      },
+      "flavor": "Blocks ads. Not consequences."
+    }
+  ]
+}
