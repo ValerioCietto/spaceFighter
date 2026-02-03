@@ -1603,7 +1603,7 @@
         });
       }
 
-      function init() {
+      async function init() {
         resize();
         initStarfield();
         loadState();
