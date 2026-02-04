@@ -105,5 +105,5 @@
       "engage_range": 4000
     }
   ],
-  "enemyWeaponPool": ["Space Bullet", "Shockwave", "Shotgun"],
+  "enemyWeaponPool": ["Space Bullet", "Shockwave", "Shotgun"]
 }
