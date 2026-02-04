@@ -1612,7 +1612,6 @@
         await initWeapons();
         applyShip(state.player.shipName || shipNames[0]);
 
-        initStationUI();
         // Station manager: gli passo info di sistema e un getter dello state giocatore
         StationManager.init({
           systemInfo: SystemInfo,
