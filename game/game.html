@@ -54,6 +54,9 @@
     <button id="galaxy-map-btn" class="galaxy-map-btn" type="button">
       Galaxy Map
     </button>
+    <button id="station-overlay-btn" class="station-overlay-btn" type="button">
+      Station
+    </button>
     <!-- Docking message -->
     <div id="docking-message" class="docking-message">
       docking with station...
@@ -67,15 +70,11 @@
           <button class="station-exit-btn" id="station-exit-btn" type="button">Exit Station</button>
         </div>
         <div class="station-dialog-body">
-          <div class="station-dialog-content" id="station-content">
-            <!-- Populated by station-manager.js -->
-          </div>
-          <div class="station-tabs">
-            <button class="station-tab-btn active" data-tab="info" type="button">Info</button>
-            <button class="station-tab-btn" data-tab="outfitter" type="button">Outfitter</button>
-            <button class="station-tab-btn" data-tab="finance" type="button">Finance</button>
-            <button class="station-tab-btn" data-tab="spaceships" type="button">Spaceships</button>
-          </div>
+          <iframe
+            src="/game/outfits-shop.html"
+            class="outfits-shop-iframe"
+            loading="lazy"
+          ></iframe>
         </div>
       </div>
     </div>
@@ -89,25 +88,6 @@
         </div>
 
         <div class="inventory-body">
-          <ul class="inventory-stats">
-            <li><strong>Credits:</strong> <span id="stat-credits">12000</span></li>
-            <li><strong>Hull:</strong> <span id="stat-hull">85%</span></li>
-            <li><strong>Shield:</strong> <span id="stat-shield">60%</span></li>
-            <li><strong>Cargo:</strong> <span id="stat-cargo">12 / 30</span></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <!-- Station shop overlay -->
-    <div class="station-shop-overlay" id="station-shop-overlay" aria-hidden="true">
-      <div class="station-shop-dialog" role="dialog" aria-modal="true">
-        <div class="station-shop-header">
-          <h2>Station Shop</h2>
-          <button id="station-shop-close-btn" type="button">Close</button>
-        </div>
-
-        <div class="station-shop-body">
           <ul class="inventory-stats">
             <li><strong>Credits:</strong> <span id="stat-credits">12000</span></li>
             <li><strong>Hull:</strong> <span id="stat-hull">85%</span></li>
