@@ -72,8 +72,8 @@
         console.log("applying ship name: "+shipName);
         state.player.shipName = shipName;                 // e.g. "human_zeus"
         state.player.shipStats = getStats(state.player.shipName);
-        state.player.shipStats.maxShield = state.player.shipStats.shield;
-        state.player.shipStats.maxHull = state.player.shipStats.hull;
+        state.player.shipStats.shieldMax = state.player.shipStats.shield;
+        state.player.shipStats.hullMax = state.player.shipStats.hull;
       
         // ensure the sprite matches the stats image
         const imgFile = state.player.shipStats?.image;    // e.g. "human_zeus.png"
@@ -744,8 +744,8 @@
         }
       }
 
-      function drawEnemies() {
-    if (!state.enemies || state.enemies.length === 0) return;
+    function drawEnemies() {
+      if (!state.enemies || state.enemies.length === 0) return;
 
         state.enemies.forEach((enemy) => {
           const stats = enemy.shipStats;
@@ -1442,7 +1442,9 @@
         ctx.restore();
       }
 
-     function drawShip() {
+      // drawPlayer
+      function drawShip() {
+
         ctx.save();
         ctx.translate(width / 2, height / 2);
 
@@ -1487,6 +1489,46 @@
           ctx.restore();
         }
 
+        const hullMax = state.player.shipStats.hullMax || 1;
+        const shieldMax = state.player.shipStats.shieldMax || 1;
+        const hull = state.player.shipStats.hull ?? 0;
+        const shield = state.player.shipStats.shield ?? 0;
+
+        const hullRatio = Math.max(0, Math.min(1, hull / hullMax));
+        const shieldRatio = Math.max(0, Math.min(1, shield / shieldMax));
+
+        const shieldDiameter = state.player.shipStats.shieldDiameterPx ?? 28;
+        const hullR = shieldDiameter - 6;
+        const shieldR = shieldDiameter;
+
+        ctx.save();
+        ctx.lineWidth = 3;
+
+        ctx.beginPath();
+        ctx.strokeStyle = "rgba(180,180,180,0.25)";
+        ctx.arc(0, 0, hullR, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.strokeStyle = "rgba(180,180,180,0.95)";
+        ctx.arc(0, 0, hullR, -Math.PI / 2, -Math.PI / 2 + hullRatio * Math.PI * 2);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.strokeStyle = "rgba(120,200,255,0.20)";
+        ctx.arc(0, 0, shieldR, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.strokeStyle = "rgba(120,200,255,0.95)";
+        ctx.arc(0, 0, shieldR, -Math.PI / 2, -Math.PI / 2 + shieldRatio * Math.PI * 2);
+        ctx.stroke();
+
+        ctx.restore();
+
+
+
+
         // --- IMAGE SHIP (preferred) ---
         if (currentShipImg && currentShipImg.complete && currentShipImg.naturalWidth > 0) {
           const targetW = state.player.shipStats.shieldDiameterPx; // tweak to taste
@@ -1500,7 +1542,9 @@
         }
 
         ctx.restore();
+
       }
+
 
       function drawMinimap() {
         const w = minimapSize;
