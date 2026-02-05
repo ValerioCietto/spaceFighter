@@ -831,7 +831,6 @@
       }
 
       let enemyShieldRegenAcc = 0;
-
       // call this inside update(dt)
       function regenEnemyShields(dt) {
         enemyShieldRegenAcc += dt;
@@ -854,6 +853,31 @@
             enemy.maxShield = maxShield;
             enemy.shield = Math.min(maxShield, (Number(enemy.shield) || 0) + regen);
           });
+        }
+      }
+
+      let playerShieldRegenAcc = 0;
+
+      // call this inside update(dt)
+      function regenPlayerShield(dt) {
+        const stats = state?.player?.shipStats;
+        if (!stats) return;
+
+        playerShieldRegenAcc += dt;
+
+        // 1 Hz regen
+        while (playerShieldRegenAcc >= 1) {
+          playerShieldRegenAcc -= 1;
+
+          const regen = Math.max(1, Number(stats.shieldRegen) || 1);
+          const maxShield = Number(stats.shieldMax);
+
+          if (!Number.isFinite(maxShield) || maxShield <= 0) return;
+
+          stats.shield = Math.min(
+            maxShield,
+            (Number(stats.shield) || 0) + regen
+          );
         }
       }
 
@@ -1526,9 +1550,6 @@
 
         ctx.restore();
 
-
-
-
         // --- IMAGE SHIP (preferred) ---
         if (currentShipImg && currentShipImg.complete && currentShipImg.naturalWidth > 0) {
           const targetW = state.player.shipStats.shieldDiameterPx; // tweak to taste
@@ -1636,6 +1657,7 @@
         updateEnemySpawning(dt);
         moveEnemies(dt);
         regenEnemyShields(dt);
+        regenPlayerShield(dt);
         updateMakeEnemiesToFire(dt);
         drawStarfield(ctx, width, height, starLayers, state.player.x, state.player.y, SystemInfo.size);
 
