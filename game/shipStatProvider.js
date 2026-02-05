@@ -186,7 +186,7 @@ const SHIPS = {
     engineFlareLength: 60,
     image: "human_zeus.png",
     shieldDiameterPx: 100,
-    damageMult: 2.0,
+    damageMult: 20.0,
     firetateMult: 3.0,
     CPU:100,
     shipCenter: { x: 0.52, y: 0.5 },

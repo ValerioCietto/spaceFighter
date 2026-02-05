@@ -121,10 +121,25 @@
       const energyValueEl = document.getElementById("energy-value");
 
       const dockingMessageEl = document.getElementById("docking-message");
+      
+      // station overlay elements
       const stationOverlayEl = document.getElementById("station-overlay");
       const stationExitBtn = document.getElementById("station-exit-btn");
       const stationTabButtons = document.querySelectorAll(".station-tab-btn");
       const stationTabContentEl = document.getElementById("station-tab-content");
+
+      const stationOverlayBtn = document.getElementById("station-overlay-btn");
+      stationOverlayBtn.addEventListener("click", stationOverlayOpen);
+      function stationOverlayOpen(){
+        // check if near
+
+        stationOverlayEl.classList.add("open");
+
+      }
+
+      stationExitBtn.addEventListener("click", () => {
+        stationOverlayEl.classList.remove("open");
+      });
 
       const inventoryOverlayEl = document.getElementById("inventory-overlay");
       const inventoryCloseBtn = document.getElementById("inventory-close-btn");
@@ -473,6 +488,7 @@
 
         const count = weapon.projectiles || 1;
 
+
         for (let i = 0; i < count; i++) {
           const offset = spreadRad > 0
             ? (-spreadRad + Math.random() * (2 * spreadRad))
@@ -496,6 +512,8 @@
 
           const startX = state.player.x + dirX * muzzleDistance;
           const startY = state.player.y + dirY * muzzleDistance;
+          const damageMult = state.player.shipStats.damageMult || 1;
+          const weaponDamage = weapon.damage * damageMult;
 
           projectiles.push({
             x: startX,
@@ -504,7 +522,7 @@
             vy,
             age: 0,
             life: weapon.life_span,
-            damage: weapon.damage,
+            damage: weaponDamage,      
             aspect: weapon.aspect,
             angle,
             homing: !!weapon.homing,
@@ -1134,8 +1152,8 @@
 
     function applyDamageToEnemy(enemy, projectile) {
       const damage = projectile.damage || 1;
-      const damageMult = state.player.shipStats.damageMult || 1;
-      let totalDamage = damage * damageMult;
+      // formula to expand with enemy shield reduction
+      let totalDamage = damage;
 
       if (enemy.shield > 0 && totalDamage > 0) {
         const absorbed = Math.min(enemy.shield, totalDamage);
