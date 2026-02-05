@@ -188,7 +188,7 @@ const SHIPS = {
     shieldDiameterPx: 100,
     shieldRegen:5,
     damageMult: 20.0,
-    firerateMult: 0.5,
+    firerateMult: 0.1,
     CPU:100,
     shipCenter: { x: 0.52, y: 0.5 },
     engineCoords: [{ x: 0.15, y: 0.46 }, { x: 0.15, y: 0.54 }],
