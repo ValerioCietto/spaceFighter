@@ -72,6 +72,8 @@
         console.log("applying ship name: "+shipName);
         state.player.shipName = shipName;                 // e.g. "human_zeus"
         state.player.shipStats = getStats(state.player.shipName);
+        state.player.shipStats.maxShield = state.player.shipStats.shield;
+        state.player.shipStats.maxHull = state.player.shipStats.hull;
       
         // ensure the sprite matches the stats image
         const imgFile = state.player.shipStats?.image;    // e.g. "human_zeus.png"
