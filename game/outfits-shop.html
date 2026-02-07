@@ -39,11 +39,14 @@
 */
 
 // === JSON INCORPORATO (puoi spostarlo in outfits.json) ===
-const data = fetch("/shops/common/outfits.json"); 
+const data = {} 
 // Inserisci qui il JSON che ti ho fornito prima, oppure sostituisci con fetch("outfits.json")
 
 // === RENDERING SHOP ===
-function renderShop(items) {
+async function renderShop() {
+    data = await fetch ("/shops/common/outfits.json"); 
+    const items = data.result;
+    console.log(data);
     const shop = document.getElementById("shop");
     shop.innerHTML = "";
 
