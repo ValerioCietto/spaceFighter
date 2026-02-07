@@ -1,54 +1,4 @@
  (function () {
-
-      const SystemInfo = {
-        name: "Solar",
-        size: 6000,
-        stars: [
-          {
-            name: "Sun",
-            position_x: 3000,
-            position_y: 3000,
-            radius: 100
-          }
-        ],
-        planets: [],
-        stations: [
-          {
-           name: "H1N17 - Tarazed Shipyards",
-           position_x: 3450,
-           position_y: 2800,
-           station_radius: 80,
-           station_rot_speed: Math.PI / 32
-          }
-        ],
-        hyperspace_gates: [
-          {
-            name: "H0N17 - Alpha centauri",
-            position_x: 200,
-            position_y: 2900,
-            rotation: 0.1,
-            width: 250,
-            type: "warp"
-          },
-          {
-            name: "H1N16 - Beta centauri",
-            position_x: 3100,
-            position_y: 80,
-            rotation: 0.1,
-            width: 250,
-            type: "warp"
-          },
-        ],
-        max_enemy_number:2,
-        spawn_rate:4,
-      };
-      const ENEMY_SPAWN_R_MIN = 1500;
-      const ENEMY_SPAWN_R_MAX = 2500;
-
-      const ENEMY_SHIELD_REGEN_PER_SEC = 1; // 1 hp/s
-      const ENEMY_DESPAWN_R = 4000; // optional safety: if too far from player
-
-
       const state = {
         player: {
           x: SystemInfo.size / 2,
@@ -102,8 +52,6 @@
 
       const FRICTION = 70;
       const MONEY_PER_TARGET = 10;
-
-     
 
       const canvas = document.getElementById("game-canvas");
       const ctx = canvas.getContext("2d");
@@ -1656,95 +1604,95 @@
 
       let gatePulseT = 0;
 
-function drawGates(dt) {
-  gatePulseT += dt;
+      function drawGates(dt) {
+        gatePulseT += dt;
 
-  const gates = Array.isArray(SystemInfo?.hyperspace_gates)
-    ? SystemInfo.hyperspace_gates
-    : [];
+        const gates = Array.isArray(SystemInfo?.hyperspace_gates)
+          ? SystemInfo.hyperspace_gates
+          : [];
 
-  const img = humanGateImg;
+        const img = humanGateImg;
 
-  const pulse = 0.5 + 0.5 * Math.sin(gatePulseT * 2.5);
-  const glowAlpha = 0.25 + pulse * 0.35;
-  const glowScale = 0.35 + pulse * 0.15;
+        const pulse = 0.5 + 0.5 * Math.sin(gatePulseT * 2.5);
+        const glowAlpha = 0.25 + pulse * 0.35;
+        const glowScale = 0.35 + pulse * 0.15;
 
-  for (const gate of gates) {
-    if (!gate || gate.type !== "warp") continue;
+        for (const gate of gates) {
+          if (!gate || gate.type !== "warp") continue;
 
-    const GATE_X = Number(gate.position_x ?? gate.x ?? 0);
-    const GATE_Y = Number(gate.position_y ?? gate.y ?? 0);
-    const size = Math.max(1, Number(gate.width ?? 64));
-    const name = String(gate.name ?? "");
+          const GATE_X = Number(gate.position_x ?? gate.x ?? 0);
+          const GATE_Y = Number(gate.position_y ?? gate.y ?? 0);
+          const size = Math.max(1, Number(gate.width ?? 64));
+          const name = String(gate.name ?? "");
 
-    const screenX = width / 2 + (GATE_X - state.player.x);
-    const screenY = height / 2 + (GATE_Y - state.player.y);
+          const screenX = width / 2 + (GATE_X - state.player.x);
+          const screenY = height / 2 + (GATE_Y - state.player.y);
 
-    ctx.save();
-    ctx.translate(screenX, screenY);
+          ctx.save();
+          ctx.translate(screenX, screenY);
 
-    /* --- SLOW ROTATION (per-gate) --- */
-    // hyperspace_gate.rotation = radians per second
-    const rotSpeed = Number(gate.rotation ?? 0);
-    const rot = Number.isFinite(rotSpeed) ? rotSpeed * gatePulseT : 0;
-    if (rot !== 0) ctx.rotate(rot);
-    /* --- END ROTATION --- */
+          /* --- SLOW ROTATION (per-gate) --- */
+          // hyperspace_gate.rotation = radians per second
+          const rotSpeed = Number(gate.rotation ?? 0);
+          const rot = Number.isFinite(rotSpeed) ? rotSpeed * gatePulseT : 0;
+          if (rot !== 0) ctx.rotate(rot);
+          /* --- END ROTATION --- */
 
-    /* --- PULSATING CORE --- */
-    const coreR = (size / 2) * glowScale;
-    const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, coreR);
-    grad.addColorStop(0, `rgba(120,200,255,${glowAlpha})`);
-    grad.addColorStop(1, "rgba(120,200,255,0)");
+          /* --- PULSATING CORE --- */
+          const coreR = (size / 2) * glowScale;
+          const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, coreR);
+          grad.addColorStop(0, `rgba(120,200,255,${glowAlpha})`);
+          grad.addColorStop(1, "rgba(120,200,255,0)");
 
-    ctx.save();
-    ctx.globalCompositeOperation = "lighter";
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.arc(0, 0, coreR, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-    /* --- END CORE --- */
+          ctx.save();
+          ctx.globalCompositeOperation = "lighter";
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(0, 0, coreR, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+          /* --- END CORE --- */
 
-    if (img?.complete && img.naturalWidth > 0) {
-      ctx.drawImage(img, -size / 2, -size / 2, size, size);
+          if (img?.complete && img.naturalWidth > 0) {
+            ctx.drawImage(img, -size / 2, -size / 2, size, size);
 
-      if (name) {
-        ctx.save();
-        ctx.rotate(-rot); // keep text upright
-        ctx.font = "14px Arial";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "bottom";
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = "rgba(0,0,0,0.6)";
-        ctx.strokeText(name, 0, -size / 2 - 6);
-        ctx.fillStyle = "white";
-        ctx.fillText(name, 0, -size / 2 - 6);
-        ctx.restore();
+            if (name) {
+              ctx.save();
+              ctx.rotate(-rot); // keep text upright
+              ctx.font = "14px Arial";
+              ctx.textAlign = "center";
+              ctx.textBaseline = "bottom";
+              ctx.lineWidth = 4;
+              ctx.strokeStyle = "rgba(0,0,0,0.6)";
+              ctx.strokeText(name, 0, -size / 2 - 6);
+              ctx.fillStyle = "white";
+              ctx.fillText(name, 0, -size / 2 - 6);
+              ctx.restore();
+            }
+
+            ctx.restore();
+            continue;
+          }
+
+          // fallback
+          const r = size / 2;
+          ctx.beginPath();
+          ctx.arc(0, 0, r, 0, Math.PI * 2);
+          ctx.strokeStyle = "#ffffff";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          if (name) {
+            ctx.font = "14px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "bottom";
+            ctx.fillStyle = "white";
+            ctx.fillText(name, 0, -r - 6);
+          }
+
+          ctx.restore();
+        }
       }
-
-      ctx.restore();
-      continue;
-    }
-
-    // fallback
-    const r = size / 2;
-    ctx.beginPath();
-    ctx.arc(0, 0, r, 0, Math.PI * 2);
-    ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    if (name) {
-      ctx.font = "14px Arial";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "bottom";
-      ctx.fillStyle = "white";
-      ctx.fillText(name, 0, -r - 6);
-    }
-
-    ctx.restore();
-  }
-}
 
       let lastTime = performance.now();
 
