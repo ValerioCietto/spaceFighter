@@ -1030,20 +1030,65 @@
       p.vy = Math.sin(p.angle) * p.speed;
     }
 
-    function updateHomingProjectile(p, dt) {
-      if (!p.homing || !target) return;
 
-      const desiredAngle = Math.atan2(target.y - p.y, target.x - p.x);
+    function getNearestEnemy(x, y) {
+      const enemies = Array.isArray(state?.enemies) ? state.enemies : [];
+      let best = null;
+      let bestD2 = Infinity;
+
+      for (const e of enemies) {
+        if (!e) continue;
+        const ex = Number(e.x);
+        const ey = Number(e.y);
+        if (!Number.isFinite(ex) || !Number.isFinite(ey)) continue;
+
+        const dx = ex - x;
+        const dy = ey - y;
+        const d2 = dx * dx + dy * dy;
+
+        if (d2 < bestD2) {
+          bestD2 = d2;
+          best = e;
+        }
+      }
+      return best;
+    }
+
+    
+    function updateHomingProjectile(p, dt) {
+      if (!p?.homing) return;
+
+      // 1) prefer nearest enemy
+      let t = getNearestEnemy(p.x, p.y);
+
+      // 2) fallback to generic target
+      if (!t && typeof target !== "undefined" && target) {
+        if (Number.isFinite(target.x) && Number.isFinite(target.y)) {
+          t = target;
+        }
+      }
+
+      if (!t) return;
+
+      const desiredAngle = Math.atan2(t.y - p.y, t.x - p.x);
       let diff = normalizeAngleDiff(desiredAngle - p.angle);
+
       const maxTurn = (p.turnSpeed || 0) * dt;
       if (diff > maxTurn) diff = maxTurn;
       if (diff < -maxTurn) diff = -maxTurn;
+
       p.angle += diff;
 
-      p.speed = Math.min(p.maxSpeed || p.speed, p.speed + (p.accel || 0) * dt);
+      p.speed = Math.min(
+        p.maxSpeed || p.speed,
+        p.speed + (p.accel || 0) * dt
+      );
+
       p.vx = Math.cos(p.angle) * p.speed;
       p.vy = Math.sin(p.angle) * p.speed;
     }
+
+    
 
     function projectileExpired(p) {
       return p.age > (p.life || 3.0);
