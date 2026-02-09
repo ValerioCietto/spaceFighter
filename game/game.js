@@ -84,9 +84,30 @@
       stationOverlayBtn.addEventListener("click", stationOverlayOpen);
       const shopRoot = document.getElementById("ship-shop-list");
 
-      function stationOverlayOpen(){
-        // check if near
+      function isPlayerNearSpaceStation(){
+        // AnyStation software allows the player to open station overlay
+        // even if not near a space station.
+        // AnyStation - make yourself at home even in space.
+        if(state.player?.ability?.anystation){
+          return true;
+        }
+        const dx = state.player.x - SystemInfo.stations[0].position_x;
+        const dy = state.player.y - SystemInfo.stations[0].position_y;
+        const dist = Math.hypot(dx, dy);
+        if(dist < 200){
+          return true;
+        }
+        else{
+          return false;
+        }
+      }
+      function updateStationButtonVisibility() {
+        stationOverlayBtn.style.display =
+          isPlayerNearSpaceStation() ? "block" : "none";
+      }
 
+      function stationOverlayOpen(){
+        // can dock
         stationOverlayEl.classList.add("open");
         renderStationShipShop({
           rootEl: shopRoot,
@@ -1763,6 +1784,7 @@
         updateMakeEnemiesToFire(dt);
         drawStarfield(ctx, width, height, starLayers, state.player.x, state.player.y, SystemInfo.size);
 
+        updateStationButtonVisibility();
         drawGates(dt);
         drawMainStar();
         drawStation();
