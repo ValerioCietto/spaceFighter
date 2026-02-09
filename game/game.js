@@ -82,11 +82,21 @@
 
       const stationOverlayBtn = document.getElementById("station-overlay-btn");
       stationOverlayBtn.addEventListener("click", stationOverlayOpen);
+      const shopRoot = document.getElementById("ship-shop-list");
+
       function stationOverlayOpen(){
         // check if near
 
         stationOverlayEl.classList.add("open");
-
+        renderStationShipShop({
+          rootEl: shopRoot,
+          state,
+          onBuy: (shipKey, stats) => {
+            // e.g. rebuild derived stats, refresh HUD, save game, etc.
+            // recalcDerivedStats(state.player);
+          },
+          onToast: (msg) => console.log("[shop]", msg),
+        });
       }
 
       stationExitBtn.addEventListener("click", () => {
@@ -1054,7 +1064,7 @@
       return best;
     }
 
-    
+
     function updateHomingProjectile(p, dt) {
       if (!p?.homing) return;
 
