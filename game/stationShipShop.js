@@ -15,6 +15,9 @@ function renderStationShipShop({ rootEl, state, onBuy, onToast }) {
   const forSaleKeys = Object.keys(SHIPS).filter((k) => k.startsWith("human_"));
 
   const money = Number(state?.player?.money ?? 0);
+  const baseUrl = location.hostname === "127.0.0.1" || location.hostname === "localhost"
+        ? "/assets/"
+        : "/spaceFighter/assets/";
 
   rootEl.innerHTML = `
     <div class="ship-shop-grid">
@@ -27,7 +30,7 @@ function renderStationShipShop({ rootEl, state, onBuy, onToast }) {
             <div class="ship-card">
   <div class="ship-card-row">
     <div class="ship-card-thumb">
-      <img src="/assets/${s.image}" alt="${prettyName(shipKey)}">
+      <img src="${baseUrl}${s.image}" alt="${prettyName(shipKey)}">
     </div>
 
     <div class="ship-card-info">
