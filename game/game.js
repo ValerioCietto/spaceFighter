@@ -818,16 +818,16 @@
       function regenEnemyShields(dt) {
         enemyShieldRegenAcc += dt;
 
-        // run at 1Hz, but frame-rate independent
-        while (enemyShieldRegenAcc >= 1) {
-          enemyShieldRegenAcc -= 1;
+        // run at 10Hz, but frame-rate independent
+        while (enemyShieldRegenAcc >= 0.1) {
+          enemyShieldRegenAcc -= 0.1;
 
           if (!state.enemies || state.enemies.length === 0) continue;
 
           state.enemies.forEach((enemy) => {
             if (!enemy || !enemy.shipStats) return;
 
-            const regen = Math.max(1, Number(enemy.shipStats.shieldRegen) || 0);
+            const regen = Math.max(0.1, Number(enemy.shipStats.shieldRegen)/10 || 0);
             const maxShield =
               Number(enemy.maxShield ?? enemy.shipStats.shieldHp ?? enemy.shield ?? 0);
 
@@ -840,7 +840,6 @@
       }
 
       let playerShieldRegenAcc = 0;
-
       // call this inside update(dt)
       function regenPlayerShield(dt) {
         const stats = state?.player?.shipStats;
@@ -848,11 +847,11 @@
 
         playerShieldRegenAcc += dt;
 
-        // 1 Hz regen
-        while (playerShieldRegenAcc >= 1) {
-          playerShieldRegenAcc -= 1;
+        // 10 Hz regen
+        while (playerShieldRegenAcc >= 0.1) {
+          playerShieldRegenAcc -= 0.1;
 
-          const regen = Math.max(1, Number(stats.shieldRegen) || 1);
+          const regen = Math.max(0.1, Number(stats.shieldRegen)/10 || 0.1);
           const maxShield = Number(stats.shieldMax);
 
           if (!Number.isFinite(maxShield) || maxShield <= 0) return;
