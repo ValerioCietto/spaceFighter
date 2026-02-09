@@ -1506,38 +1506,41 @@
         // Engine flare anchor in SHIP-LOCAL coords (after rotation). Tweak these.
         const engineFlareX = 0; // behind the ship (left in local coords)
         const engineFlareY = 40;   // centered vertically
-        const engineFlareWidth = 14;
-        const engineFlareLength = 26;
+        const engineFlareWidth = state.player.shipStats.engineFlareWidth;
+        const engineFlareLength = state.player.shipStats.engineFlareLength;
 
         if (input.thrust) {
-          ctx.save();
-          ctx.translate(engineFlareX, engineFlareY);
+          state.player.shipStats.engineCoords.forEach(engineCoord => {
+            ctx.save();
+            ctx.translate(engineFlareX+engineCoord.x, engineFlareY+engineCoord.y);
 
-          // rotate flare 90° anti-clockwise (CCW)
-          ctx.rotate(-Math.PI / 2);
+            // rotate flare 90° anti-clockwise (CCW)
+            ctx.rotate(-Math.PI / 2);
 
-          // Inverted triangle: tip at (0,0), base to the RIGHT (+X)
-          // Outer yellow flame
-          ctx.beginPath();
-          ctx.moveTo(0, 0); // tip
-          ctx.lineTo(engineFlareLength, -engineFlareWidth / 2);
-          ctx.lineTo(engineFlareLength * 0.85, 0);
-          ctx.lineTo(engineFlareLength, engineFlareWidth / 2);
-          ctx.closePath();
-          ctx.fillStyle = "rgba(255, 235, 59, 0.9)";
-          ctx.fill();
+            // Inverted triangle: tip at (0,0), base to the RIGHT (+X)
+            // Outer yellow flame
+            ctx.beginPath();
+            ctx.moveTo(0, 0); // tip
+            ctx.lineTo(engineFlareLength, -engineFlareWidth / 2);
+            ctx.lineTo(engineFlareLength * 0.85, 0);
+            ctx.lineTo(engineFlareLength, engineFlareWidth / 2);
+            ctx.closePath();
+            ctx.fillStyle = "rgba(255, 235, 59, 0.9)";
+            ctx.fill();
 
-          // Inner white core
-          ctx.beginPath();
-          ctx.moveTo(0, 0); // tip
-          ctx.lineTo(engineFlareLength * 0.65, -(engineFlareWidth * 0.35));
-          ctx.lineTo(engineFlareLength * 0.52, 0);
-          ctx.lineTo(engineFlareLength * 0.65, (engineFlareWidth * 0.35));
-          ctx.closePath();
-          ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
-          ctx.fill();
+            // Inner white core
+            ctx.beginPath();
+            ctx.moveTo(0, 0); // tip
+            ctx.lineTo(engineFlareLength * 0.65, -(engineFlareWidth * 0.35));
+            ctx.lineTo(engineFlareLength * 0.52, 0);
+            ctx.lineTo(engineFlareLength * 0.65, (engineFlareWidth * 0.35));
+            ctx.closePath();
+            ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
+            ctx.fill();
 
-          ctx.restore();
+            ctx.restore();
+          });
+          
         }
 
         const hullMax = state.player.shipStats.hullMax || 1;
