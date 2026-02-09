@@ -56,3 +56,8 @@ const SystemInfo = {
     max_enemy_number:2,
     spawn_rate:4, // threat level
 };
+
+function getSystemInfo(){
+    // this function compiles hyperspace_gates from galaxy-map.json
+    console.log("to do");
+}
