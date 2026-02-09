@@ -209,6 +209,7 @@
         "human_mercury",
         "human_perseus",
         "human_demeter",
+        "human_ares",
         "human_zeus",
       ];
 
@@ -219,6 +220,7 @@
         "human_mercury.png",
         "human_starfighter.png",
         "human_toad.png",
+        "human_ares.png",
         "human_zeus.png",
         "jared_zuque.png",
         "jared_three_eyes.png",

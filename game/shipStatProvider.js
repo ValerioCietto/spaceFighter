@@ -196,7 +196,7 @@ const SHIPS = {
     engineFlareType: "fire",
     engineFlareWidth: 20,
     engineFlareLength: 45,
-    shieldDiameterPx: 55,
+    shieldDiameterPx: 70,
     shipCenter: { x: 0.5, y: 0.5 },
     engineCoords: [{ x: 0.17, y: 0.48 }, { x: 0.17, y: 0.52 }],
     weaponGunCoords: [{ x: 0.82, y: 0.46 }, { x: 0.82, y: 0.54 }],
