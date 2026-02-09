@@ -884,8 +884,8 @@
       speedValueEl.textContent = newSpeed.toFixed(1);
       posValueEl.textContent = `${state.player.x.toFixed(0)}, ${state.player.y.toFixed(0)}`;
       solarSystemEl.textContent = SystemInfo.name;
-      shieldValueEl.textContent = state.player.shipStats.shield;
-      hullValueEl.textContent = state.player.shipStats.hull;
+      shieldValueEl.textContent = state.player.shipStats.shield.toFixed(1);
+      hullValueEl.textContent = state.player.shipStats.hull.toFixed(1);
       energyValueEl.textContent = state.player.shipStats.energy;
     }
 
