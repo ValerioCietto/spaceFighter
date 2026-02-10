@@ -149,7 +149,7 @@
       "aspect": "round_bullet",
       "delay_ms": 500,
       "energy_cost": 10,
-      "engage_range": 700
+      "engage_range": 700,
       "description": "Commonly nicknamed pea shooter."
     },
     {
