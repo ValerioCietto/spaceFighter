@@ -130,13 +130,22 @@
 
         <div class="galaxy-body">
           <iframe
-            src="/game/galaxy-map-viewer.html"
+            id="galaxy-iframe"
             class="galaxy-iframe"
             loading="lazy"
           ></iframe>
         </div>
       </div>
     </div>
+    <script>
+    (function () {
+      const iframe = document.getElementById("galaxy-iframe");
+      const isGithub = location.hostname.endsWith("github.io");
+      iframe.src = isGithub
+        ? "https://valeriocietto.github.io/game/galaxy-map-viewer.html"
+        : "/game/galaxy-map-viewer.html";
+    })();
+    </script>
 
     <div id="touch-controls">
       <div class="touch-group">
