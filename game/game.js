@@ -14,6 +14,7 @@
             name: "Shield Booster Mk1",
             price: 200,
             type: "defensive",
+            status: "active",
             outfitSpaceCost: 1,
             effects: [{
              shieldMaxBonus:20
@@ -24,6 +25,7 @@
             name: "Target pointer hud",
             price: 10,
             type: "software",
+            status: "equipped",
             outfitSpaceCost: 0,
             effect: [{
              givesAbiity: "targetHightlighter"
