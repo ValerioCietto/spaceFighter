@@ -13,37 +13,40 @@
       "aspect": "bullet",
       "delay_ms": 2000,
       "energy_cost": 15,
-      "engage_range": 4000
+      "engage_range": 4000,
+      "description": "High end deceptively powerful weapon. Used for area denial and bombing."
     },
     {
       "name": "Barrage",
       "cost": 300000,
-      "damage": 1,
+      "damage": 30,
       "base_speed": 1400,
       "acceleration": -100,
       "life_span": 5.0,
       "speed": 1020,
       "spread": 10.0,
-      "projectiles": 5,
+      "projectiles": 10,
       "aspect": "line",
       "delay_ms": 2000,
       "energy_cost": 15,
-      "engage_range": 4000
+      "engage_range": 8000,
+      "description": "High end sniper shotgun. The fast traveling projectiles can destroy targets even at 5000-8000 range."
     },
     {
-      "name": "Shotgun Minigun",
+      "name": "Dragonfire",
       "cost": 300000,
-      "damage": 1,
+      "damage": 5,
       "base_speed": 400,
       "acceleration": -100,
-      "life_span": 5.0,
+      "life_span": 4.0,
       "speed": 420,
-      "spread": 10.0,
+      "spread": 5.0,
       "projectiles": 5,
       "aspect": "line",
       "delay_ms": 20,
       "energy_cost": 15,
-      "engage_range": 4000
+      "engage_range": 4000,
+      "description": "A shotgun with so high fire rate and DPS that is nicknamed Dragonfire."
     },
     {
       "name": "Loitering missile barrage",
@@ -60,7 +63,8 @@
       "energy_cost": 15,
       "engage_range": 4000,
       "turning_speed_deg": 150,
-      "homing": true
+      "homing": true,
+      "description": "Hit pursuing enemies in the back while fleeing."
     },
     {
       "name": "Shotgun missile barrage",
@@ -77,29 +81,31 @@
       "energy_cost": 15,
       "engage_range": 4000,
       "turning_speed_deg": 150,
-      "homing": true
+      "homing": true,
+      "description": "A very good weapon for speedsters, allowing to deal very good short range damage"
     },
     {
       "name": "Slowing run Missile",
       "cost": 300000,
-      "damage": 20,
+      "damage": 10,
       "base_speed": 1000,
       "acceleration": -200,
       "life_span": 4.0,
       "speed": 900,
       "spread": 360.0,
-      "projectiles": 6,
+      "projectiles": 4,
       "aspect": "missile",
       "delay_ms": 200,
       "energy_cost": 15,
       "engage_range": 4000,
       "turning_speed_deg": 150,
-      "homing": true
+      "homing": true,
+      "description": "High range expensive low damage, but very high hit chance."
     },
     {
       "name": "Magnetic mine cluster",
       "cost": 300000,
-      "damage": 20,
+      "damage": 10,
       "base_speed": 10,
       "acceleration": 10,
       "life_span": 120.0,
@@ -111,7 +117,8 @@
       "energy_cost": 15,
       "engage_range": 4000,
       "turning_speed_deg": 10,
-      "homing": true
+      "homing": true,
+      "description": "A mine cluster that chases enemies at a snail's pace."
     },
     {
       "name": "Mine cluster",
@@ -128,7 +135,8 @@
       "energy_cost": 15,
       "engage_range": 4000,
       "turning_speed_deg": 0,
-      "homing": true
+      "homing": true,
+      "description": "A static mine cluster, ideal for speedster bombing."
     },
     {
       "name": "Space Bullet",
@@ -142,6 +150,7 @@
       "delay_ms": 500,
       "energy_cost": 10,
       "engage_range": 700
+      "description": "Commonly nicknamed pea shooter."
     },
     {
       "name": "Sniper",
@@ -155,7 +164,8 @@
       "auto_aim": 0.5,
       "delay_ms": 3000,
       "energy_cost": 100,
-      "engage_range": 5000
+      "engage_range": 5000,
+      "description": "High range, auto-aim assisted weapon for long range sniping. 5000px effective range"
     },
     {
       "name": "Shotgun",
@@ -169,12 +179,13 @@
       "aspect": "bullet",
       "delay_ms": 2000,
       "energy_cost": 50,
-      "engage_range": 500
+      "engage_range": 500,
+      "description": "High spread 5 shot damage gun. 600px effective max range"
     },
     {
       "name": "Homing missiles",
       "cost": 2500,
-      "damage": 5,
+      "damage": 1,
       "base_speed": 100,
       "acceleration": 10,
       "speed": 300,
@@ -186,10 +197,11 @@
       "delay_ms": 10000,
       "homing": true,
       "energy_cost": 5,
-      "engage_range": 2000
+      "engage_range": 2000,
+      "description": "Slow yet smart missiles. Budget entry level self driven missile. Made for didactic purpose."
     },
     {
-      "name": "Lazy missiles",
+      "name": "Cruise missiles",
       "cost": 1200,
       "damage": 10,
       "base_speed": 10,
@@ -203,7 +215,8 @@
       "delay_ms": 5000,
       "homing": true,
       "energy_cost": 20,
-      "engage_range": 3000
+      "engage_range": 3000,
+      "description": "Start slow, high acceleration, slow turn missiles. Made for targeting slow moving far targets like cargo ships."
     },
     {
       "name": "Shockwave",
@@ -217,10 +230,11 @@
       "aspect": "line",
       "delay_ms": 2000,
       "energy_cost": 40,
-      "engage_range": 60
+      "engage_range": 60,
+      "description": "Can destroy a small ship with a single shot. For closing short distance battles fast."
     },
     {
-      "name": "Minelayer",
+      "name": "Smoke ring",
       "cost": 3000,
       "damage": 1,
       "base_speed": 10,
@@ -232,24 +246,26 @@
       "aspect": "bullet",
       "delay_ms": 2000,
       "energy_cost": 15,
-      "engage_range": 4000
+      "engage_range": 4000,
+      "description": "Starter Area denial weapon or starter bomber weapon. Projectiles follow momentum, so you can stack multiple rings charging a tougher spaceship or stay still and add ring stacks to deal huge damage to ships dumb enough to approach"
     },
     {
       "name": "Death Pulse",
       "cost": 300000,
-      "damage": 1,
+      "damage": 5,
       "base_speed": 1 ,
       "acceleration": 100,
       "life_span": 120.0,
       "speed": 300,
       "spread": 360.0,
-      "projectiles": 60,
+      "projectiles": 50,
       "aspect": "missile",
       "delay_ms": 200,
       "energy_cost": 15,
       "engage_range": 4000,
       "turning_speed_deg": 0,
-      "homing": true
+      "homing": true,
+      "description": "Floods the whole star system of high speed accelerating missiles."
     }
   ],
   "enemyWeaponPool": ["Space Bullet", "Shockwave", "Shotgun"]
