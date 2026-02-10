@@ -8,7 +8,29 @@
           angle: -Math.PI / 2,
           money: 0,
           shipName: "human_starfighter",
-          systemName: "Solar"
+          systemName: "Solar",
+          outfits: [
+           {
+            name: "Shield Booster Mk1",
+            price: 200,
+            type: "defensive",
+            outfitSpaceCost: 1,
+            effects: [{
+             shieldMaxBonus:20
+            }],
+            description: "A cheap small max shield bonus with no downsides."
+           },
+           {
+            name: "Target pointer hud",
+            price: 10,
+            type: "software",
+            outfitSpaceCost: 0,
+            effect: [{
+             givesAbiity: "targetHightlighter"
+            }],
+            description: "An help to see nearer target, Press TAB or bullseye button to toggle activation"
+           }
+          ]
         },
         enemies:[],
         neutralPassive:[],
