@@ -40,7 +40,7 @@ function setupInput(
         break;
       case " ":
       case "Spacebar":
-        attemptFireWeapon();
+        attemptFireWeapon(true);
         break;
       case "Tab":
         e.preventDefault();
