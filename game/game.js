@@ -464,29 +464,63 @@
             speed,
             accel: w.acceleration || 0,
             maxSpeed: w.speed || w.base_speed || 0,
-            turnSpeed: w.turn_speed_rad || 0
+            turnSpeed: w.turn_speed_rad || 0 
           });
         }
 
         return true;
       }
 
-      function attemptFireWeapon() {
+      function attemptFireWeapon(manual = false) {
         const weapon = weapons[currentWeaponIndex];
         const now = performance.now();
+
+        // If not manual, only fire if latched ON
+        if (!manual) {
+          if (!weapon?.autofire_toggle) return;
+          if (!weapons[currentWeaponIndex]?.autofireToggled) return;
+        }
+
+        // If manual and weapon supports toggle, latch it ON
+        if (manual && weapon?.autofire_toggle && weapons[currentWeaponIndex].autofireToggled) {
+          weapons[currentWeaponIndex].autofireToggled = false;
+        }else{
+          weapons[currentWeaponIndex].autofireToggled = true;
+        }
+
         const last = weaponLastFire[currentWeaponIndex] || 0;
         const firerateMult = state.player.shipStats.firerateMult || 1.0;
-        if (now - last < ( weapon.delay_ms * firerateMult)) {
-          return;
-        }
+
+        // NOTE: your current formula uses delay_ms * firerateMult (kept as-is)
+        if (now - last < (weapon.delay_ms * firerateMult)) return;
+
         weaponLastFire[currentWeaponIndex] = now;
 
         let baseAngle = state.player.angle;
-        if (weapon.auto_aim && target) {
-          const toTargetAngle = Math.atan2(target.y - state.player.y, target.x - state.player.x);
-          let diff = normalizeAngleDiff(toTargetAngle - state.player.angle);
-          if (Math.abs(diff) <= weapon.auto_aim) {
-            baseAngle = toTargetAngle;
+        if (weapon.auto_aim && state.enemies && state.enemies.length > 0) {
+          let nearest = null;
+          let minDist2 = Infinity;
+
+          for (const e of state.enemies) {
+            if (!e) continue;
+            const dx = e.x - state.player.x;
+            const dy = e.y - state.player.y;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < minDist2) {
+              minDist2 = d2;
+              nearest = e;
+            }
+          }
+
+          if (nearest) {
+            const toEnemyAngle = Math.atan2(
+              nearest.y - state.player.y,
+              nearest.x - state.player.x
+            );
+            let diff = normalizeAngleDiff(toEnemyAngle - state.player.angle);
+            if (Math.abs(diff) <= weapon.auto_aim) {
+              baseAngle = toEnemyAngle;
+            }
           }
         }
 
@@ -497,12 +531,8 @@
 
         const count = weapon.projectiles || 1;
 
-
         for (let i = 0; i < count; i++) {
-          const offset = spreadRad > 0
-            ? (-spreadRad + Math.random() * (2 * spreadRad))
-            : 0;
-
+          const offset = spreadRad > 0 ? (-spreadRad + Math.random() * (2 * spreadRad)) : 0;
           const angle = baseAngle + offset;
           const dirX = Math.cos(angle);
           const dirY = Math.sin(angle);
@@ -531,14 +561,15 @@
             vy,
             age: 0,
             life: weapon.life_span,
-            damage: weaponDamage,      
+            damage: weaponDamage,
             aspect: weapon.aspect,
             angle,
             homing: !!weapon.homing,
             speed: speed,
             accel: weapon.acceleration || 0,
             maxSpeed: weapon.speed || weapon.base_speed || 0,
-            turnSpeed: weapon.turn_speed_rad || 0
+            turnSpeed: weapon.turn_speed_rad || 0,
+            arming_time: weapon.arming_time || 0
           });
         }
       }
@@ -890,20 +921,17 @@
 
 
 
-    function update(dt) {
-      
+    function update(dt, dtMillis) {
       
       // if we are in docking mode
       if(!stationDialogOpen){
         stationAngle += STATION_ROT_SPEED * dt;
         playerMoveUpdate(dt);
         playerDockingUpdate(dt);
-        updatePlayerProjectiles(dt);
+        updatePlayerProjectiles(dt, dtMillis);
         updateEnemyProjectiles(dt);
       }
       
-
-
       const newSpeed = Math.hypot(state.player.vx, state.player.vy);
       speedValueEl.textContent = newSpeed.toFixed(1);
       posValueEl.textContent = `${state.player.x.toFixed(0)}, ${state.player.y.toFixed(0)}`;
@@ -1031,20 +1059,22 @@
       openStationDialog();
     }
 
-    /** Updates player projectiles, collisions vs target and enemies */
-    function updatePlayerProjectiles(dt) {
+    function updatePlayerProjectiles(dt, dtMillis) {
       for (let i = projectiles.length - 1; i >= 0; i--) {
         const p = projectiles[i];
         p.age += dt;
+        p.ageMs = (p.ageMs || 0) + dtMillis;
 
         updateHomingProjectile(p, dt);
 
         p.x += p.vx * dt;
         p.y += p.vy * dt;
 
+        const armed = p.ageMs >= (p.arming_time || 0);
+
         let remove = projectileExpired(p);
-        if (!remove) remove = projectileHitTarget(p);
-        if (!remove) remove = projectileHitAnyEnemy(p);
+        if (!remove && armed) remove = projectileHitTarget(p);
+        if (!remove && armed) remove = projectileHitAnyEnemy(p);
 
         if (remove) projectiles.splice(i, 1);
       }
@@ -1803,15 +1833,16 @@
       function loop(now) {
         const dt = Math.min(0.05, (now - lastTime) / 1000);
         lastTime = now;
+        const dtMillis = dt * 1000;  
 
-        update(dt);
+        update(dt, dtMillis);
         updateEnemySpawning(dt);
         moveEnemies(dt);
         regenEnemyShields(dt);
         regenPlayerShield(dt);
         updateMakeEnemiesToFire(dt);
         drawStarfield(ctx, width, height, starLayers, state.player.x, state.player.y, SystemInfo.size);
-
+        attemptFireWeapon(false);
         updateStationButtonVisibility();
         drawGates(dt);
         drawMainStar();

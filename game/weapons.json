@@ -1,10 +1,62 @@
 {
   "weapons": [
     {
+      "name": "AutoSniper",
+      "cost": 1000,
+      "damage": 10,
+      "base_speed": 1000,
+      "acceleration": -100,
+      "life_span": 3.0,
+      "speed": 1000, 
+      "spread": 1.0,
+      "projectiles": 1,
+      "aspect": "line",
+      "delay_ms": 800,
+      "energy_cost": 15,
+      "engage_range": 4000,
+      "auto_aim": 0.6,
+      "autofire_toggle": true,
+      "description": "A starter autofire auto aim sniper gun."
+    },
+    {
+      "name": "Wyrmfire",
+      "cost": 3000,
+      "damage": 5,
+      "base_speed": 220,
+      "acceleration": -100,
+      "life_span": 2.0,
+      "speed": 220,
+      "spread": 1.0,
+      "projectiles": 1,
+      "aspect": "line",
+      "delay_ms": 200,
+      "energy_cost": 15,
+      "engage_range": 4000,
+      "autofire_toggle": true,
+      "description": "A starter autofire weapon minigun. You will probably like this."
+    },
+    {
+      "name": "Drakefire",
+      "cost": 30000,
+      "damage": 5,
+      "base_speed": 320,
+      "acceleration": -100,
+      "life_span": 2.5,
+      "speed": 320,
+      "spread": 2.0,
+      "projectiles": 2,
+      "aspect": "line",
+      "delay_ms": 80,
+      "energy_cost": 15,
+      "engage_range": 4000,
+      "autofire_toggle": true,
+      "description": "An advanced double autofire weapon minigun. If you liked Wyrmfire, you will love Drakefire."
+    },
+    {
       "name": "Dragonfire",
       "cost": 300000,
       "damage": 5,
-      "base_speed": 400,
+      "base_speed": 420,
       "acceleration": -100,
       "life_span": 3.0,
       "speed": 420,
@@ -15,7 +67,7 @@
       "energy_cost": 15,
       "engage_range": 4000,
       "autofire_toggle": true,
-      "description": "A shotgun with so high fire rate and DPS that is nicknamed Dragonfire."
+      "description": "A 5 shot hurricane speed hellish minigun. If you loved Wyrmfire, you will want nothing else rather than Dragonfire."
     },
     {
       "name": "Ring",
@@ -88,7 +140,7 @@
     {
       "name": "Slowing run Missile",
       "cost": 200000,
-      "damage": 10,
+      "damage": 5,
       "base_speed": 1000,
       "acceleration": -200,
       "life_span": 4.0,
@@ -101,6 +153,8 @@
       "engage_range": 4000,
       "turning_speed_deg": 150,
       "homing": true,
+      "autofire_toggle": true,
+      "arming_time": 1000,
       "description": "High range expensive low damage, but very high hit chance."
     },
     {
@@ -120,6 +174,7 @@
       "turning_speed_deg": 10,
       "arming_time": 1000,
       "homing": true,
+      "autofire_toggle": true,
       "description": "A mine cluster that chases enemies at a snail's pace."
     },
     {
@@ -229,7 +284,7 @@
       "acceleration": -75,
       "life_span": 0.2,
       "spread": 360.0,
-      "projectiles": 90,
+      "projectiles": 40,
       "aspect": "line",
       "delay_ms": 2000,
       "energy_cost": 40,
