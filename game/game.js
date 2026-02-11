@@ -1516,7 +1516,17 @@
             ctx.moveTo(screenX, screenY);
             ctx.lineTo(screenX + ax, screenY + ay);
             ctx.stroke();
-          } else if (aspect === "missile") {
+          }else if(aspect === "fire"){
+            const len = 15-p.age*2; 
+            const ax = Math.cos(p.angle) * len;
+            const ay = Math.sin(p.angle) * len;
+            ctx.strokeStyle = "#ff0000";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(screenX, screenY);
+            ctx.lineTo(screenX + ax, screenY + ay);
+            ctx.stroke();
+          }else if (aspect === "missile") {
             ctx.save();
             ctx.translate(screenX, screenY);
             ctx.rotate(p.angle);
