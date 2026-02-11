@@ -2,7 +2,7 @@
   "weapons": [
     {
       "name": "PseudoTurret",
-      "cost": 500,
+      "cost": 2500,
       "damage": 1,
       "base_speed": 500,
       "acceleration": -100,
