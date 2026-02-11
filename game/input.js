@@ -107,7 +107,7 @@ function setupInput(
     const start = (e) => {
       e.preventDefault();
       if (action === "fire") {
-        attemptFireWeapon();
+        attemptFireWeapon(true);
         return;
       }
       if (action === "lock") {
