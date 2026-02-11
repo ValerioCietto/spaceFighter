@@ -1,6 +1,24 @@
 {
   "weapons": [
     {
+      "name": "Drakefire Turret",
+      "cost": 90000,
+      "damage": 5,
+      "base_speed": 320,
+      "acceleration": -100,
+      "life_span": 2.5,
+      "speed": 320,
+      "spread": 2.0,
+      "projectiles": 2,
+      "aspect": "fire",
+      "delay_ms": 80,
+      "energy_cost": 15,
+      "engage_range": 4000,
+      "auto_aim": 4.0,
+      "autofire_toggle": true,
+      "description": "An advanced double autofire weapon minigun turreted version."
+    },
+    {
       "name": "PseudoTurret",
       "cost": 2500,
       "damage": 1,
@@ -53,25 +71,7 @@
       "auto_aim": 4.0,
       "autofire_toggle": true,
       "description": "A starter autofire auto aim turret gun."
-    },
-    {
-      "name": "Drakefire Turret",
-      "cost": 90000,
-      "damage": 5,
-      "base_speed": 320,
-      "acceleration": -100,
-      "life_span": 2.5,
-      "speed": 320,
-      "spread": 2.0,
-      "projectiles": 2,
-      "aspect": "fire",
-      "delay_ms": 80,
-      "energy_cost": 15,
-      "engage_range": 4000,
-      "auto_aim": 4.0,
-      "autofire_toggle": true,
-      "description": "An advanced double autofire weapon minigun turreted version."
-    },
+    },  
     {
       "name": "AutoSniper",
       "cost": 1000,
