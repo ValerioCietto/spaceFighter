@@ -14,7 +14,7 @@
       "delay_ms": 1000,
       "energy_cost": 1,
       "engage_range": 2000,
-      "auto_aim": 2.0,
+      "auto_aim": 4.0,
       "autofire_toggle": true,
       "description": "A starter autofire auto aim turret gun."
     },
