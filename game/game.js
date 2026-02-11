@@ -1445,21 +1445,11 @@
             ctx.lineTo(screenX + ax, screenY + ay);
             ctx.stroke();
           } else if (aspect === "fire"){
-            // age normalized 0 → 1
-            const t = Math.min(1, p.age / p.life_span);
-            
-            // yellow (255,255,0) → red (255,0,0)
-            const r = 255;
-            const g = Math.floor(255 * (1 - t));
-            const b = 0;
-            
-            const len = 10 - p.age;
+            const len = 10-p.age;
             const ax = Math.cos(p.angle) * len;
             const ay = Math.sin(p.angle) * len;
-            
-            ctx.strokeStyle = `rgb(${r},${g},${b})`;
+            ctx.strokeStyle = "#ff0000";
             ctx.lineWidth = 1;
-            
             ctx.beginPath();
             ctx.moveTo(screenX, screenY);
             ctx.lineTo(screenX + ax, screenY + ay);
