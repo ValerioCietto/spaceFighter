@@ -1,5 +1,5 @@
  (function () {
-      const state = {
+      const const state = {
         player: {
           x: SystemInfo.size / 2,
           y: SystemInfo.size / 2,
@@ -7,50 +7,74 @@
           vy: 0,
           angle: -Math.PI / 2,
           money: 0,
-          shipName: "human_starfighter",
           systemName: "Solar",
-          currentSpaceship: 0,
-          ownedSpaceships: {
-           id: 0,
-           name: "Little Raven",
-           templateName: "Perseus",
-           shipStats: {},
-           outfits:[
-           {
-            name: "Shield Booster Mk1",
-            price: 200,
-            type: "defensive",
-            status: "active",
-            outfitSpaceCost: 1,
-            effects: [{
-             shieldMaxBonus:20
-            }],
-            description: "A cheap small max shield bonus with no downsides."
-           },
-           {
-            name: "Target pointer hud",
-            price: 10,
-            type: "software",
-            status: "equipped",
-            outfitSpaceCost: 0,
-            effect: [{
-             givesAbiity: "targetHightlighter"
-            }],
-            description: "An help to see nearer target, Press TAB or bullseye button to toggle activation"
-           }
-          ]
-          }
+      
+          // runtime pointer to the active owned ship instance
+          currentSpaceshipId: 0,
+      
+          // OPTIONAL backward-compat (can be derived from active ship)
+          shipName: "human_starfighter",
+      
+          // array of OWNED ship INSTANCES (mutable, saved)
+          ownedSpaceships: [
+            {
+              id: 0,
+              name: "Little Raven",
+      
+              // points to ShipStatsProvider template
+              templateName: "Perseus",
+      
+              // instance-specific base stats overrides (optional)
+              shipStats: {
+                // e.g. hullMaxBonus: 20, speedBonus: 10, etc.
+              },
+      
+              outfits: [
+                {
+                  name: "Shield Booster Mk1",
+                  price: 200,
+                  type: "defensive",
+                  status: "equipped", // use: "equipped" / "stored"
+                  outfitSpaceCost: 1,
+                  effects: [{ shieldMaxBonus: 20 }],
+                  description: "A cheap small max shield bonus with no downsides.",
+                },
+                {
+                  name: "Target pointer hud",
+                  price: 10,
+                  type: "software",
+                  status: "equipped",
+                  outfitSpaceCost: 0,
+                  effects: [{ givesAbility: "targetHighlighter" }],
+                  description:
+                    "Helps to see nearer target. Press TAB or bullseye button to toggle.",
+                },
+              ],
+      
+              weapons: {
+                gunPorts: [],
+                turretPorts: [],
+                dronePorts: [],
+              },
+      
+              abilities: {
+                // granted by outfits/software or story unlocks
+                // e.g. targetHighlighter: true
+              },
+            },
+          ],
         },
-        enemies:[],
-        neutralPassive:[],
-        allies:[],
-        targets:[],
-        ui:{
-         mode: "game", // states can be "galaxyMap", "station", "game"
-         deathModal: false, // if true, deathModal will show a choice to continue with a last save or last station
-        }
+      
+        enemies: [],
+        neutralPassive: [],
+        allies: [],
+        targets: [],
+      
+        ui: {
+          mode: "game", // "galaxyMap" | "station" | "game"
+          deathModal: false,
+        },
       };
-
       function applyShip(shipName) {
         console.log("applying ship name: "+shipName);
         state.player.shipName = shipName;                 // e.g. "human_zeus"
