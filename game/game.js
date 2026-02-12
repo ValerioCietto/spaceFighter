@@ -1,5 +1,5 @@
  (function () {
-      const const state = {
+      const state = {
         player: {
           x: SystemInfo.size / 2,
           y: SystemInfo.size / 2,
