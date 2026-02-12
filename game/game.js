@@ -9,7 +9,13 @@
           money: 0,
           shipName: "human_starfighter",
           systemName: "Solar",
-          outfits: [
+          currentSpaceship: 0,
+          ownedSpaceships: {
+           id: 0,
+           name: "Little Raven",
+           templateName: "Perseus",
+           shipStats: {},
+           outfits:[
            {
             name: "Shield Booster Mk1",
             price: 200,
@@ -33,6 +39,7 @@
             description: "An help to see nearer target, Press TAB or bullseye button to toggle activation"
            }
           ]
+          }
         },
         enemies:[],
         neutralPassive:[],
