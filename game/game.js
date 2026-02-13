@@ -1763,6 +1763,17 @@
           });
         }
 
+        if(SystemInfo.hyperspace_gates && SystemInfo.hyperspace_gates.length > 0){
+          SystemInfo.hyperspace_gates.forEach(gate => {
+            const gate_x = (gate.position_x - SystemInfo.size / 2) * minimapScale;
+            const gate_y = (gate.position_y - SystemInfo.size / 2) * minimapScale;
+            minimapCtx.beginPath();
+            minimapCtx.arc(gate_x, gate_y, 2.5, 0, Math.PI * 2);
+            minimapCtx.fillStyle = "#52f9ff";
+            minimapCtx.fill();
+          });
+        }
+
         const sx = (state.player.x - SystemInfo.size / 2) * minimapScale;
         const sy = (state.player.y - SystemInfo.size / 2) * minimapScale;
 
@@ -1777,7 +1788,7 @@
         minimapCtx.closePath();
         minimapCtx.fillStyle = "#4fc3f7";
         minimapCtx.fill();
-
+        
         minimapCtx.restore();
         minimapCtx.restore();
       }
