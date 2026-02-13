@@ -1460,6 +1460,7 @@
         const shipY = height / 2;
 
         for (const enemy of state.enemies) {
+          // world -> screen
           const enemyX = width / 2 + (enemy.x - state.player.x);
           const enemyY = height / 2 + (enemy.y - state.player.y);
 
@@ -1471,23 +1472,43 @@
           const dirX = dx / dist;
           const dirY = dy / dist;
 
-          const startX = shipX + dirX * 25;
-          const startY = shipY + dirY * 25;
-
+          // scale with distance (optional)
           const REF_DIST = 400;
           const t = Math.min(1, dist / REF_DIST);
-          const length = 10 + (60 - 10) * t;
 
-          const endX = startX + dirX * length;
-          const endY = startY + dirY * length;
+          const offset = 30;
+          const size = 5 + 7 * t; // triangle length
+
+          const centerX = shipX + dirX * offset;
+          const centerY = shipY + dirY * offset;
+
+          const perpX = -dirY;
+          const perpY = dirX;
+
+          const BASE_WIDTH = 0.22; // smaller base
+          const BACK_OFFSET = 0.65;
+
+          const tipX = centerX + dirX * size;
+          const tipY = centerY + dirY * size;
+
+          const baseLeftX =
+            centerX - dirX * size * BACK_OFFSET + perpX * size * BASE_WIDTH;
+          const baseLeftY =
+            centerY - dirY * size * BACK_OFFSET + perpY * size * BASE_WIDTH;
+
+          const baseRightX =
+            centerX - dirX * size * BACK_OFFSET - perpX * size * BASE_WIDTH;
+          const baseRightY =
+            centerY - dirY * size * BACK_OFFSET - perpY * size * BASE_WIDTH;
 
           ctx.save();
-          ctx.strokeStyle = "#ff5252";
-          ctx.lineWidth = 2;
+          ctx.fillStyle = "#ff5252";
           ctx.beginPath();
-          ctx.moveTo(startX, startY);
-          ctx.lineTo(endX, endY);
-          ctx.stroke();
+          ctx.moveTo(tipX, tipY);
+          ctx.lineTo(baseLeftX, baseLeftY);
+          ctx.lineTo(baseRightX, baseRightY);
+          ctx.closePath();
+          ctx.fill();
           ctx.restore();
         }
       }
