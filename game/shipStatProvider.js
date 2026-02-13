@@ -39,7 +39,7 @@ const ENEMY_TYPES = ["jared_zuque", "jared_three_eyes", "jared_three_eyes_spike_
 
 const SHIPS = {
   // Humans
-    human_perseus: {
+  human_perseus: {
     cost: 10000,
     shield: 100,
     hull: 50,
@@ -49,7 +49,7 @@ const SHIPS = {
     engineFlareType: "triangular",
     engineFlareWidth: 10,
     engineFlareLength: 26,
-    image: "human_starfighter.png",
+    image: "human_perseus.png",
     shieldDiameterPx: 33,
     shieldRegen:1,
     CPU: 10,
@@ -362,7 +362,7 @@ const DEFAULT_STATS = {
   engineFlareType: "triangular",
   engineFlareWidth: 16,
   engineFlareLength: 48,
-  image: "human_starfighter.png",
+  image: "human_perseus.png",
   shieldDiameterPx: 90,
   CPU:10,
   shipCenter: { x: 0.5, y: 0.5 },
