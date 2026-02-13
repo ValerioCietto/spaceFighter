@@ -1444,7 +1444,7 @@
         const endY = startY + dirY * length;
 
         ctx.save();
-        ctx.strokeStyle = "#ff5252";
+        ctx.strokeStyle = "#c84040";
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(startX, startY);
@@ -1452,6 +1452,46 @@
         ctx.stroke();
         ctx.restore();
       }
+
+      function drawEnemyLineIndicator() {
+        if (!lineToTarget || !state.enemies || state.enemies.length === 0) return;
+
+        const shipX = width / 2;
+        const shipY = height / 2;
+
+        for (const enemy of state.enemies) {
+          const enemyX = width / 2 + (enemy.x - state.player.x);
+          const enemyY = height / 2 + (enemy.y - state.player.y);
+
+          const dx = enemyX - shipX;
+          const dy = enemyY - shipY;
+          const dist = Math.hypot(dx, dy);
+          if (dist < 1) continue;
+
+          const dirX = dx / dist;
+          const dirY = dy / dist;
+
+          const startX = shipX + dirX * 25;
+          const startY = shipY + dirY * 25;
+
+          const REF_DIST = 400;
+          const t = Math.min(1, dist / REF_DIST);
+          const length = 10 + (60 - 10) * t;
+
+          const endX = startX + dirX * length;
+          const endY = startY + dirY * length;
+
+          ctx.save();
+          ctx.strokeStyle = "#ff5252";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(startX, startY);
+          ctx.lineTo(endX, endY);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
 
       
       function drawEnemyProjectiles() {
@@ -1788,7 +1828,7 @@
         minimapCtx.closePath();
         minimapCtx.fillStyle = "#4fc3f7";
         minimapCtx.fill();
-        
+
         minimapCtx.restore();
         minimapCtx.restore();
       }
@@ -1911,6 +1951,7 @@
         drawStation();
         drawTarget();
         drawTargetLine();
+        drawEnemyLineIndicator();
         drawEnemyProjectiles();
         drawProjectiles();
         drawEnemies();
