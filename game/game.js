@@ -164,6 +164,7 @@
       function stationOverlayOpen(){
         // can dock
         stationOverlayEl.classList.add("open");
+        state.ui.mode = "station";
         renderStationShipShop({
           rootEl: shopRoot,
           state,
@@ -177,6 +178,7 @@
 
       stationExitBtn.addEventListener("click", () => {
         stationOverlayEl.classList.remove("open");
+        state.ui.mode = "game";
       });
 
       const inventoryOverlayEl = document.getElementById("inventory-overlay");
@@ -1954,47 +1956,35 @@
       let lastTime = performance.now();
 
       function loop(now) {
-        const dt = Math.min(0.05, (now - lastTime) / 1000);
-        lastTime = now;
-        const dtMillis = dt * 1000;  
+        if(state.ui.mode === "game"){
+          const dt = Math.min(0.05, (now - lastTime) / 1000);
+          lastTime = now;
+          const dtMillis = dt * 1000;  
 
-        update(dt, dtMillis);
-        updateEnemySpawning(dt);
-        moveEnemies(dt);
-        regenEnemyShields(dt);
-        regenPlayerShield(dt);
-        updateMakeEnemiesToFire(dt);
-        drawStarfield(ctx, width, height, starLayers, state.player.x, state.player.y, SystemInfo.size);
-        attemptFireWeapon(false);
-        updateStationButtonVisibility();
-        drawGates(dt);
-        drawMainStar();
-        drawStation();
-        drawTarget();
-        drawTargetLine();
-        drawEnemyLineIndicator();
-        drawEnemyProjectiles();
-        drawProjectiles();
-        drawEnemies();
-        drawShip();
-        drawMinimap();
+          update(dt, dtMillis);
+          updateEnemySpawning(dt);
+          moveEnemies(dt);
+          regenEnemyShields(dt);
+          regenPlayerShield(dt);
+          updateMakeEnemiesToFire(dt);
+          drawStarfield(ctx, width, height, starLayers, state.player.x, state.player.y, SystemInfo.size);
+          attemptFireWeapon(false);
+          updateStationButtonVisibility();
+          drawGates(dt);
+          drawMainStar();
+          drawStation();
+          drawTarget();
+          drawTargetLine();
+          drawEnemyLineIndicator();
+          drawEnemyProjectiles();
+          drawProjectiles();
+          drawEnemies();
+          drawShip();
+          drawMinimap();
+        }
+
 
         requestAnimationFrame(loop);
-      }
-
-      function initStationUI() {
-        setActiveTab("info");
-
-        stationTabButtons.forEach(btn => {
-          btn.addEventListener("click", () => {
-            const tab = btn.dataset.tab;
-            setActiveTab(tab);
-          });
-        });
-
-        stationExitBtn.addEventListener("click", () => {
-          closeStationDialog();
-        });
       }
 
       async function init() {
