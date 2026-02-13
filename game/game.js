@@ -71,7 +71,7 @@
         targets: [],
       
         ui: {
-          mode: "game", // "galaxyMap" | "station" | "game"
+          mode: "game", // "inventory" | "galaxyMap" | "station" | "game"
           deathModal: false,
         },
       };
@@ -169,8 +169,9 @@
           rootEl: shopRoot,
           state,
           onBuy: (shipKey, stats) => {
-            // e.g. rebuild derived stats, refresh HUD, save game, etc.
-            // recalcDerivedStats(state.player);
+            templateName = shipKey;
+            onBoughtSpaceship({ state, stats, templateName });
+            saveState();
           },
           onToast: (msg) => console.log("[shop]", msg),
         });

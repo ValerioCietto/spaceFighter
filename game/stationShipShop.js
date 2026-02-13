@@ -92,6 +92,42 @@ function renderStationShipShop({ rootEl, state, onBuy, onToast }) {
   });
 }
 
+function onBoughtSpaceship({ state, shipStats, templateName }) {
+  if (!state?.player) return null;
+
+  if (!Array.isArray(state.player.ownedSpaceships)) {
+    state.player.ownedSpaceships = [];
+  }
+
+  const nextId =
+    state.player.ownedSpaceships.length > 0
+      ? Math.max(...state.player.ownedSpaceships.map(s => s.id || 0)) + 1
+      : 0;
+
+  const newShip = {
+    id: nextId,
+    name: templateName,
+    templateName,
+
+    // instance-level stat overrides (start empty)
+    shipStats: shipStats,
+
+    outfits: [],
+
+    weapons: {
+      gunPorts: [],
+      turretPorts: [],
+      dronePorts: [],
+    },
+
+    abilities: {},
+  };
+
+  state.player.ownedSpaceships.push(newShip);
+  
+  return newShip;
+}
+
 function prettyName(shipKey) {
   return shipKey
     .replace(/^human_/, "")
