@@ -11,53 +11,62 @@
 function renderStationShipShop({ rootEl, state, onBuy, onToast }) {
   if (!rootEl) return;
 
-  // pick what is "for sale" (example: only human_* for now)
   const forSaleKeys = Object.keys(SHIPS).filter((k) => k.startsWith("human_"));
 
   const money = Number(state?.player?.money ?? 0);
-  const baseUrl = location.hostname === "127.0.0.1" || location.hostname === "localhost"
-        ? "/assets/"
-        : "/spaceFighter/assets/";
+  const baseUrl =
+    location.hostname === "127.0.0.1" || location.hostname === "localhost"
+      ? "/assets/"
+      : "/spaceFighter/assets/";
 
   rootEl.innerHTML = `
     <div class="ship-shop-grid">
       ${forSaleKeys
         .map((shipKey) => {
           const s = getStats(shipKey);
-          const canAfford = money >= Number(s.cost || 0);
+          const cost = Number(s.cost || 0);
+          const canAfford = money >= cost;
 
           return `
             <div class="ship-card">
-  <div class="ship-card-row">
-    <div class="ship-card-thumb">
-      <img src="${baseUrl}${s.image}" alt="${prettyName(shipKey)}">
-    </div>
+              <div class="ship-card-row">
+                <div class="ship-card-thumb">
+                  <img src="${baseUrl}${s.image}" alt="${prettyName(shipKey)}">
+                </div>
 
-    <div class="ship-card-info">
-      <div class="ship-card-title">${prettyName(shipKey)}</div>
-      <div class="ship-card-meta">
-        <div>Cost: ${s.cost}§</div>
-        <div>Shield: ${s.shield}</div>
-        <div>Hull: ${s.hull}</div>
-        <div>Speed: ${s.speed}</div>
-        <div>Accel: ${s.acceleration}</div>
-        <div>CPU: ${s.CPU}</div>
-        <div>DamagePower x${(s.damageMult ?? 1).toFixed(2)}</div>
-        <div>FireRate x${(s.firerateMult ?? 1).toFixed(2)}</div>
-      </div>
-    </div>
-  </div>
+                <div class="ship-card-info">
+                  <div class="ship-card-title">${prettyName(shipKey)}</div>
+                  <div class="ship-card-meta">
+                    <div>Cost: ${cost}§</div>
+                    <div>Shield: ${s.shield}</div>
+                    <div>Hull: ${s.hull}</div>
+                    <div>Speed: ${s.speed}</div>
+                    <div>Accel: ${s.acceleration}</div>
+                    <div>CPU: ${s.CPU}</div>
+                    <div>DamagePower x${(s.damageMult ?? 1).toFixed(2)}</div>
+                    <div>FireRate x${(s.firerateMult ?? 1).toFixed(2)}</div>
+                  </div>
+                </div>
+              </div>
 
-  <button class="ship-buy-btn">Buy</button>
-  <div class="ship-card-warn">Not enough money</div>
-</div>
+              <button
+                class="ship-buy-btn"
+                data-buy="${shipKey}"
+                ${canAfford ? "" : "disabled"}
+                aria-disabled="${canAfford ? "false" : "true"}"
+              >
+                Buy
+              </button>
+
+              ${canAfford ? "" : `<div class="ship-card-warn">Not enough money</div>`}
+            </div>
           `;
         })
         .join("")}
     </div>
   `;
 
-  rootEl.querySelectorAll("[data-buy]").forEach((btn) => {
+  rootEl.querySelectorAll(".ship-buy-btn[data-buy]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const shipKey = btn.getAttribute("data-buy");
       if (!shipKey) return;
@@ -71,15 +80,13 @@ function renderStationShipShop({ rootEl, state, onBuy, onToast }) {
         return;
       }
 
-      // do the purchase (update state)
       state.player.money = curMoney - cost;
-      state.player.shipType = shipKey;          // or whatever your game uses
-      state.player.shipStats = stats;           // common pattern in your codebase
+      state.player.shipType = shipKey;
+      state.player.shipStats = stats;
 
-      onBuy(shipKey, stats);
+      onBuy?.(shipKey, stats);
       onToast?.(`Purchased ${prettyName(shipKey)} for ${cost}§`);
 
-      // re-render to refresh affordability + money-dependent UI
       renderStationShipShop({ rootEl, state, onBuy, onToast });
     });
   });
