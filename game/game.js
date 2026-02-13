@@ -26,7 +26,22 @@
       
               // instance-specific base stats overrides (optional)
               shipStats: {
-                // e.g. hullMaxBonus: 20, speedBonus: 10, etc.
+                cost: 10000,
+                shield: 100,
+                hull: 50,
+                speed: 150,
+                acceleration: 180,
+                turningSpeedRad: Math.PI * 1.25,
+                engineFlareType: "triangular",
+                engineFlareWidth: 10,
+                engineFlareLength: 26,
+                image: "human_perseus.png",
+                shieldDiameterPx: 33,
+                shieldRegen:1,
+                CPU: 10,
+                shipCenter: { x: 0.5, y: 0.5 },
+                engineCoords: [{ x: 0, y: -5 }],
+                weaponGunCoords: [{ x: 0.83, y: 0.45 }, { x: 0.83, y: 0.55 }],
               },
       
               outfits: [
@@ -106,7 +121,7 @@
       stationImg.src = STATION_ASSET;
 
       const FRICTION = 70;
-      const MONEY_PER_TARGET = 10;
+      const MONEY_PER_TARGET = 1000;
 
       const canvas = document.getElementById("game-canvas");
       const ctx = canvas.getContext("2d");
@@ -189,6 +204,7 @@
       inventoryBtn.addEventListener("click", openInventory);
       function openInventory() {
         inventoryOverlayEl.classList.add("open");
+         renderInventory(state);
       }
 
       function closeInventory() {
@@ -276,7 +292,7 @@
         "human_gunship.png",
         "human_icarus.png",
         "human_mercury.png",
-        "human_starfighter.png",
+        "human_perseus.png",
         "human_toad.png",
         "human_ares.png",
         "human_zeus.png",
