@@ -181,15 +181,16 @@
       }
 
       function stationOverlayOpen(){
-        // can dock
         stationOverlayEl.classList.add("open");
         state.ui.mode = "station";
+        shopRoot.innerHTML = "";
+
         renderStationShipShop({
           rootEl: shopRoot,
           state,
           onBuy: (shipKey, stats) => {
-            templateName = shipKey;
-            onBoughtSpaceship({ state, stats, templateName });
+            const templateName = shipKey;
+            onBoughtSpaceship({ state, shipStats: stats, templateName });
             saveState();
           },
           onToast: (msg) => console.log("[shop]", msg),
@@ -664,34 +665,98 @@
 
       window.addEventListener("resize", resize);
 
+      // run with: npx serve .  (or any static server) then open the page
       function loadState() {
         try {
           const raw = localStorage.getItem(STORAGE_KEY);
           if (!raw) return;
 
           const saved = JSON.parse(raw);
+          if (!saved?.player) return;
 
           // numeric state
           ["x", "y", "vx", "vy", "angle", "money"].forEach((k) => {
-            if (typeof saved?.player[k] === "number") state.player[k] = saved.player[k];
+            if (typeof saved.player[k] === "number") state.player[k] = saved.player[k];
           });
-          console.log(state.player)
 
-          // shipName (string)
-          if (typeof saved.player.shipName === "string" && saved.player.shipName.trim()) {
-            const name = saved.player.shipName.trim();
-            if (shipNames.includes(name)) applyShip(name);
-          }
-
-          // galaxySystemName (string)
+          // systemName
           if (typeof saved.player.systemName === "string" && saved.player.systemName.trim()) {
             state.player.systemName = saved.player.systemName.trim();
           }
+
+          // ✅ restore owned ships
+          if (Array.isArray(saved.player.ownedSpaceships)) {
+            state.player.ownedSpaceships = saved.player.ownedSpaceships;
+          }
+
+          // ✅ restore active ship pointer (your canonical field)
+          if (Number.isFinite(saved.player.currentSpaceshipId)) {
+            state.player.currentSpaceshipId = saved.player.currentSpaceshipId;
+          }
+
+          // backward compat if old saves used activeShipId
+          if (!Number.isFinite(state.player.currentSpaceshipId) && Number.isFinite(saved.player.activeShipId)) {
+            state.player.currentSpaceshipId = saved.player.activeShipId;
+          }
+
+          // ✅ rebuild runtime shipStats from active owned ship (not from shipName)
+          applyActiveShip(state); // the function I suggested earlier
         } catch (e) {
           console.warn("Impossibile caricare lo stato:", e);
         }
 
         moneyValueEl.textContent = `${state.player.money.toFixed(0)}§`;
+      }
+
+
+      function getActiveShipInstance(state) {
+        const p = state?.player;
+        const owned = Array.isArray(p?.ownedSpaceships) ? p.ownedSpaceships : [];
+        const id = Number(p?.currentSpaceshipId ?? 0);
+        return owned.find(s => Number(s?.id) === id) || null;
+      }
+
+      function applyActiveShip(state) {
+        const p = state?.player;
+        if (!p) return false;
+
+        const inst = getActiveShipInstance(state);
+        if (!inst) {
+          // fallback to old flow
+          if (p.shipName) applyShip(p.shipName);
+          return false;
+        }
+
+        // merge template + instance overrides
+        const base = getStats(inst.templateName) || {};
+        const overrides = inst.shipStats || {};
+        const stats = { ...base, ...overrides };
+
+        // normalize
+        stats.shield = Number(stats.shield) || 0;
+        stats.hull = Number(stats.hull) || 0;
+
+        stats.shieldMax = Number(stats.shieldMax);
+        if (!Number.isFinite(stats.shieldMax) || stats.shieldMax <= 0) stats.shieldMax = stats.shield;
+
+        stats.hullMax = Number(stats.hullMax);
+        if (!Number.isFinite(stats.hullMax) || stats.hullMax <= 0) stats.hullMax = stats.hull || 1;
+
+        stats.shield = Math.min(stats.shield, stats.shieldMax);
+        stats.hull = Math.min(stats.hull, stats.hullMax);
+
+        // commit
+        p.shipStats = stats;
+        p.shipName = inst.templateName; // backward compat
+
+        // ✅ image selection exactly like applyShip()
+        const imgFile = stats.image ? String(stats.image) : "";
+        if (imgFile) {
+          shipSkinIndex = Math.max(0, shipSkins.indexOf(imgFile));
+          currentShipImg = loadShipImage(imgFile);
+        }
+
+        return true;
       }
 
       function saveState() {
@@ -1866,8 +1931,6 @@
           drawShip();
           drawMinimap();
         }
-
-
         requestAnimationFrame(loop);
       }
 
@@ -1878,7 +1941,7 @@
         spawnTarget();
         updateLockButtonVisual();
         await initWeapons();
-        applyShip(state.player.shipName || shipNames[0]);
+        applyActiveShip(state);
 
         // Station manager: gli passo info di sistema e un getter dello state giocatore
         StationManager.init({
