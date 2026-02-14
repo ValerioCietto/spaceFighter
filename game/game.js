@@ -158,7 +158,7 @@
         // AnyStation software allows the player to open station overlay
         // even if not near a space station.
         // AnyStation - make yourself at home even in space.
-        if(state.player?.ability?.anystation){
+        if(state.player?.abilities?.anystation){
           return true;
         }
         const dx = state.player.x - SystemInfo.stations[0].position_x;
@@ -1154,7 +1154,7 @@
       // enemy projectiles home into player!
       if (!p.homing || !state.player) return;
 
-      const desiredAngle = Math.atan2(target.y - p.y, target.x - p.x);
+      const desiredAngle = Math.atan2(state.player.y - p.y, state.player.x - p.x);
       let diff = normalizeAngleDiff(desiredAngle - p.angle);
       const maxTurn = (p.turnSpeed || 0) * dt;
       if (diff > maxTurn) diff = maxTurn;
