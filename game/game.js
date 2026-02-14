@@ -1220,10 +1220,13 @@
 
       p.angle += diff;
 
-      p.speed = Math.min(
-        p.maxSpeed || p.speed,
-        p.speed + (p.accel || 0) * dt
-      );
+      if (p.accel) {
+        p.speed += p.accel * dt;
+      }
+
+      if (p.maxSpeed && p.maxSpeed > 0) {
+        p.speed = Math.min(p.speed, p.maxSpeed);
+      }
 
       p.vx = Math.cos(p.angle) * p.speed;
       p.vy = Math.sin(p.angle) * p.speed;
