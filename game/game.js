@@ -91,14 +91,21 @@
         },
       };
       function applyShip(shipName) {
-        console.log("applying ship name: "+shipName);
-        state.player.shipName = shipName;                 // e.g. "human_zeus"
-        state.player.shipStats = getStats(state.player.shipName);
-        state.player.shipStats.shieldMax = state.player.shipStats.shield;
-        state.player.shipStats.hullMax = state.player.shipStats.hull;
-      
-        // ensure the sprite matches the stats image
-        const imgFile = state.player.shipStats?.image;    // e.g. "human_zeus.png"
+        console.log("applying ship name: " + shipName);
+
+        state.player.shipName = String(shipName || "").trim();
+        const stats = getStats(state.player.shipName) || {};
+        state.player.shipStats = stats;
+        stats.shield = Number(stats.shield) || 0;
+        stats.hull = Number(stats.hull) || 0;
+        stats.shieldMax = Number(stats.shieldMax);
+        if (!Number.isFinite(stats.shieldMax) || stats.shieldMax <= 0) stats.shieldMax = stats.shield;
+
+        stats.hullMax = Number(stats.hullMax);
+        if (!Number.isFinite(stats.hullMax) || stats.hullMax <= 0) stats.hullMax = stats.hull || 1;
+        stats.shield = Math.min(stats.shield, stats.shieldMax);
+        stats.hull = Math.min(stats.hull, stats.hullMax);
+        const imgFile = stats.image ? String(stats.image) : "";
         if (imgFile) {
           shipSkinIndex = Math.max(0, shipSkins.indexOf(imgFile));
           currentShipImg = loadShipImage(imgFile);
@@ -779,7 +786,6 @@
         if(state.enemies.length > 0){
           // move every enemy toward the player if they haven't reached the engagement range
           
-          // for every enemy
           state.enemies.forEach(enemy => {
             const stats = enemy.shipStats || getStats(enemy.shipName);
 
@@ -1976,7 +1982,7 @@
           const dt = Math.min(0.05, (now - lastTime) / 1000);
           lastTime = now;
           const dtMillis = dt * 1000;  
-
+          
           update(dt, dtMillis);
           updateEnemySpawning(dt);
           moveEnemies(dt);
