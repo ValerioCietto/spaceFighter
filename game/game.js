@@ -431,11 +431,10 @@
         if (maxN <= 0 || rate <= 0) return;
 
         enemySpawnAcc += dt;
-        if (enemySpawnAcc < rate) return;
-        enemySpawnAcc = 0;
+        while (enemySpawnAcc >= rate) {
+          enemySpawnAcc -= rate;
 
-        if (state?.enemies ){
-          if(state?.enemies.length < maxN){
+          if (state?.enemies && state.enemies.length < maxN) {
             spawnEnemy();
           }
         }
