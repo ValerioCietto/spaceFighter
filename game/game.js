@@ -142,14 +142,11 @@
 
       const touchButtons = document.querySelectorAll(".touch-btn");
       const lockButton = document.querySelector('.touch-btn[data-action="lock"]');
-      const dockButtonEl = document.getElementById("dock-button");
       const solarSystemEl = document.getElementById("solar-system-value");
     
       const shieldValueEl = document.getElementById("shield-value");
       const hullValueEl = document.getElementById("hull-value");
       const energyValueEl = document.getElementById("energy-value");
-
-      const dockingMessageEl = document.getElementById("docking-message");
       
       // station overlay elements
       const stationOverlayEl = document.getElementById("station-overlay");
@@ -350,9 +347,6 @@
       const projectiles = [];
       const enemyProjectiles = [];
       let target = null;
-
-      let dockingActive = false;
-      let stationDialogOpen = false;
 
       function spawnTarget() {
         const centerX = SystemInfo.size / 2;
@@ -624,63 +618,6 @@
         } else {
           lockButton.classList.remove("toggled");
         }
-      }
-
-      if (dockButtonEl) {
-       dockButtonEl.addEventListener("click", (e) => {
-         e.preventDefault();
-         startDocking();
-       });
-     }
-
-      function startDocking() {
-        console.log('start docking');
-        if (stationDialogOpen) return;
-        dockingActive = true;
-        dockingMessageEl.classList.add("visible");
-      }
-
-      function openStationDialog() {
-        stationDialogOpen = true;
-        dockingActive = false;
-        console.log('opening station panel');
-        dockingMessageEl.classList.remove("visible");
-        stationOverlayEl.classList.add("open");
-      }
-
-      function closeStationDialog() {
-        stationDialogOpen = false;
-        stationOverlayEl.classList.remove("open");
-      }
-
-      function setActiveTab(tab) {
-        stationTabButtons.forEach(btn => {
-          btn.classList.toggle("active", btn.dataset.tab === tab);
-        });
-
-        let html = "";
-        if (tab === "info") {
-          html = `
-            <h3>Info</h3>
-            <p>General information about the station, services and traffic.</p>
-          `;
-        } else if (tab === "outfitter") {
-          html = `
-            <h3>Outfitter</h3>
-            <p>Configure and upgrade weapons, shields and systems.</p>
-          `;
-        } else if (tab === "finance") {
-          html = `
-            <h3>Finance</h3>
-            <p>Manage your money, loans and station fees.</p>
-          `;
-        } else if (tab === "spaceships") {
-          html = `
-            <h3>Spaceships</h3>
-            <p>View, buy or sell starships and modules.</p>
-          `;
-        }
-        stationTabContentEl.innerHTML = html;
       }
 
       // STARFIELD
@@ -961,14 +898,10 @@
 
     function update(dt, dtMillis) {
       
-      // if we are in docking mode
-      if(!stationDialogOpen){
-        stationAngle += STATION_ROT_SPEED * dt;
-        playerMoveUpdate(dt);
-        playerDockingUpdate(dt);
-        updatePlayerProjectiles(dt, dtMillis);
-        updateEnemyProjectiles(dt);
-      }
+      stationAngle += STATION_ROT_SPEED * dt;
+      playerMoveUpdate(dt);
+      updatePlayerProjectiles(dt, dtMillis);
+      updateEnemyProjectiles(dt);
       
       const newSpeed = Math.hypot(state.player.vx, state.player.vy);
       speedValueEl.textContent = newSpeed.toFixed(1);
@@ -981,34 +914,10 @@
 
     /** Moves + rotates player (manual or docking autopilot), clamps speed, integrates position */
     function playerMoveUpdate(dt) {
-      if (dockingActive && !stationDialogOpen) {
-        playerDockingAutopilotMove(dt);
-      } else {
-        playerManualMove(dt);
-      }
-
+      playerManualMove(dt);
       clampPlayerSpeed();
       integratePlayerPosition(dt);
       clampPlayerToWorld();
-    }
-
-    function playerDockingAutopilotMove(dt) {
-      const dx = STATION_X - state.player.x;
-      const dy = STATION_Y - state.player.y;
-      const dist = Math.hypot(dx, dy);
-
-      const desiredAngle = Math.atan2(dy, dx);
-      rotatePlayerToward(desiredAngle, dt);
-
-      let targetSpeed;
-      if (dist > 200) targetSpeed = state.player.shipStats.speed * 0.7;
-      else if (dist > 50) targetSpeed = state.player.shipStats.speed * 0.3;
-      else targetSpeed = 30;
-
-      const dirX = Math.cos(state.player.angle);
-      const dirY = Math.sin(state.player.angle);
-      state.player.vx = dirX * targetSpeed;
-      state.player.vy = dirY * targetSpeed;
     }
 
     function playerManualMove(dt) {
@@ -1040,14 +949,6 @@
       }
     }
 
-    function rotatePlayerToward(desiredAngle, dt) {
-      let diff = normalizeAngleDiff(desiredAngle - state.player.angle);
-      const maxTurn = state.player.shipStats.turningSpeedRad * dt;
-      if (diff > maxTurn) diff = maxTurn;
-      if (diff < -maxTurn) diff = -maxTurn;
-      state.player.angle += diff;
-    }
-
     function applySpeedToVelocity(speed) {
       if (speed === 0) {
         state.player.vx = 0;
@@ -1077,24 +978,6 @@
     function clampPlayerToWorld() {
       state.player.x = Math.max(0, Math.min(SystemInfo.size, state.player.x));
       state.player.y = Math.max(0, Math.min(SystemInfo.size, state.player.y));
-    }
-
-    /** Handles docking completion + dialog open */
-    function playerDockingUpdate(dt) {
-      if (!dockingActive || stationDialogOpen) return;
-
-      const dx = STATION_X - state.player.x;
-      const dy = STATION_Y - state.player.y;
-      const dist = Math.hypot(dx, dy);
-
-      if (dist >= 5) return;
-
-      state.player.x = STATION_X;
-      state.player.y = STATION_Y;
-      state.player.vx = 0;
-      state.player.vy = 0;
-      dockingActive = false;
-      openStationDialog();
     }
 
     function updatePlayerProjectiles(dt, dtMillis) {
@@ -1669,19 +1552,14 @@
         ctx.restore();
       }
 
-      // drawPlayer
       function drawShip() {
 
         ctx.save();
         ctx.translate(width / 2, height / 2);
 
-        // sprite loaded need rotation 90° clockwise
         ctx.rotate(state.player.angle + Math.PI / 2);
-
-        // --- ENGINE FLARE (when accelerating) ---
-        // Engine flare anchor in SHIP-LOCAL coords (after rotation). Tweak these.
-        const engineFlareX = 0; // behind the ship (left in local coords)
-        const engineFlareY = 40;   // centered vertically
+        const engineFlareX = 0; 
+        const engineFlareY = 40;
         const engineFlareWidth = state.player.shipStats.engineFlareWidth;
         const engineFlareLength = state.player.shipStats.engineFlareLength;
 
@@ -1690,11 +1568,9 @@
             ctx.save();
             ctx.translate(engineFlareX+engineCoord.x, engineFlareY+engineCoord.y);
 
-            // rotate flare 90° anti-clockwise (CCW)
+
             ctx.rotate(-Math.PI / 2);
 
-            // Inverted triangle: tip at (0,0), base to the RIGHT (+X)
-            // Outer yellow flame
             ctx.beginPath();
             ctx.moveTo(0, 0); // tip
             ctx.lineTo(engineFlareLength, -engineFlareWidth / 2);
@@ -2019,8 +1895,7 @@
           },
           cycleWeapon,
           (idx) => { currentWeaponIndex = idx; },
-          touchButtons,
-          startDocking
+          touchButtons
         );
 
         setInterval(saveState, 2000);

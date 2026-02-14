@@ -6,15 +6,8 @@ function setupInput(
   toggleLock,
   cycleWeapon,
   setWeaponIndex,
-  touchButtons,
-  requestDocking
+  touchButtons
 ) {
-  function safeDocking() {
-    if (typeof requestDocking === "function") {
-      requestDocking();
-    }
-  }
-
   // Keyboard input
   window.addEventListener("keydown", (e) => {
     switch (e.key) {
@@ -57,10 +50,6 @@ function setupInput(
         break;
       case "4":
         setWeaponIndex(3);
-        break;
-      case "l":
-      case "L":
-        safeDocking();
         break;
     }
   });

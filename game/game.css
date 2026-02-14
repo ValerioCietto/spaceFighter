@@ -111,9 +111,7 @@ body {
   background: radial-gradient(circle at center, #202436 0, #05060a 70%);
 }
 
-/* DOCK BUTTON (sotto minimappa) */
-
-#dock-button {
+#inventory-btn {
   position: absolute;
   top: calc(8px + 140px + 8px); /* 8px (top minimap) + 140px (minimap height) + 8px margin */
   right: 8px;
@@ -132,7 +130,7 @@ body {
   transition: opacity 0.2s, border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
 }
 
-#inventory-btn {
+#galaxy-map-btn {
   position: absolute;
   top: calc(8px + 140px + 8px + 28px); /* 8px (top minimap) + 140px (minimap height) + 8px margin */
   right: 8px;
@@ -151,28 +149,9 @@ body {
   transition: opacity 0.2s, border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
 }
 
-#galaxy-map-btn {
-  position: absolute;
-  top: calc(8px + 140px + 8px + 28px + 28px); /* 8px (top minimap) + 140px (minimap height) + 8px margin */
-  right: 8px;
-  width: 140px;
-  padding: 6px 10px;
-  border-radius: 10px;
-  border: 1px solid var(--ui-border);
-  background: var(--ui-bg);
-  color: var(--text);
-  font-size: 12px;
-  text-align: center;
-  cursor: pointer;
-  z-index: 11;
-  backdrop-filter: blur(4px);
-  opacity: 0.6;
-  transition: opacity 0.2s, border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
-}
-
 #station-overlay-btn {
   position: absolute;
-  top: calc(8px + 140px + 8px + 28px + 28px + 28px); /* 8px (top minimap) + 140px (minimap height) + 8px margin */
+  top: calc(8px + 140px + 8px + 28px + 28px); /* 8px (top minimap) + 140px (minimap height) + 8px margin */
   right: 8px;
   width: 140px;
   padding: 6px 10px;
@@ -330,19 +309,8 @@ body {
   background: #000;
 }
 
-#dock-button:hover {
-  opacity: 1;
-  border-color: var(--accent);
-}
 
-/* stato “attivo”/blink quando vicino alla stazione */
-#dock-button.blink {
-  animation: dockBlink 0.8s infinite alternate;
-  opacity: 1;
-  border-color: var(--accent);
-  box-shadow: 0 0 10px rgba(79, 195, 247, 0.9);
-  background-color: rgba(79, 195, 247, 0.15);
-}
+
 
 @keyframes dockBlink {
   from {
