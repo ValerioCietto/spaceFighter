@@ -22,7 +22,7 @@
               name: "Little Raven",
       
               // points to ShipStatsProvider template
-              templateName: "Perseus",
+              templateName: "human_perseus",
       
               // instance-specific base stats overrides (optional)
               shipStats: {
@@ -271,17 +271,6 @@
         if (e.key === "Escape") closeGalaxyOverlay();
       });
 
-      const changeShipBtn = document.getElementById("change-ship-button");
-      if (!changeShipBtn) return;
-
-      changeShipBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation(); // important if anything listens higher up
-        cycleShipSkin();     // ONLY this
-        saveState();
-      });
-
-
       const shipNames = [
         "human_artemis",
         "human_hermes",
@@ -339,12 +328,6 @@
       
       // initial sprite
       let currentShipImg = loadShipImage(shipSkins[shipSkinIndex]);
-      
-      function cycleShipSkin() {
-        const currentIdx = Math.max(0, shipNames.indexOf(state.player.shipName));
-        const nextIdx = (currentIdx + 1) % shipNames.length;
-        applyShip(shipNames[nextIdx]);
-      }
 
       let width = 0;
       let height = 0;
