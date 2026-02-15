@@ -401,13 +401,21 @@ function getStats(shipName) {
   return structuredClone(stats);
 }
 
+function saveState(state) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    console.warn("Impossibile salvare lo stato:", e);
+  }
+}
+
 function setActiveShip(state, shipId) {
   const p = state?.player;
   if (!p) return;
 
   p.currentSpaceshipId = Number(shipId);   // <-- THIS is what applyActiveShip uses
   applyActiveShip(state);                  // updates currentShipImg from shipStats.image
-  saveState();
+  saveState(state);
 }
 
 function getActiveShipInstance(state) {

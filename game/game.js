@@ -161,7 +161,7 @@
           onBuy: (shipKey, stats) => {
             const templateName = shipKey;
             onBoughtSpaceship({ state, shipStats: stats, templateName });
-            saveState();
+            saveState(state);
           },
           onToast: (msg) => console.log("[shop]", msg),
         });
@@ -444,8 +444,8 @@
 
           for (const e of state.enemies) {
             if (!e) continue;
-            const dx = e.x - state.player.x;
-            const dy = e.y - state.player.y;
+            const dx = e.x - (state.player.x + state.player.vx);
+            const dy = e.y - (state.player.y + state.player.vy);
             const d2 = dx * dx + dy * dy;
             if (d2 < minDist2) {
               minDist2 = d2;
@@ -455,8 +455,8 @@
 
           if (nearest) {
             const toEnemyAngle = Math.atan2(
-              nearest.y - state.player.y,
-              nearest.x - state.player.x
+              nearest.y - (state.player.y + state.player.vy),
+              nearest.x - (state.player.x + state.player.vx)
             );
             let diff = normalizeAngleDiff(toEnemyAngle - state.player.angle);
             if (Math.abs(diff) <= weapon.auto_aim) {
