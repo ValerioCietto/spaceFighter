@@ -400,3 +400,83 @@ function getStats(shipName) {
 
   return structuredClone(stats);
 }
+
+function setActiveShip(state, shipId) {
+  const p = state?.player;
+  if (!p) return;
+
+  p.currentSpaceshipId = Number(shipId);   // <-- THIS is what applyActiveShip uses
+  applyActiveShip(state);                  // updates currentShipImg from shipStats.image
+  saveState();
+}
+
+function getActiveShipInstance(state) {
+  const p = state?.player;
+  const owned = Array.isArray(p?.ownedSpaceships) ? p.ownedSpaceships : [];
+  const id = Number(p?.currentSpaceshipId ?? 0);
+  return owned.find(s => Number(s?.id) === id) || null;
+}
+
+function applyActiveShip(state) {
+  console.log("Applying active ship instance...");
+  const p = state?.player;
+  if (!p) return false;
+
+  const inst = getActiveShipInstance(state);
+  if (!inst) {
+    // fallback to old flow
+    if (p.shipName) applyShip(p.shipName);
+    return false;
+  }
+
+  // merge template + instance overrides
+  const base = getStats(inst.templateName) || {};
+  const overrides = inst.shipStats || {};
+  const stats = { ...base, ...overrides };
+
+  // normalize
+  stats.shield = Number(stats.shield) || 0;
+  stats.hull = Number(stats.hull) || 0;
+
+  stats.shieldMax = Number(stats.shieldMax);
+  if (!Number.isFinite(stats.shieldMax) || stats.shieldMax <= 0) stats.shieldMax = stats.shield;
+
+  stats.hullMax = Number(stats.hullMax);
+  if (!Number.isFinite(stats.hullMax) || stats.hullMax <= 0) stats.hullMax = stats.hull || 1;
+
+  stats.shield = Math.min(stats.shield, stats.shieldMax);
+  stats.hull = Math.min(stats.hull, stats.hullMax);
+
+  // commit
+  p.shipStats = stats;
+  p.shipName = inst.templateName; 
+
+  const imgFile = stats.image ? String(stats.image) : "";
+  if (imgFile) {
+    currentShipImg = loadShipImage(imgFile);
+  }
+
+  return true;
+}
+
+const shipImages = new Map();
+let shipImgReady = false;
+function loadShipImage(filename) {
+  shipImgReady = false;
+
+  // cached
+  if (shipImages.has(filename)) {
+    shipImgReady = true;
+    return shipImages.get(filename);
+  }
+
+  const img = new Image();
+  img.onload = () => { shipImgReady = true; };
+  img.onerror = () => {
+    console.warn("Failed to load ship image:", img.src);
+    shipImgReady = false;
+  };
+  img.src = SHIP_ASSET_BASE + filename;
+  shipImages.set(filename, img);
+  return img;
+}

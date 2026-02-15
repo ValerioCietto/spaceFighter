@@ -101,7 +101,6 @@
         stats.hull = Math.min(stats.hull, stats.hullMax);
         const imgFile = stats.image ? String(stats.image) : "";
         if (imgFile) {
-          shipSkinIndex = Math.max(0, shipSkins.indexOf(imgFile));
           currentShipImg = loadShipImage(imgFile);
         }
       }
@@ -256,62 +255,18 @@
 
       galaxyCloseBtn.addEventListener("click", closeGalaxyOverlay);
 
-      // optional ESC close
+      // optional ESC closewdwd
       window.addEventListener("keydown", e => {
         if (e.key === "Escape") closeGalaxyOverlay();
       });
-
-      const shipSkins = [
-        "human_berseker.png",
-        "human_gunship.png",
-        "human_icarus.png",
-        "human_mercury.png",
-        "human_perseus.png",
-        "human_toad.png",
-        "human_ares.png",
-        "human_zeus.png",
-        "jared_zuque.png",
-        "jared_three_eyes.png",
-        "jared_three_eyes_spike_hybrid.png",
-        "technician_spike_razor_upgraded.png",
-        "technician_spike_razor.png",
-        "technician_hard_shell_double_closed.png",
-        "technician_hard_shell_v1.png"
-      ];
-            
-      // sprite cache
-      const shipImages = new Map();
-      let shipSkinIndex = 0;
-      let shipImgReady = false;
       
-      function loadShipImage(filename) {
-        shipImgReady = false;
-      
-        // cached
-        if (shipImages.has(filename)) {
-          shipImgReady = true;
-          return shipImages.get(filename);
-        }
-      
-        const img = new Image();
-        img.onload = () => { shipImgReady = true; };
-        img.onerror = () => {
-          console.warn("Failed to load ship image:", img.src);
-          shipImgReady = false;
-        };
-        img.src = SHIP_ASSET_BASE + filename;
-        shipImages.set(filename, img);
-        return img;
-      }
-      let currentShipImg = loadShipImage(shipSkins[shipSkinIndex]);
+      // loadShipImage(filename) from shipStatProvider.js
 
       let width = 0;
       let height = 0;
 
       let minimapSize = 0;
       let minimapScale = 0;
-
-
 
       const input = {
         left: false,
@@ -674,55 +629,6 @@
         moneyValueEl.textContent = `${state.player.money.toFixed(0)}§`;
       }
 
-
-      function getActiveShipInstance(state) {
-        const p = state?.player;
-        const owned = Array.isArray(p?.ownedSpaceships) ? p.ownedSpaceships : [];
-        const id = Number(p?.currentSpaceshipId ?? 0);
-        return owned.find(s => Number(s?.id) === id) || null;
-      }
-
-      function applyActiveShip(state) {
-        const p = state?.player;
-        if (!p) return false;
-
-        const inst = getActiveShipInstance(state);
-        if (!inst) {
-          // fallback to old flow
-          if (p.shipName) applyShip(p.shipName);
-          return false;
-        }
-
-        // merge template + instance overrides
-        const base = getStats(inst.templateName) || {};
-        const overrides = inst.shipStats || {};
-        const stats = { ...base, ...overrides };
-
-        // normalize
-        stats.shield = Number(stats.shield) || 0;
-        stats.hull = Number(stats.hull) || 0;
-
-        stats.shieldMax = Number(stats.shieldMax);
-        if (!Number.isFinite(stats.shieldMax) || stats.shieldMax <= 0) stats.shieldMax = stats.shield;
-
-        stats.hullMax = Number(stats.hullMax);
-        if (!Number.isFinite(stats.hullMax) || stats.hullMax <= 0) stats.hullMax = stats.hull || 1;
-
-        stats.shield = Math.min(stats.shield, stats.shieldMax);
-        stats.hull = Math.min(stats.hull, stats.hullMax);
-
-        // commit
-        p.shipStats = stats;
-        p.shipName = inst.templateName; 
-
-        const imgFile = stats.image ? String(stats.image) : "";
-        if (imgFile) {
-          shipSkinIndex = Math.max(0, shipSkins.indexOf(imgFile));
-          currentShipImg = loadShipImage(imgFile);
-        }
-
-        return true;
-      }
 
       function saveState() {
         try {
