@@ -9,23 +9,17 @@
           money: 0,
           systemName: "Solar",
       
-          // runtime pointer to the active owned ship instance
           currentSpaceshipId: 0,
       
-          // OPTIONAL backward-compat (can be derived from active ship)
           shipName: "human_starfighter",
       
-          // array of OWNED ship INSTANCES (mutable, saved)
           ownedSpaceships: [
             {
               id: 0,
               name: "Little Raven",
       
-              // points to ShipStatsProvider template
               templateName: "human_perseus",
-      
-              // instance-specific base stats overrides (optional)
-              shipStats: {
+                shipStats: {
                 cost: 10000,
                 shield: 100,
                 hull: 50,
@@ -151,8 +145,6 @@
       // station overlay elements
       const stationOverlayEl = document.getElementById("station-overlay");
       const stationExitBtn = document.getElementById("station-exit-btn");
-      const stationTabButtons = document.querySelectorAll(".station-tab-btn");
-      const stationTabContentEl = document.getElementById("station-tab-content");
 
       const stationOverlayBtn = document.getElementById("station-overlay-btn");
       stationOverlayBtn.addEventListener("click", stationOverlayOpen);
@@ -269,18 +261,6 @@
         if (e.key === "Escape") closeGalaxyOverlay();
       });
 
-      const shipNames = [
-        "human_artemis",
-        "human_hermes",
-        "human_gunship",
-        "human_icarus",
-        "human_mercury",
-        "human_perseus",
-        "human_demeter",
-        "human_ares",
-        "human_zeus",
-      ];
-
       const shipSkins = [
         "human_berseker.png",
         "human_gunship.png",
@@ -323,8 +303,6 @@
         shipImages.set(filename, img);
         return img;
       }
-      
-      // initial sprite
       let currentShipImg = loadShipImage(shipSkins[shipSkinIndex]);
 
       let width = 0;
@@ -376,7 +354,6 @@
         const shipName = ENEMY_TYPES[(Math.random() * ENEMY_TYPES.length) | 0];
         const shipStats = getStats(shipName);
 
-        // basic hp model (prefer stats if you have them)
         const maxShield = shipStats?.shield ?? 20;
         const maxHull = shipStats?.hull ?? 20;
 
@@ -440,7 +417,6 @@
           const last = Number(enemy.lastFire) || 0;
           if (now - last < minDelayMs) return;
 
-          // only mark as fired if we actually shoot (and are in range)
           if (enemyFireWeapon(enemy)) {
             enemy.lastFire = now;
           }
@@ -509,13 +485,11 @@
         const weapon = weapons[currentWeaponIndex];
         const now = performance.now();
 
-        // If not manual, only fire if latched ON
         if (!manual) {
           if (!weapon?.autofire_toggle) return;
           if (!weapons[currentWeaponIndex]?.autofireToggled) return;
         }
 
-        // If manual and weapon supports toggle, latch it ON
         if (manual && weapon?.autofire_toggle && weapons[currentWeaponIndex].autofireToggled) {
           weapons[currentWeaponIndex].autofireToggled = false;
         }else{
@@ -525,7 +499,6 @@
         const last = weaponLastFire[currentWeaponIndex] || 0;
         const firerateMult = state.player.shipStats.firerateMult || 1.0;
 
-        // NOTE: your current formula uses delay_ms * firerateMult (kept as-is)
         if (now - last < (weapon.delay_ms * firerateMult)) return;
 
         weaponLastFire[currentWeaponIndex] = now;
@@ -665,7 +638,6 @@
 
       window.addEventListener("resize", resize);
 
-      // run with: npx serve .  (or any static server) then open the page
       function loadState() {
         try {
           const raw = localStorage.getItem(STORAGE_KEY);
@@ -674,33 +646,27 @@
           const saved = JSON.parse(raw);
           if (!saved?.player) return;
 
-          // numeric state
           ["x", "y", "vx", "vy", "angle", "money"].forEach((k) => {
             if (typeof saved.player[k] === "number") state.player[k] = saved.player[k];
           });
 
-          // systemName
           if (typeof saved.player.systemName === "string" && saved.player.systemName.trim()) {
             state.player.systemName = saved.player.systemName.trim();
           }
 
-          // ✅ restore owned ships
           if (Array.isArray(saved.player.ownedSpaceships)) {
             state.player.ownedSpaceships = saved.player.ownedSpaceships;
           }
 
-          // ✅ restore active ship pointer (your canonical field)
           if (Number.isFinite(saved.player.currentSpaceshipId)) {
             state.player.currentSpaceshipId = saved.player.currentSpaceshipId;
           }
 
-          // backward compat if old saves used activeShipId
           if (!Number.isFinite(state.player.currentSpaceshipId) && Number.isFinite(saved.player.activeShipId)) {
             state.player.currentSpaceshipId = saved.player.activeShipId;
           }
 
-          // ✅ rebuild runtime shipStats from active owned ship (not from shipName)
-          applyActiveShip(state); // the function I suggested earlier
+          applyActiveShip(state); 
         } catch (e) {
           console.warn("Impossibile caricare lo stato:", e);
         }
@@ -747,9 +713,8 @@
 
         // commit
         p.shipStats = stats;
-        p.shipName = inst.templateName; // backward compat
+        p.shipName = inst.templateName; 
 
-        // ✅ image selection exactly like applyShip()
         const imgFile = stats.image ? String(stats.image) : "";
         if (imgFile) {
           shipSkinIndex = Math.max(0, shipSkins.indexOf(imgFile));
