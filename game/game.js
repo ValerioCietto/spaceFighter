@@ -84,27 +84,6 @@
           deathModal: false,
         },
       };
-      function applyShip(shipName) {
-        console.log("applying ship name: " + shipName);
-
-        state.player.shipName = String(shipName || "").trim();
-        const stats = getStats(state.player.shipName) || {};
-        state.player.shipStats = stats;
-        stats.shield = Number(stats.shield) || 0;
-        stats.hull = Number(stats.hull) || 0;
-        stats.shieldMax = Number(stats.shieldMax);
-        if (!Number.isFinite(stats.shieldMax) || stats.shieldMax <= 0) stats.shieldMax = stats.shield;
-
-        stats.hullMax = Number(stats.hullMax);
-        if (!Number.isFinite(stats.hullMax) || stats.hullMax <= 0) stats.hullMax = stats.hull || 1;
-        stats.shield = Math.min(stats.shield, stats.shieldMax);
-        stats.hull = Math.min(stats.hull, stats.hullMax);
-        const imgFile = stats.image ? String(stats.image) : "";
-        if (imgFile) {
-          currentShipImg = loadShipImage(imgFile);
-        }
-      }
-
   
       const STAR_DIAMETER = SystemInfo.stars[0].radius+200;
       const STAR_RADIUS_WORLD = SystemInfo.stars[0].radius;

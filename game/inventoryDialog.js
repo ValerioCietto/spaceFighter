@@ -1,6 +1,3 @@
-
-
-
 function renderInventory(state) {
   const p = state.player;
 
@@ -26,7 +23,6 @@ function renderInventory(state) {
 
   cargoEl.textContent = `${p.cargo ?? 0} / ${p.cargoMax ?? 0}`;
 
-  // ---- OWNED SHIPS SECTION (replace, don't append) ----
   const old = bodyEl.querySelector("#owned-ships-section");
   if (old) old.remove();
 
