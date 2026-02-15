@@ -76,27 +76,5 @@ function renderInventory(state) {
   });
 }
 
-function setActiveShip(state, shipId) {
-  const p = state?.player;
-  if (!p || !Array.isArray(p.ownedSpaceships)) return;
 
-  const inst = p.ownedSpaceships.find((s) => s.id === shipId);
-  if (!inst) return;
 
-  p.activeShipId = shipId;
-
-  // optional: actually switch the currently flown ship
-  p.shipType = inst.templateName;
-
-  // base template stats + instance overrides
-  const base = getStats(inst.templateName); // your ShipStatsProvider template
-  p.shipStats = { ...base, ...(inst.shipStats || {}) };
-  p.shipName = inst.templateName;
-  // keep hull/shield sane when switching
-  p.maxHull = Number(p.shipStats.hull ?? p.maxHull ?? 0);
-  p.hull = Math.min(Number(p.hull ?? p.maxHull), p.maxHull);
-
-  p.maxShield = Number(p.shipStats.shield ?? p.maxShield ?? 0);
-  p.shield = Math.min(Number(p.shield ?? p.maxShield), p.maxShield);
-
-}
