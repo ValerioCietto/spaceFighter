@@ -346,7 +346,7 @@
           if (!enemy || !enemy.weapon || !enemy.shipStats) return;
 
           const firerateMult = Number(enemy.shipStats.firerateMult) || 1.0;
-          const minDelayMs = Math.max(1, Number(enemy.weapon.delay_ms) || 0) * firerateMult;
+          const minDelayMs = Math.max(1, Number(enemy.weapon.delay_ms) || 0) * 1 / firerateMult;
 
           const last = Number(enemy.lastFire) || 0;
           if (now - last < minDelayMs) return;
@@ -433,7 +433,7 @@
         const last = weaponLastFire[currentWeaponIndex] || 0;
         const firerateMult = state.player.shipStats.firerateMult || 1.0;
 
-        if (now - last < (weapon.delay_ms * firerateMult)) return;
+        if (now - last < (weapon.delay_ms * 1 / firerateMult)) return;
 
         weaponLastFire[currentWeaponIndex] = now;
 

@@ -1,6 +1,20 @@
 {
   "weapons": [
     {
+      "name": "Space Bullet",
+      "cost": 1000,
+      "damage": 1,
+      "base_speed": 250,
+      "life_span": 3.0,
+      "spread": 0.15,
+      "projectiles": 1,
+      "aspect": "round_bullet",
+      "delay_ms": 500,
+      "energy_cost": 10,
+      "engage_range": 700,
+      "description": "Commonly nicknamed pea shooter."
+    },
+    {
       "name": "Drakefire Turret",
       "cost": 90000,
       "damage": 5,
@@ -268,20 +282,7 @@
       "homing": true,
       "description": "A static mine cluster, ideal for speedster bombing on static installations."
     },
-    {
-      "name": "Space Bullet",
-      "cost": 1000,
-      "damage": 1,
-      "base_speed": 250,
-      "life_span": 3.0,
-      "spread": 0.15,
-      "projectiles": 1,
-      "aspect": "round_bullet",
-      "delay_ms": 500,
-      "energy_cost": 10,
-      "engage_range": 700,
-      "description": "Commonly nicknamed pea shooter."
-    },
+    
     {
       "name": "Sniper",
       "cost": 2000,
