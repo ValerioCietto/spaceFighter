@@ -82,17 +82,24 @@
     <div class="inventory-overlay" id="inventory-overlay" aria-hidden="true">
       <div class="inventory-dialog" role="dialog" aria-modal="true">
         <div class="inventory-header">
-          <h2>Inventory</h2>
+          <h2>Inventory <span id="stat-credits">0</span>§</h2>
           <button id="inventory-close-btn" type="button">Close</button>
         </div>
 
         <div class="inventory-body">
-          <ul class="inventory-stats">
-            <li><strong>Credits:</strong> <span id="stat-credits">12000</span></li>
-            <li><strong>Hull:</strong> <span id="stat-hull">85%</span></li>
-            <li><strong>Shield:</strong> <span id="stat-shield">60%</span></li>
-            <li><strong>Cargo:</strong> <span id="stat-cargo">12 / 30</span></li>
-          </ul>
+          <div class="inv-tabs" role="tablist" aria-label="Inventory Tabs">
+            <button class="inv-tab is-active" type="button" role="tab" aria-selected="true" data-tab="current">
+              Current ship
+            </button>
+            <button class="inv-tab" type="button" role="tab" aria-selected="false" data-tab="owned">
+              Owned ships
+            </button>
+          </div>
+
+          <div class="inv-panels">
+            <section class="inv-panel is-active" role="tabpanel" data-panel="current"></section>
+            <section class="inv-panel" role="tabpanel" data-panel="owned"></section>
+          </div>
         </div>
       </div>
     </div>

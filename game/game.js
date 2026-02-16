@@ -179,11 +179,13 @@
       inventoryBtn.addEventListener("click", openInventory);
       function openInventory() {
         inventoryOverlayEl.classList.add("open");
-         renderInventory(state);
+        state.ui.mode = "inventory";
+        renderInventory(state);
       }
 
       function closeInventory() {
         inventoryOverlayEl.classList.remove("open");
+        state.ui.mode = "game";
       }
 
       inventoryCloseBtn.addEventListener("click", closeInventory);
@@ -202,6 +204,7 @@
 
       function openDeathOverlay() {
         deathOverlayEl.classList.add("open");
+        state.ui.mode = "death";
       }
 
       function closeDeathOverlay() {
