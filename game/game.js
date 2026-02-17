@@ -511,7 +511,7 @@
             vx = shipSpeedX + dirX * weapon.base_speed;
             vy = shipSpeedY + dirY * weapon.base_speed;
           }
-    
+          console.log("MuzzleX: " + muzzleX + " MuzzleY: " + muzzleY);
           projectiles.push({
             x: muzzleX,
             y: muzzleY,
