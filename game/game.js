@@ -468,59 +468,76 @@
      }
      
      /** Fire logic: aim + spawn projectiles (no toggle/can-fire logic here) */
-     function playerFireWeapon({ weapon /*, now*/ }) {
-       let baseAngle = resolveBaseAngleForWeapon({ weapon });
-     
-       const spreadRad = (weapon.spread || 0) * Math.PI / 180;
-       const muzzleDistance = 18;
-       const shipSpeedX = state.player.vx;
-       const shipSpeedY = state.player.vy;
-     
-       const count = weapon.projectiles || 1;
-     
-       for (let i = 0; i < count; i++) {
-         const offset = spreadRad > 0 ? (-spreadRad + Math.random() * (2 * spreadRad)) : 0;
-         const angle = baseAngle + offset;
-         const dirX = Math.cos(angle);
-         const dirY = Math.sin(angle);
-     
-         let vx, vy, speed;
-     
-         if (weapon.homing) {
-           speed = weapon.base_speed;
-           vx = dirX * speed;
-           vy = dirY * speed;
-         } else {
-           speed = weapon.base_speed;
-           vx = shipSpeedX + dirX * weapon.base_speed;
-           vy = shipSpeedY + dirY * weapon.base_speed;
-         }
-     
-         const startX = state.player.x + dirX * muzzleDistance;
-         const startY = state.player.y + dirY * muzzleDistance;
-     
-         const damageMult = state.player.shipStats.damageMult || 1;
-         const weaponDamage = weapon.damage * damageMult;
-     
-         projectiles.push({
-           x: startX,
-           y: startY,
-           vx,
-           vy,
-           age: 0,
-           life: weapon.life_span,
-           damage: weaponDamage,
-           aspect: weapon.aspect,
-           angle,
-           homing: !!weapon.homing,
-           speed,
-           accel: weapon.acceleration || 0,
-           maxSpeed: weapon.speed || weapon.base_speed || 0,
-           turnSpeed: weapon.turn_speed_rad || 0,
-           arming_time: weapon.arming_time || 0,
-         });
-       }
-     }
+    function playerFireWeapon({ weapon }) {
+      const baseAngle = resolveBaseAngleForWeapon({ weapon });
+    
+      const spreadRad = (weapon.spread || 0) * Math.PI / 180;
+      const shipSpeedX = state.player.vx;
+      const shipSpeedY = state.player.vy;
+    
+      const damageMult = state.player.shipStats.damageMult || 1;
+      const weaponDamage = weapon.damage * damageMult;
+    
+      const count = weapon.projectiles || 1;
+    
+      // If no ports are defined, fallback to old single muzzle (keeps robustness)
+      const ports = Array.isArray(state.player.shipStats.weaponGunCoords) && state.player.shipStats.weaponGunCoords.length
+        ? state.player.shipStats.weaponGunCoords
+        : [{ type: "gun", x: 0, y: 18 }];
+    
+      for (const port of ports) {
+        if (!port || port.type !== "gun") continue;
+    
+        // rotate local port coords by ship angle, then translate to world
+        const p = rotatePoint(port.x, port.y, state.player.angle);
+        const muzzleX = state.player.x + p.x;
+        const muzzleY = state.player.y + p.y;
+    
+        for (let i = 0; i < count; i++) {
+          const offset = spreadRad > 0 ? (-spreadRad + Math.random() * (2 * spreadRad)) : 0;
+          const angle = baseAngle + offset;
+    
+          const dirX = Math.cos(angle);
+          const dirY = Math.sin(angle);
+    
+          let vx, vy, speed;
+    
+          if (weapon.homing) {
+            speed = weapon.base_speed;
+            vx = dirX * speed;
+            vy = dirY * speed;
+          } else {
+            speed = weapon.base_speed;
+            vx = shipSpeedX + dirX * weapon.base_speed;
+            vy = shipSpeedY + dirY * weapon.base_speed;
+          }
+    
+          projectiles.push({
+            x: muzzleX,
+            y: muzzleY,
+            vx,
+            vy,
+            age: 0,
+            life: weapon.life_span,
+            damage: weaponDamage,
+            aspect: weapon.aspect,
+            angle,
+            homing: !!weapon.homing,
+            speed,
+            accel: weapon.acceleration || 0,
+            maxSpeed: weapon.speed || weapon.base_speed || 0,
+            turnSpeed: weapon.turn_speed_rad || 0,
+            arming_time: weapon.arming_time || 0,
+          });
+        }
+      }
+    }
+    
+    function rotatePoint(x, y, angleRad) {
+      const c = Math.cos(angleRad);
+      const s = Math.sin(angleRad);
+      return { x: x * c - y * s, y: x * s + y * c };
+    }
      
      function resolveBaseAngleForWeapon({ weapon }) {
        let baseAngle = state.player.angle;
