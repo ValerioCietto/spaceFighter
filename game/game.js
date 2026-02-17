@@ -418,105 +418,142 @@
         return true;
       }
 
-      function attemptFireWeapon(manual = false) {
-        const weapon = weapons[currentWeaponIndex];
-        const now = performance.now();
-
-        if (!manual) {
-          if (!weapon?.autofire_toggle) return;
-          if (!weapons[currentWeaponIndex]?.autofireToggled) return;
-        }
-
-        if (manual && weapon?.autofire_toggle && weapons[currentWeaponIndex].autofireToggled) {
-          weapons[currentWeaponIndex].autofireToggled = false;
-        }else{
-          weapons[currentWeaponIndex].autofireToggled = true;
-        }
-
-        const last = weaponLastFire[currentWeaponIndex] || 0;
-        const firerateMult = state.player.shipStats.firerateMult || 1.0;
-
-        if (now - last < (weapon.delay_ms * 1 / firerateMult)) return;
-
-        weaponLastFire[currentWeaponIndex] = now;
-
-        let baseAngle = state.player.angle;
-        if (weapon.auto_aim && state.enemies && state.enemies.length > 0) {
-          let nearest = null;
-          let minDist2 = Infinity;
-
-          for (const e of state.enemies) {
-            if (!e) continue;
-            const dx = e.x - (state.player.x + state.player.vx);
-            const dy = e.y - (state.player.y + state.player.vy);
-            const d2 = dx * dx + dy * dy;
-            if (d2 < minDist2) {
-              minDist2 = d2;
-              nearest = e;
-            }
-          }
-
-          if (nearest) {
-            const toEnemyAngle = Math.atan2(
-              nearest.y - (state.player.y + state.player.vy),
-              nearest.x - (state.player.x + state.player.vx)
-            );
-            let diff = normalizeAngleDiff(toEnemyAngle - state.player.angle);
-            if (Math.abs(diff) <= weapon.auto_aim) {
-              baseAngle = toEnemyAngle;
-            }
-          }
-        }
-
-        const spreadRad = (weapon.spread || 0) * Math.PI / 180;
-        const muzzleDistance = 18;
-        const shipSpeedX = state.player.vx;
-        const shipSpeedY = state.player.vy;
-
-        const count = weapon.projectiles || 1;
-
-        for (let i = 0; i < count; i++) {
-          const offset = spreadRad > 0 ? (-spreadRad + Math.random() * (2 * spreadRad)) : 0;
-          const angle = baseAngle + offset;
-          const dirX = Math.cos(angle);
-          const dirY = Math.sin(angle);
-
-          let vx, vy, speed;
-
-          if (weapon.homing) {
-            speed = weapon.base_speed;
-            vx = dirX * speed;
-            vy = dirY * speed;
-          } else {
-            speed = weapon.base_speed;
-            vx = shipSpeedX + dirX * weapon.base_speed;
-            vy = shipSpeedY + dirY * weapon.base_speed;
-          }
-
-          const startX = state.player.x + dirX * muzzleDistance;
-          const startY = state.player.y + dirY * muzzleDistance;
-          const damageMult = state.player.shipStats.damageMult || 1;
-          const weaponDamage = weapon.damage * damageMult;
-
-          projectiles.push({
-            x: startX,
-            y: startY,
-            vx,
-            vy,
-            age: 0,
-            life: weapon.life_span,
-            damage: weaponDamage,
-            aspect: weapon.aspect,
-            angle,
-            homing: !!weapon.homing,
-            speed: speed,
-            accel: weapon.acceleration || 0,
-            maxSpeed: weapon.speed || weapon.base_speed || 0,
-            turnSpeed: weapon.turn_speed_rad || 0,
-            arming_time: weapon.arming_time || 0
-          });
-        }
-      }
+     function attemptFireWeapon(manual = false) {
+       const idx = currentWeaponIndex;
+       const weapon = weapons[idx];
+       const now = performance.now();
+     
+       if (!weapon) return;
+     
+       // 1) Autofire toggle + gating (no projectile side-effects here)
+       const toggleRes = applyAutofireToggleAndGate({ weapon, idx, manual });
+       if (!toggleRes.canProceed) return;
+     
+       // 2) Can-fire checks (cooldown etc.)
+       if (!canPlayerFireWeapon({ weapon, idx, now })) return;
+     
+       // 3) Mark last fire timestamp
+       weaponLastFire[idx] = now;
+     
+       // 4) Execute fire (projectiles creation)
+       playerFireWeapon({ weapon, now });
+     }
+     
+     /** Autofire: keep behavior identical to original */
+     function applyAutofireToggleAndGate({ weapon, idx, manual }) {
+       // If NOT manual: only proceed if weapon supports autofire AND it is currently toggled ON
+       if (!manual) {
+         if (!weapon?.autofire_toggle) return { canProceed: false };
+         if (!weapons[idx]?.autofireToggled) return { canProceed: false };
+       }
+     
+       // Preserve original toggle semantics:
+       // - manual press while autofire ON => turn it OFF
+       // - else => turn it ON
+       if (manual && weapon?.autofire_toggle && weapons[idx].autofireToggled) {
+         weapons[idx].autofireToggled = false;
+       } else {
+         weapons[idx].autofireToggled = true;
+       }
+     
+       return { canProceed: true };
+     }
+     
+     /** Cooldown / firerate gating (no firing side-effects here) */
+     function canPlayerFireWeapon({ weapon, idx, now }) {
+       const last = weaponLastFire[idx] || 0;
+       const firerateMult = state.player.shipStats.firerateMult || 1.0;
+       const minDelay = weapon.delay_ms * (1 / firerateMult);
+       return now - last >= minDelay;
+     }
+     
+     /** Fire logic: aim + spawn projectiles (no toggle/can-fire logic here) */
+     function playerFireWeapon({ weapon /*, now*/ }) {
+       let baseAngle = resolveBaseAngleForWeapon({ weapon });
+     
+       const spreadRad = (weapon.spread || 0) * Math.PI / 180;
+       const muzzleDistance = 18;
+       const shipSpeedX = state.player.vx;
+       const shipSpeedY = state.player.vy;
+     
+       const count = weapon.projectiles || 1;
+     
+       for (let i = 0; i < count; i++) {
+         const offset = spreadRad > 0 ? (-spreadRad + Math.random() * (2 * spreadRad)) : 0;
+         const angle = baseAngle + offset;
+         const dirX = Math.cos(angle);
+         const dirY = Math.sin(angle);
+     
+         let vx, vy, speed;
+     
+         if (weapon.homing) {
+           speed = weapon.base_speed;
+           vx = dirX * speed;
+           vy = dirY * speed;
+         } else {
+           speed = weapon.base_speed;
+           vx = shipSpeedX + dirX * weapon.base_speed;
+           vy = shipSpeedY + dirY * weapon.base_speed;
+         }
+     
+         const startX = state.player.x + dirX * muzzleDistance;
+         const startY = state.player.y + dirY * muzzleDistance;
+     
+         const damageMult = state.player.shipStats.damageMult || 1;
+         const weaponDamage = weapon.damage * damageMult;
+     
+         projectiles.push({
+           x: startX,
+           y: startY,
+           vx,
+           vy,
+           age: 0,
+           life: weapon.life_span,
+           damage: weaponDamage,
+           aspect: weapon.aspect,
+           angle,
+           homing: !!weapon.homing,
+           speed,
+           accel: weapon.acceleration || 0,
+           maxSpeed: weapon.speed || weapon.base_speed || 0,
+           turnSpeed: weapon.turn_speed_rad || 0,
+           arming_time: weapon.arming_time || 0,
+         });
+       }
+     }
+     
+     function resolveBaseAngleForWeapon({ weapon }) {
+       let baseAngle = state.player.angle;
+     
+       if (weapon.auto_aim && state.enemies && state.enemies.length > 0) {
+         let nearest = null;
+         let minDist2 = Infinity;
+     
+         for (const e of state.enemies) {
+           if (!e) continue;
+           const dx = e.x - (state.player.x + state.player.vx);
+           const dy = e.y - (state.player.y + state.player.vy);
+           const d2 = dx * dx + dy * dy;
+           if (d2 < minDist2) {
+             minDist2 = d2;
+             nearest = e;
+           }
+         }
+     
+         if (nearest) {
+           const toEnemyAngle = Math.atan2(
+             nearest.y - (state.player.y + state.player.vy),
+             nearest.x - (state.player.x + state.player.vx)
+           );
+           const diff = normalizeAngleDiff(toEnemyAngle - state.player.angle);
+           if (Math.abs(diff) <= weapon.auto_aim) {
+             baseAngle = toEnemyAngle;
+           }
+         }
+       }
+     
+       return baseAngle;
+     }
 
       function cycleWeapon() {
         currentWeaponIndex = (currentWeaponIndex + 1) % weapons.length;
