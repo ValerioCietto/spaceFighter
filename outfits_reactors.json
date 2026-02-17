@@ -1,0 +1,247 @@
+[
+  {
+    "name": "Compact Cell I",
+    "category": "basic",
+    "outfitSpace": 4,
+    "price": 800,
+    "CPU": 0,
+    "effects": { "energyRegen": 2, "energyMax": 10 }
+  },
+  {
+    "name": "Compact Cell II",
+    "category": "basic",
+    "outfitSpace": 8,
+    "price": 2200,
+    "CPU": 0,
+    "effects": { "energyRegen": 4, "energyMax": 20 }
+  },
+  {
+    "name": "Civilian Core III",
+    "category": "basic",
+    "outfitSpace": 12,
+    "price": 5200,
+    "CPU": 0,
+    "effects": { "energyRegen": 6, "energyMax": 30 }
+  },
+  {
+    "name": "Industrial Reactor IV",
+    "category": "basic",
+    "outfitSpace": 18,
+    "price": 12000,
+    "CPU": 0,
+    "effects": { "energyRegen": 10, "energyMax": 60 }
+  },
+  {
+    "name": "Heavy Civilian Core V",
+    "category": "basic",
+    "outfitSpace": 26,
+    "price": 26000,
+    "CPU": 0,
+    "effects": { "energyRegen": 15, "energyMax": 100, "accelerationMult": -0.03 }
+  },
+
+  {
+    "name": "Pulse Micro-Core",
+    "category": "speedster",
+    "outfitSpace": 6,
+    "price": 3500,
+    "CPU": 1,
+    "effects": { "energyRegen": 5, "energyMax": -10, "speed": 5 }
+  },
+  {
+    "name": "Vector Flux Reactor",
+    "category": "speedster",
+    "outfitSpace": 10,
+    "price": 9000,
+    "CPU": 1,
+    "effects": { "energyRegen": 8, "shieldMult": -0.05, "speed": 10 }
+  },
+  {
+    "name": "Ion Stream Core",
+    "category": "speedster",
+    "outfitSpace": 14,
+    "price": 18000,
+    "CPU": 2,
+    "effects": { "energyRegen": 12, "shieldMult": -0.10, "speed": 15 }
+  },
+  {
+    "name": "Phase Drive Reactor",
+    "category": "speedster",
+    "outfitSpace": 18,
+    "price": 36000,
+    "CPU": 2,
+    "effects": { "energyRegen": 15, "speed": 20, "turningSpeedRadMult": -0.08 }
+  },
+  {
+    "name": "Tachyon Slip Core",
+    "category": "speedster",
+    "outfitSpace": 24,
+    "price": 75000,
+    "CPU": 3,
+    "effects": { "energyRegen": 20, "shieldMult": -0.15, "hullMult": -0.10, "speed": 30 }
+  },
+
+  {
+    "name": "Defense Matrix I",
+    "category": "tank",
+    "outfitSpace": 8,
+    "price": 6000,
+    "CPU": 1,
+    "effects": { "energyRegen": 5, "shield": 25, "shieldRegen": 1, "speed": -5 }
+  },
+  {
+    "name": "Fortified Reactor II",
+    "category": "tank",
+    "outfitSpace": 14,
+    "price": 14000,
+    "CPU": 1,
+    "effects": { "energyRegen": 8, "shield": 60, "shieldRegen": 2, "speed": -8 }
+  },
+  {
+    "name": "Bastion Core III",
+    "category": "tank",
+    "outfitSpace": 20,
+    "price": 28000,
+    "CPU": 2,
+    "effects": { "energyRegen": 10, "shield": 120, "shieldRegen": 3, "speed": -12 }
+  },
+  {
+    "name": "Bulwark Generator IV",
+    "category": "tank",
+    "outfitSpace": 28,
+    "price": 56000,
+    "CPU": 2,
+    "effects": { "energyRegen": 14, "shield": 200, "shieldRegen": 4, "speed": -15, "accelerationMult": -0.05 }
+  },
+  {
+    "name": "Citadel Fusion V",
+    "category": "tank",
+    "outfitSpace": 36,
+    "price": 110000,
+    "CPU": 3,
+    "effects": { "energyRegen": 18, "shield": 300, "shieldRegen": 6, "speed": -20, "accelerationMult": -0.10 }
+  },
+
+  {
+    "name": "Black Market Flux I",
+    "category": "glass",
+    "outfitSpace": 8,
+    "price": 8000,
+    "CPU": 2,
+    "effects": { "energyRegen": 18, "shield": -20, "hull": -10 }
+  },
+  {
+    "name": "Singularity II",
+    "category": "glass",
+    "outfitSpace": 12,
+    "price": 18000,
+    "CPU": 2,
+    "effects": { "energyRegen": 28, "energyMax": 20, "shield": -40, "hull": -20 }
+  },
+  {
+    "name": "Event Horizon III",
+    "category": "glass",
+    "outfitSpace": 16,
+    "price": 36000,
+    "CPU": 3,
+    "effects": { "energyRegen": 35, "energyMax": 40, "shield": -60, "hull": -30 }
+  },
+  {
+    "name": "Void Compression IV",
+    "category": "glass",
+    "outfitSpace": 20,
+    "price": 72000,
+    "CPU": 3,
+    "effects": { "energyRegen": 45, "energyMax": 80, "shield": -80, "hull": -40 }
+  },
+  {
+    "name": "Cataclysm Drive V",
+    "category": "glass",
+    "outfitSpace": 26,
+    "price": 150000,
+    "CPU": 4,
+    "effects": { "energyRegen": 60, "energyMax": 120, "shield": -120, "hull": -60 }
+  },
+
+  {
+    "name": "Harmonic Reactor",
+    "category": "exotic",
+    "outfitSpace": 12,
+    "price": 20000,
+    "CPU": 2,
+    "effects": { "energyRegen": 10, "damageMult": 0.10 }
+  },
+  {
+    "name": "Adaptive Core",
+    "category": "exotic",
+    "outfitSpace": 16,
+    "price": 32000,
+    "CPU": 2,
+    "effects": { "energyRegen": 12, "shieldRegen": 3, "accelerationMult": -0.05 }
+  },
+  {
+    "name": "Quantum Feedback",
+    "category": "exotic",
+    "outfitSpace": 18,
+    "price": 45000,
+    "CPU": 3,
+    "effects": { "energyRegen": 20, "shield": -40 }
+  },
+  {
+    "name": "Dark Matter Lattice",
+    "category": "exotic",
+    "outfitSpace": 22,
+    "price": 80000,
+    "CPU": 3,
+    "effects": { "energyRegen": 25, "energyMax": 50, "turningSpeedRadMult": -0.15 }
+  },
+  {
+    "name": "Phase Resonance Core",
+    "category": "exotic",
+    "outfitSpace": 24,
+    "price": 95000,
+    "CPU": 3,
+    "effects": { "energyRegen": 15, "shield": -60, "shieldRegen": 2, "speed": 15 }
+  },
+
+  {
+    "name": "Military Mk I",
+    "category": "military",
+    "outfitSpace": 12,
+    "price": 18000,
+    "CPU": 1,
+    "effects": { "energyRegen": 12, "energyMax": 40 }
+  },
+  {
+    "name": "Military Mk II",
+    "category": "military",
+    "outfitSpace": 18,
+    "price": 40000,
+    "CPU": 2,
+    "effects": { "energyRegen": 18, "energyMax": 80, "shieldRegen": 2 }
+  },
+  {
+    "name": "Assault Mk III",
+    "category": "military",
+    "outfitSpace": 24,
+    "price": 80000,
+    "CPU": 2,
+    "effects": { "energyRegen": 25, "energyMax": 120, "damageMult": 0.05, "accelerationMult": -0.05 }
+  },
+  {
+    "name": "Warfleet Mk IV",
+    "category": "military",
+    "outfitSpace": 32,
+    "price": 150000,
+    "CPU": 3,
+    "effects": { "energyRegen": 35, "energyMax": 200, "shieldRegen": 3, "turningSpeedRadMult": -0.08 }
+  },
+  {
+    "name": "Strategic Cmd Mk V",
+    "category": "military",
+    "outfitSpace": 40,
+    "price": 300000,
+    "CPU": 4,
+    "effects": { "energyRegen": 45, "energyMax": 300, "shieldRegen": 5, "speed": 10, "accelerationMult": -0.10 }
+  }
+]
