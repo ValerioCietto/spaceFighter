@@ -175,7 +175,7 @@ const SHIPS = {
     CPU:30,
     shipCenter: { x: 0.5, y: 0.5 },
     engineCoords: [{ x: -14, y: -20 }, { x: 0, y: -12 }, { x: 14, y: -20 }],
-    weaponGunCoords: [{type: "gun", x: -15, y: 15 },{type: "gun", x: 0, y: 30 }, {type: "gun", x: 15, y: 15 }],
+    weaponGunCoords: [{type: "gun", x: 0, y: -15 },{type: "gun", x: 0, y: 0 }, {type: "gun", x: 0, y: 15 }],
     outfitSpace: 40,
   },
 
