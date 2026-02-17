@@ -223,7 +223,7 @@ const SHIPS = {
     shieldDiameterPx: 70,
     shipCenter: { x: 0.5, y: 0.5 },
     engineCoords: [{ x: -21, y: 6 }, { x: 21, y: 6 }],
-    weaponGunCoords: [{type: "gun", x: -10, y: 18 }, {type: "gun", x: -10, y: 18 }, {type: "turret", x: -10, y:0}, {type: "turret", x: 10, y:0 }, {type: "spinal", x: 0, y:10}],
+    weaponGunCoords: [{type: "gun", x: -10, y: 18 }, {type: "gun", x: 10, y: 18 }, {type: "turret", x: -10, y:0}, {type: "turret", x: 10, y:0 }, {type: "spinal", x: 0, y:10}],
     outfitSpace: 110,
   },
 
