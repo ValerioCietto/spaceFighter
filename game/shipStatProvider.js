@@ -57,7 +57,7 @@ const SHIPS = {
     CPU: 10,
     shipCenter: { x: 0.5, y: 0.5 },
     engineCoords: [{ x: 0, y: -5 }],
-    weaponGunCoords: [{type: "gun", x: 0, y: 18 }],
+    weaponGunCoords: [{type: "gun", x: 0, y: 0 }],
     outfitSpace: 10,
   },
 
@@ -80,7 +80,7 @@ const SHIPS = {
     CPU:25,
     shipCenter: { x: 0.5, y: 0.50 },
     engineCoords: [{ x: -15, y: -5 },{ x: 15, y: -5 }],
-    weaponGunCoords: [{type: "turret", x: 0, y: 25 }],
+    weaponGunCoords: [{type: "turret", x: 0, y: 0 }],
     outfitSpace: 30,
   },
 
@@ -103,7 +103,7 @@ const SHIPS = {
     CPU:8,
     shipCenter: { x: 0.5, y: 0.5 },
     engineCoords: [{ x: 0, y: 0 }],
-    weaponGunCoords: [{type: "gun", x: 0, y: 20 }],
+    weaponGunCoords: [{type: "gun", x: 0, y: 0 }],
     outfitSpace: 8,
   },
 
@@ -127,7 +127,7 @@ const SHIPS = {
     CPU:12,
     shipCenter: { x: 0.5, y: 0.5 },
     engineCoords: [{ x: 0, y: 0 }],
-    weaponGunCoords: [{type: "gun", x: -2, y: 18 },{type: "gun", x: 2, y: 18 }],
+    weaponGunCoords: [{type: "gun", x: 0, y: -3 },{type: "gun", x: 0, y: 3 }],
     outfitSpace: 15,
   },
 
@@ -151,7 +151,7 @@ const SHIPS = {
     CPU:15,
     shipCenter: { x: 0.5, y: 0.5 }, // normalized (0..1) relative to sprite
     engineCoords: [ { x: 0, y: 0 }],
-    weaponGunCoords: [{type: "gun", x: -10, y: 18 },{type: "gun", x: 10, y: 18 }],
+    weaponGunCoords: [{type: "gun", x: 0, y: -10 },{type: "gun", x: 0, y: 10 }],
     outfitSpace: 25,
   },
 
@@ -199,7 +199,7 @@ const SHIPS = {
     CPU:50,
     shipCenter: { x: 0.5, y: 0.5 }, // normalized (0..1) relative to sprite
     engineCoords: [{ x: 0, y: 20 }],
-    weaponGunCoords: [{type: "gun", x: 0, y: 18 },{type: "gun", x: 0, y: 22 }, {type: "gun", x: 0, y: 26 }],
+    weaponGunCoords: [{type: "gun", x: 10, y: 0 },{type: "gun", x: 14, y: 0 }, {type: "gun", x: 18, y: 0 }],
     outfitSpace: 60,
   },
 
@@ -223,7 +223,7 @@ const SHIPS = {
     shieldDiameterPx: 70,
     shipCenter: { x: 0.5, y: 0.5 },
     engineCoords: [{ x: -21, y: 6 }, { x: 21, y: 6 }],
-    weaponGunCoords: [{type: "gun", x: -10, y: 18 }, {type: "gun", x: 10, y: 18 }, {type: "turret", x: -10, y:0}, {type: "turret", x: 10, y:0 }, {type: "spinal", x: 0, y:10}],
+    weaponGunCoords: [{type: "gun", x: 0, y: -18 }, {type: "gun", x: 0, y: 18 }, {type: "turret", x: 0, y:-18}, {type: "turret", x: 0, y:18 }, {type: "spinal", x: 10, y:0}],
     outfitSpace: 110,
   },
 
@@ -248,7 +248,7 @@ const SHIPS = {
     CPU:100,
     shipCenter: { x: 0.5, y: 0.5 },
     engineCoords: [{ x: -30, y: 30 }, { x: 30, y: 30 },{ x: -15, y: 20 }, { x: 15, y: 20 }],
-    weaponGunCoords: [{type: "gun", x: -15, y: 18 }, {type: "gun", x: 15, y: 18 }, {type: "gun", x: -15, y: 22 }, {type: "gun", x: 15, y: 22 }, {type: "turret", x: -20, y:0}, {type: "turret", x: 0, y:0 }, {type: "turret", x: 20, y:0 }, {type: "spinal", x: 0, y:10}],
+    weaponGunCoords: [{type: "gun", x: 18, y: -15 }, {type: "gun", x: 18, y: 15 }, {type: "gun", x: 22, y: -8 }, {type: "gun", x: 22, y: 8 }, {type: "turret", x: 0, y:-20}, {type: "turret", x: 0, y:0 }, {type: "turret", x: 0, y:20 }, {type: "spinal", x: -10, y:0}],
     outfitSpace: 150,
   },
 
