@@ -160,9 +160,8 @@
     (function () {
       const iframe = document.getElementById("galaxy-iframe");
       const isGithub = location.hostname.endsWith("github.io");
-      iframe.src = isGithub
-        ? "https://valeriocietto.github.io/game/galaxy-map-viewer.html"
-        : "/game/galaxy-map-viewer.html";
+      const basePath = isGithub ? "/spaceFighter" : "";
+      iframe.src = `${basePath}/game/galaxy-map-viewer.html`;
     })();
     </script>
 
