@@ -12,7 +12,6 @@
           currentSpaceshipId: 0,
       
           shipName: "human_starfighter",
-          ownedWeapons: [],
       
           ownedSpaceships: [
             {
@@ -128,50 +127,6 @@
       const stationOverlayBtn = document.getElementById("station-overlay-btn");
       stationOverlayBtn.addEventListener("click", stationOverlayOpen);
       const shopRoot = document.getElementById("ship-shop-list");
-      const stationTabs = Array.from(document.querySelectorAll("#station-tabs .tab-btn"));
-      const stationSectionTitleEl = document.getElementById("station-section-title");
-
-      function setActiveStationTab(tabName) {
-        stationTabs.forEach((tabBtn) => {
-          tabBtn.classList.toggle("is-active", tabBtn.dataset.tab === tabName);
-        });
-
-        if (stationSectionTitleEl) {
-          stationSectionTitleEl.textContent = `${tabName} · Shop`;
-        }
-
-        if (tabName === "Weapons") {
-          renderStationWeaponShop({
-            rootEl: shopRoot,
-            state,
-            onBuy: () => saveState(),
-            onToast: (msg) => console.log("[weapon-shop]", msg),
-          });
-          return;
-        }
-
-        if (tabName === "Shipyard") {
-          renderStationShipShop({
-            rootEl: shopRoot,
-            state,
-            onBuy: (shipKey, stats) => {
-              const templateName = shipKey;
-              onBoughtSpaceship({ state, shipStats: stats, templateName });
-              saveState(state);
-            },
-            onToast: (msg) => console.log("[shop]", msg),
-          });
-          return;
-        }
-
-        shopRoot.innerHTML = `<p>Coming soon.</p>`;
-      }
-
-      stationTabs.forEach((tabBtn) => {
-        tabBtn.addEventListener("click", () => {
-          setActiveStationTab(tabBtn.dataset.tab || "Shipyard");
-        });
-      });
 
       function isPlayerNearSpaceStation(){
         // AnyStation software allows the player to open station overlay
@@ -199,7 +154,17 @@
         stationOverlayEl.classList.add("open");
         state.ui.mode = "station";
         shopRoot.innerHTML = "";
-        setActiveStationTab("Shipyard");
+
+        renderStationShipShop({
+          rootEl: shopRoot,
+          state,
+          onBuy: (shipKey, stats) => {
+            const templateName = shipKey;
+            onBoughtSpaceship({ state, shipStats: stats, templateName });
+            saveState(state);
+          },
+          onToast: (msg) => console.log("[shop]", msg),
+        });
       }
 
       stationExitBtn.addEventListener("click", () => {
@@ -681,10 +646,6 @@
 
           if (Array.isArray(saved.player.ownedSpaceships)) {
             state.player.ownedSpaceships = saved.player.ownedSpaceships;
-          }
-
-          if (Array.isArray(saved.player.ownedWeapons)) {
-            state.player.ownedWeapons = saved.player.ownedWeapons;
           }
 
           if (Number.isFinite(saved.player.currentSpaceshipId)) {
