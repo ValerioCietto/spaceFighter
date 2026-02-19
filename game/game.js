@@ -35,7 +35,7 @@
                 CPU: 10,
                 shipCenter: { x: 0.5, y: 0.5 },
                 engineCoords: [{ x: 0, y: -5 }],
-                weaponGunCoords: [{ x: 0.83, y: 0.45 }, { x: 0.83, y: 0.55 }],
+                weaponGunCoords: [{type: "gun", x: 18, y: 0 }],
               },
       
               outfits: [
@@ -422,7 +422,7 @@
        const idx = currentWeaponIndex;
        const weapon = weapons[idx];
        const now = performance.now();
-     
+
        if (!weapon) return;
      
        // 1) Autofire toggle + gating (no projectile side-effects here)
@@ -464,7 +464,8 @@
        const last = weaponLastFire[idx] || 0;
        const firerateMult = state.player.shipStats.firerateMult || 1.0;
        const minDelay = weapon.delay_ms * (1 / firerateMult);
-       return now - last >= minDelay;
+       const canFire = now - last >= minDelay;
+       return canFire;
      }
      
      /** Fire logic: aim + spawn projectiles (no toggle/can-fire logic here) */
@@ -479,7 +480,6 @@
       const weaponDamage = weapon.damage * damageMult;
     
       const count = weapon.projectiles || 1;
-    
       // If no ports are defined, fallback to old single muzzle (keeps robustness)
       const ports = Array.isArray(state.player.shipStats.weaponGunCoords) && state.player.shipStats.weaponGunCoords.length
         ? state.player.shipStats.weaponGunCoords
@@ -492,7 +492,6 @@
         const p = rotatePoint(port.x, port.y, state.player.angle);
         const muzzleX = state.player.x + p.x;
         const muzzleY = state.player.y + p.y;
-    
         for (let i = 0; i < count; i++) {
           const offset = spreadRad > 0 ? (-spreadRad + Math.random() * (2 * spreadRad)) : 0;
           const angle = baseAngle + offset;
@@ -1453,7 +1452,6 @@
 
       function drawProjectiles() {
         if (!projectiles.length) return;
-
         ctx.save();
 
         projectiles.forEach((p) => {
