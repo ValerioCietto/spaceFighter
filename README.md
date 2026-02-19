@@ -32,3 +32,35 @@ Merchant pilots may like automations to establish trade routes, with auto dockin
 How to start 
 live-server . --port=8080
 
+Game HTML links
+- https://valeriocietto.github.io/spaceFighter/game/demo/demo-attack-human-spaceships.html
+- https://valeriocietto.github.io/spaceFighter/game/demo/demo-common-jared.html
+- https://valeriocietto.github.io/spaceFighter/game/demo/demo-common.html
+- https://valeriocietto.github.io/spaceFighter/game/demo/demo-detailed-station.html
+- https://valeriocietto.github.io/spaceFighter/game/demo/demo-engine-flare.html
+- https://valeriocietto.github.io/spaceFighter/game/demo/demo-human-drones.html
+- https://valeriocietto.github.io/spaceFighter/game/demo/demo-hyperspace.html
+- https://valeriocietto.github.io/spaceFighter/game/demo/demo-jared-capital.html
+- https://valeriocietto.github.io/spaceFighter/game/demo/demo-jared.html
+- https://valeriocietto.github.io/spaceFighter/game/demo/demo-outfits.html
+- https://valeriocietto.github.io/spaceFighter/game/demo/demo-planets.html
+- https://valeriocietto.github.io/spaceFighter/game/demo/demo-shop-immagini-reali.html
+- https://valeriocietto.github.io/spaceFighter/game/demo/demo-shop.html
+- https://valeriocietto.github.io/spaceFighter/game/demo/demo-shop1-jared.html
+- https://valeriocietto.github.io/spaceFighter/game/demo/demo-shop1-technicians.html
+- https://valeriocietto.github.io/spaceFighter/game/demo/demo-shop1.html
+- https://valeriocietto.github.io/spaceFighter/game/demo/demo-spaceships.html
+- https://valeriocietto.github.io/spaceFighter/game/demo/demo-spaceships1.html
+- https://valeriocietto.github.io/spaceFighter/game/demo/demo-stations.html
+- https://valeriocietto.github.io/spaceFighter/game/demo/demo-technicians-capital.html
+- https://valeriocietto.github.io/spaceFighter/game/demo/demo-technicians.html
+- https://valeriocietto.github.io/spaceFighter/game/demo/demo-zeus.html
+- https://valeriocietto.github.io/spaceFighter/game/demo/interstellarGate.html
+- https://valeriocietto.github.io/spaceFighter/game/demo/simple3d.html
+- https://valeriocietto.github.io/spaceFighter/game/galaxy-editor.html
+- https://valeriocietto.github.io/spaceFighter/game/galaxy-map-viewer.html
+- https://valeriocietto.github.io/spaceFighter/game/galaxy-map.html
+- https://valeriocietto.github.io/spaceFighter/game/game.html
+- https://valeriocietto.github.io/spaceFighter/game/outfits-shop.html
+- https://valeriocietto.github.io/spaceFighter/game/spaceship-shop.html
+
