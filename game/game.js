@@ -1435,6 +1435,71 @@
         }
       }
 
+      function drawHyperspaceGateLineIndicator() {
+        if (lineToTarget) return;
+
+        const gates = Array.isArray(SystemInfo?.hyperspace_gates)
+          ? SystemInfo.hyperspace_gates
+          : [];
+        if (!gates.length) return;
+
+        const shipX = width / 2;
+        const shipY = height / 2;
+
+        for (const gate of gates) {
+          if (!gate || gate.type !== "warp") continue;
+
+          const gateX = width / 2 + (Number(gate.position_x ?? gate.x ?? 0) - state.player.x);
+          const gateY = height / 2 + (Number(gate.position_y ?? gate.y ?? 0) - state.player.y);
+
+          const dx = gateX - shipX;
+          const dy = gateY - shipY;
+          const dist = Math.hypot(dx, dy);
+          if (dist < 1) continue;
+
+          const dirX = dx / dist;
+          const dirY = dy / dist;
+
+          const REF_DIST = 400;
+          const t = Math.min(1, dist / REF_DIST);
+
+          const offset = 30;
+          const size = 5 + 7 * t;
+
+          const centerX = shipX + dirX * offset;
+          const centerY = shipY + dirY * offset;
+
+          const perpX = -dirY;
+          const perpY = dirX;
+
+          const BASE_WIDTH = 0.22;
+          const BACK_OFFSET = 0.65;
+
+          const tipX = centerX + dirX * size;
+          const tipY = centerY + dirY * size;
+
+          const baseLeftX =
+            centerX - dirX * size * BACK_OFFSET + perpX * size * BASE_WIDTH;
+          const baseLeftY =
+            centerY - dirY * size * BACK_OFFSET + perpY * size * BASE_WIDTH;
+
+          const baseRightX =
+            centerX - dirX * size * BACK_OFFSET - perpX * size * BASE_WIDTH;
+          const baseRightY =
+            centerY - dirY * size * BACK_OFFSET - perpY * size * BASE_WIDTH;
+
+          ctx.save();
+          ctx.fillStyle = "#00e5ff";
+          ctx.beginPath();
+          ctx.moveTo(tipX, tipY);
+          ctx.lineTo(baseLeftX, baseLeftY);
+          ctx.lineTo(baseRightX, baseRightY);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
 
       
       function drawEnemyProjectiles() {
@@ -1889,6 +1954,7 @@
           drawTarget();
           drawTargetLine();
           drawEnemyLineIndicator();
+          drawHyperspaceGateLineIndicator();
           drawEnemyProjectiles();
           drawProjectiles();
           drawEnemies();
