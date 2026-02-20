@@ -1,4 +1,5 @@
 (function(){
+  // a save game, if present is on localstorage key 'spaceFighterSaveData'
   const P = SF.STORAGE_PREFIX;
   const safe = (fn, fallback=null)=>{ try{ return fn(); }catch(e){ return fallback; } };
 
@@ -27,7 +28,7 @@
   // simple helper for navigation – you can swap targets later
   function go(to){
     // Stub routes (use actual pages when ready)
-    if (to === 'continue')       window.location.href = 'game.html?resume=1';
+    if (to === 'continue')       window.location.href = '/game/game.html';
     else if (to === 'new')       window.location.href = 'species-choose.html';
     else if (to === 'load')      window.location.href = 'load.html';
   }
