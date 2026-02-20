@@ -493,11 +493,14 @@
      
        // 2) Can-fire checks (cooldown etc.)
        if (!canPlayerFireWeapon({ weapon, idx, now })) return;
+
+       // 3) Spend energy only when the shot is actually allowed
+       spendPlayerWeaponEnergy(weapon);
      
-       // 3) Mark last fire timestamp
+       // 4) Mark last fire timestamp
        weaponLastFire[idx] = now;
      
-       // 4) Execute fire (projectiles creation)
+       // 5) Execute fire (projectiles creation)
        playerFireWeapon({ weapon, now });
      }
      
@@ -527,7 +530,20 @@
        const firerateMult = state.player.shipStats.firerateMult || 1.0;
        const minDelay = weapon.delay_ms * (1 / firerateMult);
        const canFire = now - last >= minDelay;
-       return canFire;
+       if (!canFire) return false;
+
+       const currentEnergy = Number(state?.player?.shipStats?.energy) || 0;
+       const energyCost = Math.max(0, Number(weapon?.energy_cost) || 0);
+       return currentEnergy >= energyCost;
+     }
+
+     function spendPlayerWeaponEnergy(weapon) {
+       const stats = state?.player?.shipStats;
+       if (!stats) return;
+
+       const energyCost = Math.max(0, Number(weapon?.energy_cost) || 0);
+       const currentEnergy = Number(stats.energy) || 0;
+       stats.energy = Math.max(0, currentEnergy - energyCost);
      }
      
      /** Fire logic: aim + spawn projectiles (no toggle/can-fire logic here) */
@@ -949,6 +965,28 @@
         }
       }
 
+      let playerEnergyRegenAcc = 0;
+      function regenPlayerEnergy(dt) {
+        const stats = state?.player?.shipStats;
+        if (!stats) return;
+
+        playerEnergyRegenAcc += dt;
+
+        // 10 Hz regen
+        while (playerEnergyRegenAcc >= 0.1) {
+          playerEnergyRegenAcc -= 0.1;
+
+          const regenStep = Math.max(0, Number(stats.energyRegen) || 0) / 10;
+          const energyMax = Math.max(0, Number(stats.energyMax) || 0);
+          if (energyMax <= 0) return;
+
+          stats.energy = Math.min(
+            energyMax,
+            (Number(stats.energy) || 0) + regenStep
+          );
+        }
+      }
+
 
 
 
@@ -958,6 +996,7 @@
       playerMoveUpdate(dt);
       updatePlayerProjectiles(dt, dtMillis);
       updateEnemyProjectiles(dt);
+      regenPlayerEnergy(dt);
       
       const newSpeed = Math.hypot(state.player.vx, state.player.vy);
       speedValueEl.textContent = newSpeed.toFixed(1);
@@ -965,7 +1004,7 @@
       solarSystemEl.textContent = SystemInfo.name;
       shieldValueEl.textContent = state.player.shipStats.shield.toFixed(1);
       hullValueEl.textContent = state.player.shipStats.hull.toFixed(1);
-      energyValueEl.textContent = state.player.shipStats.energy;
+      energyValueEl.textContent = state.player.shipStats.energy.toFixed(1);
     }
 
     /** Moves + rotates player (manual or docking autopilot), clamps speed, integrates position */
