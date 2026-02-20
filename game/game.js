@@ -1,5 +1,6 @@
  (function () {
       const state = {
+        discoveredSystems: ["Solar"],
         player: {
           x: SystemInfo.size / 2,
           y: SystemInfo.size / 2,
@@ -197,6 +198,7 @@
         if (!nearest || !isPlayerNearHyperspaceGate()) return;
 
         const destinationSystemName = String(nearest.gate.name || "Unknown System");
+        discoverSystem(destinationSystemName);
 
         state.player.systemName = destinationSystemName;
         SystemInfo.name = destinationSystemName;
@@ -287,6 +289,7 @@
       const galaxyCloseBtn = document.getElementById("galaxy-close-btn");
 
       function openGalaxyOverlay() {
+        saveState();
         galaxyOverlayEl.classList.add("open");
       }
 
@@ -702,6 +705,12 @@
             state.player.systemName = saved.player.systemName.trim();
           }
 
+          if (Array.isArray(saved.discoveredSystems)) {
+            state.discoveredSystems = saved.discoveredSystems
+              .map((name) => String(name || "").trim())
+              .filter(Boolean);
+          }
+
           if (Array.isArray(saved.player.ownedSpaceships)) {
             state.player.ownedSpaceships = saved.player.ownedSpaceships;
           }
@@ -719,7 +728,25 @@
           console.warn("Impossibile caricare lo stato:", e);
         }
 
+        discoverSystem(state.player.systemName);
+
         moneyValueEl.textContent = `${state.player.money.toFixed(0)}§`;
+      }
+
+      function discoverSystem(systemName) {
+        const normalizedName = String(systemName || "").trim();
+        if (!normalizedName) return;
+
+        if (!Array.isArray(state.discoveredSystems)) {
+          state.discoveredSystems = [];
+        }
+
+        const alreadyDiscovered = state.discoveredSystems.some(
+          (knownName) => String(knownName).toLowerCase() === normalizedName.toLowerCase()
+        );
+        if (!alreadyDiscovered) {
+          state.discoveredSystems.push(normalizedName);
+        }
       }
 
 
