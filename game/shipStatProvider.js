@@ -479,8 +479,18 @@ function applyActiveShip(state) {
   stats.hullMax = Number(stats.hullMax);
   if (!Number.isFinite(stats.hullMax) || stats.hullMax <= 0) stats.hullMax = stats.hull || 1;
 
+  stats.energyMax = Number(stats.energyMax);
+  if (!Number.isFinite(stats.energyMax) || stats.energyMax <= 0) stats.energyMax = 0;
+
+  stats.energyRegen = Number(stats.energyRegen);
+  if (!Number.isFinite(stats.energyRegen) || stats.energyRegen < 0) stats.energyRegen = 0;
+
+  stats.energy = Number(stats.energy);
+  if (!Number.isFinite(stats.energy)) stats.energy = stats.energyMax;
+
   stats.shield = Math.min(stats.shield, stats.shieldMax);
   stats.hull = Math.min(stats.hull, stats.hullMax);
+  stats.energy = Math.max(0, Math.min(stats.energy, stats.energyMax));
 
   // commit
   p.shipStats = stats;
