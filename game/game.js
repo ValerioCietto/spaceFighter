@@ -126,6 +126,10 @@
 
       const stationOverlayBtn = document.getElementById("station-overlay-btn");
       stationOverlayBtn.addEventListener("click", stationOverlayOpen);
+
+      const hyperspaceBtn = document.getElementById("hyperspace-btn");
+      hyperspaceBtn.addEventListener("click", enterHyperspace);
+
       const shopRoot = document.getElementById("ship-shop-list");
 
       function isPlayerNearSpaceStation(){
@@ -148,6 +152,61 @@
       function updateStationButtonVisibility() {
         stationOverlayBtn.style.display =
           isPlayerNearSpaceStation() ? "block" : "none";
+      }
+
+      function getNearestHyperspaceGate() {
+        const gates = Array.isArray(SystemInfo?.hyperspace_gates)
+          ? SystemInfo.hyperspace_gates
+          : [];
+
+        let nearestGate = null;
+        let nearestDist = Infinity;
+
+        for (const gate of gates) {
+          if (!gate || gate.type !== "warp") continue;
+
+          const dx = state.player.x - Number(gate.position_x ?? gate.x ?? 0);
+          const dy = state.player.y - Number(gate.position_y ?? gate.y ?? 0);
+          const dist = Math.hypot(dx, dy);
+
+          if (dist < nearestDist) {
+            nearestGate = gate;
+            nearestDist = dist;
+          }
+        }
+
+        return nearestGate ? { gate: nearestGate, distance: nearestDist } : null;
+      }
+
+      function isPlayerNearHyperspaceGate() {
+        const nearest = getNearestHyperspaceGate();
+        if (!nearest) return false;
+
+        const gateSize = Math.max(1, Number(nearest.gate.width ?? 64));
+        const interactionRadius = Math.max(160, gateSize * 0.75);
+        return nearest.distance <= interactionRadius;
+      }
+
+      function updateHyperspaceButtonVisibility() {
+        hyperspaceBtn.style.display =
+          isPlayerNearHyperspaceGate() ? "block" : "none";
+      }
+
+      function enterHyperspace() {
+        const nearest = getNearestHyperspaceGate();
+        if (!nearest || !isPlayerNearHyperspaceGate()) return;
+
+        const destinationSystemName = String(nearest.gate.name || "Unknown System");
+
+        state.player.systemName = destinationSystemName;
+        SystemInfo.name = destinationSystemName;
+
+        state.player.x = SystemInfo.size / 2;
+        state.player.y = SystemInfo.size / 2;
+        state.player.vx = 0;
+        state.player.vy = 0;
+
+        saveState(state);
       }
 
       function stationOverlayOpen(){
@@ -1823,6 +1882,7 @@
           drawStarfield(ctx, width, height, starLayers, state.player.x, state.player.y, SystemInfo.size);
           attemptFireWeapon(false);
           updateStationButtonVisibility();
+          updateHyperspaceButtonVisibility();
           drawGates(dt);
           drawMainStar();
           drawStation();

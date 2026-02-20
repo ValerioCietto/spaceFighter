@@ -173,6 +173,25 @@ body {
   transition: opacity 0.2s, border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
 }
 
+#hyperspace-btn {
+  position: absolute;
+  top: calc(8px + 140px + 8px + 28px + 28px + 28px);
+  right: 8px;
+  width: 140px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--ui-border);
+  background: var(--ui-bg);
+  color: var(--text);
+  font-size: 12px;
+  text-align: center;
+  cursor: pointer;
+  z-index: 11;
+  backdrop-filter: blur(4px);
+  opacity: 0.6;
+  transition: opacity 0.2s, border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
 .death-overlay {
   position: fixed;
   inset: 0;
@@ -601,6 +620,5 @@ body {
   flex:1 1 auto;
   min-width:0;
 }
-
 
 
