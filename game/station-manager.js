@@ -1,7 +1,7 @@
 // Command to launch: `npx serve .` then open http://localhost:3000/game.html in a browser
 
 (function (global) {
-  const DEFAULT_TABS = ["info", "outfitter", "finance", "spaceships"];
+  const DEFAULT_TABS = ["Shipyard", "Outfits", "Weapons", "Market", "Bank", "Plaza"];
 
   function createSafeGet(fn, fallback) {
     return function () {
@@ -87,7 +87,7 @@
 
     setActiveTab(tabId) {
       if (!DEFAULT_TABS.includes(tabId)) {
-        tabId = "info";
+        tabId = "Shipyard";
       }
       this._activeTab = tabId;
 
@@ -115,24 +115,10 @@
       const sys = getSystemInfo();
       const player = getPlayerState();
 
-      const systemName = sys?.name || "Unknown System";
-      const stationLabel = this._titleEl?.textContent || "Station";
-      const money = player?.money != null ? player.money.toFixed(0) : "0";
-
       let html = "";
 
       switch (tabId) {
-        case "info":
-          html = `
-            <h3>Info</h3>
-            <p>Welcome to <strong>${stationLabel}</strong>.</p>
-            <p>System: <strong>${systemName}</strong></p>
-            <p>Current balance: <strong>${money}§</strong></p>
-            <p>This is a placeholder for station lore, services description and local news.</p>
-          `;
-          break;
-
-        case "outfitter":
+        case "Outfits":
           html = `
             <h3>Outfitter</h3>
             <p>Here you will be able to buy and equip weapons, shields and utilities for your ship.</p>
@@ -144,9 +130,9 @@
           `;
           break;
 
-        case "finance":
+        case "Bank":
           html = `
-            <h3>Finance</h3>
+            <h3>Bank</h3>
             <p>Station financial services.</p>
             <ul>
               <li>Deposit / withdraw credits (coming soon)</li>
@@ -156,7 +142,7 @@
           `;
           break;
 
-        case "spaceships":
+        case "Shipyard":
           html = `
             <h3>Spaceships</h3>
             <p>Shipyard interface.</p>
@@ -165,6 +151,7 @@
               <li>Trade-in current ship</li>
               <li>Preview stats and roles</li>
             </ul>
+            <div id="ship-shop-list"></div>
           `;
           break;
 
