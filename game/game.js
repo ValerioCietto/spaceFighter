@@ -95,7 +95,7 @@
       const STATION_RADIUS = 80;
       const STATION_ROT_SPEED = Math.PI / 32; // rad/sec
 
-      const STATION_ASSET = window.BASE_PATH + "/assets/space_station.png";
+      const STATION_ASSET = window.BASE_PATH + "/assets/human_space_station_basic.png";
       const stationImg = new Image();
       stationImg.src = STATION_ASSET;
 
