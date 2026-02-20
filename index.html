@@ -14,7 +14,7 @@
   <main class="start-wrap" role="main">
     <h1 class="game-title">STARFIGHTER</h1>
     <div class="menu">
-      <button id="btnContinue" class="btn big">Continue</button>
+      <button id="btnContinue" class="btn big" disabled>Continue</button>
       <button id="btnNew" class="btn big accent">New Game</button>
       <button id="btnLoad" class="btn big">Load Game</button>
     </div>
@@ -29,6 +29,18 @@
 
   <script src="js/config.js"></script>
   <script src="js/save.js"></script>
+  <script>
+    (function(){
+      const continueBtn = document.getElementById('btnContinue');
+      if (!continueBtn) return;
+
+      const hasSave = typeof SFSave !== 'undefined' && typeof SFSave.hasAnySave === 'function'
+        ? SFSave.hasAnySave()
+        : false;
+
+      continueBtn.disabled = !hasSave;
+    })();
+  </script>
   <!-- star special effects -->
   <script src="js/start.js"></script>
 </body>
