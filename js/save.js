@@ -1,4 +1,4 @@
-ies(function(){
+(function(){
   const P = SF.STORAGE_PREFIX;
   const safe = (fn, fallback=null)=>{ try{ return fn(); }catch(e){ return fallback; } };
 

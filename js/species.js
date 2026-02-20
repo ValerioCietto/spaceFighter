@@ -1,10 +1,14 @@
 (function(){
+  // if localhost use as baseURL /assets, if github pages use /spaceFighter/assets, otherwise fallback to ./assets
+  const baseURL = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost'
+    ? '/assets/'
+    : (window.location.hostname === 'silux.github.io' ? '/spaceFighter/assets/' : './assets/');
   // ---- Data ----
   const SPECIES = [
     {
       id: 'Humans',
       name: 'Human',
-      img: 'spaceFighter/assets/advanced-human.png',
+      img: baseURL + 'human-advanced.png',
       desc: `Humans are the long descendant of hominid monkeys from planet Terra, otherwise called Sol-3.
 These biologic beings have DNA recombinated so much that it is way more adapted to space travel, with ability to switch off consciousness for seemingly lightning fast space travel, slowing time with andrenaline and need much less food and water to make maintaining costs negligible.
 Human retain taste toward art, big space vessel and an inexhaustible curiosity for exploration.`,
@@ -13,7 +17,7 @@ Human retain taste toward art, big space vessel and an inexhaustible curiosity f
     {
       id: 'Jared',
       name: 'Jared',
-      img: 'spaceFighter/assets/advanced-jared.png',
+      img: baseURL + 'jared-advanced.png',
       desc: `Jared evolved from a moon of their gas giant home world. More accustomed to the harshness of space, jared are obsessed with space from the beginning of their civilization.
 They are wolf head mammals which make eggs and have a wolf pack society style.
 Speed and reliability are the most prized values that reflects on their ships.`,
@@ -22,7 +26,7 @@ Speed and reliability are the most prized values that reflects on their ships.`,
     {
       id: 'Technicians',
       name: 'Technicians',
-      img: 'spaceFighter/assets/advanced-technician.png',
+      img: baseURL + 'squid-advanced.png',
       desc: `Technicians are squid like creatures which either live in a protective suit that allows to walk on land or purely virtual entities with avatar robotic bodies. Virtual entities are the most courageous and pilot most of the fighter ships, organic ones are more cunning and prefer the thick shells of Capital, Dreadnoughts or cargo ships.
 In Squid society, only the smartest idea is the one worth of fighting for and with this principle, the ships are designed.`,
       specialties: { Armor:4, Shields:1, Regen:2, Damage:3, Firerate:2, Tactics:4 }
@@ -95,7 +99,7 @@ In Squid society, only the smartest idea is the one worth of fighting for and wi
     SFSave.set('player', initial);
     // Navigate
     const q = new URLSearchParams({ new: '1', species: sp.id });
-    window.location.href = 'game.html?' + q.toString();
+    window.location.href = '/game/game.html?' + q.toString();
   }
 
   // random selection
