@@ -25,6 +25,7 @@
     _options: null,
 
     init(options) {
+      console.log("[StationManager] Initializing with options:", options);
       this._options = options || {};
       this._overlay = document.getElementById("station-overlay");
       this._contentEl = document.getElementById("station-content");
@@ -54,6 +55,7 @@
     },
 
     openStation(stationContext) {
+      console.log("[StationManager] Opening station dialog with context:", stationContext);
       if (!this._overlay) return;
 
       this._isOpen = true;
@@ -75,6 +77,7 @@
     },
 
     closeStation() {
+      console.log("[StationManager] Closing station dialog");
       if (!this._overlay) return;
       this._isOpen = false;
       this._overlay.classList.remove("open");
