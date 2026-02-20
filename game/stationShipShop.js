@@ -26,25 +26,43 @@ function renderStationShipShop({ rootEl, state, onBuy, onToast }) {
           const s = getStats(shipKey);
           const cost = Number(s.cost || 0);
           const canAfford = money >= cost;
+          // weaponGunCoords types gun, turret, drone, spinal
+          const numberOfGunPorts = Array.isArray(s.weaponGunCoords)
+            ? s.weaponGunCoords.filter((c) => c.type === "gun").length
+            : 0;
+          const numberOfTurretPorts = Array.isArray(s.weaponGunCoords)
+            ? s.weaponGunCoords.filter((c) => c.type === "turret").length
+            : 0;
+          const numberOfDronePorts = Array.isArray(s.weaponGunCoords)
+            ? s.weaponGunCoords.filter((c) => c.type === "drone").length
+            : 0;
+          const numberOfSpinalPorts = Array.isArray(s.weaponGunCoords)
+            ? s.weaponGunCoords.filter((c) => c.type === "spinal").length
+            : 0;
 
+          // Weapons capacity report.
+          const weaponCapacityReport = `
+            ${numberOfGunPorts > 0 ? `Gun ports: ${numberOfGunPorts}` : ""}
+            ${numberOfTurretPorts > 0 ? `Turret ports: ${numberOfTurretPorts}` : ""}
+            ${numberOfDronePorts > 0 ? `Drone ports: ${numberOfDronePorts}` : ""}
+            ${numberOfSpinalPorts > 0 ? `Spinal ports: ${numberOfSpinalPorts}` : ""}
+          `.trim();
           return `
             <div class="ship-card">
               <div class="ship-card-row">
                 <div class="ship-card-thumb">
                   <img src="${baseUrl}${s.image}" alt="${prettyName(shipKey)}">
                 </div>
-
                 <div class="ship-card-info">
-                  <div class="ship-card-title">${prettyName(shipKey)}</div>
+                  <div class="ship-card-title">${prettyName(shipKey)} - ${cost}§</div>
                   <div class="ship-card-meta">
-                    <div>Cost: ${cost}§</div>
-                    <div>Shield: ${s.shield}</div>
+                    <div>Shield: ${s.shield} + ${s.shieldRegen}/s</div>
                     <div>Hull: ${s.hull}</div>
-                    <div>Speed: ${s.speed}</div>
-                    <div>Accel: ${s.acceleration}</div>
+                    <div>Speed: ${s.speed} + ${s.acceleration}</div>
                     <div>CPU: ${s.CPU}</div>
                     <div>DamagePower x${(s.damageMult ?? 1).toFixed(2)}</div>
                     <div>FireRate x${(s.firerateMult ?? 1).toFixed(2)}</div>
+                    ${weaponCapacityReport ? `<div>${weaponCapacityReport}</div>` : ""}
                   </div>
                 </div>
               </div>
@@ -55,7 +73,7 @@ function renderStationShipShop({ rootEl, state, onBuy, onToast }) {
                 ${canAfford ? "" : "disabled"}
                 aria-disabled="${canAfford ? "false" : "true"}"
               >
-                Buy
+                Buy 
               </button>
 
               ${canAfford ? "" : `<div class="ship-card-warn">Not enough money</div>`}
@@ -108,18 +126,13 @@ function onBoughtSpaceship({ state, shipStats, templateName }) {
     id: nextId,
     name: templateName,
     templateName,
-
-    // instance-level stat overrides (start empty)
     shipStats: shipStats,
-
     outfits: [],
-
     weapons: {
       gunPorts: [],
       turretPorts: [],
       dronePorts: [],
     },
-
     abilities: {},
   };
 
