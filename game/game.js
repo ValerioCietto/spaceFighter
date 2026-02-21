@@ -131,6 +131,13 @@
       const hyperspaceBtn = document.getElementById("hyperspace-btn");
       hyperspaceBtn.addEventListener("click", enterHyperspace);
 
+      const hyperspaceTransition = {
+        active: false,
+        phase: "idle", // align | accelerate | fadeIn | fadeOut
+        destinationSystemName: null,
+        fadeAlpha: 0,
+      };
+
       const shopRoot = document.getElementById("ship-shop-list");
 
       function isPlayerNearSpaceStation(){
@@ -197,18 +204,91 @@
         const nearest = getNearestHyperspaceGate();
         if (!nearest || !isPlayerNearHyperspaceGate()) return;
 
+        if (hyperspaceTransition.active) return;
+
+        const gateX = Number(nearest.gate.position_x ?? nearest.gate.x ?? state.player.x);
+        const gateY = Number(nearest.gate.position_y ?? nearest.gate.y ?? state.player.y);
         const destinationSystemName = String(nearest.gate.name || "Unknown System");
-        discoverSystem(destinationSystemName);
 
-        state.player.systemName = destinationSystemName;
-        SystemInfo.name = destinationSystemName;
-
-        state.player.x = SystemInfo.size / 2;
-        state.player.y = SystemInfo.size / 2;
+        state.player.x = gateX;
+        state.player.y = gateY;
         state.player.vx = 0;
         state.player.vy = 0;
 
-        saveState(state);
+        hyperspaceTransition.active = true;
+        hyperspaceTransition.phase = "align";
+        hyperspaceTransition.destinationSystemName = destinationSystemName;
+        hyperspaceTransition.fadeAlpha = 0;
+      }
+
+      function normalizeAngle(rad) {
+        let out = rad;
+        while (out > Math.PI) out -= Math.PI * 2;
+        while (out < -Math.PI) out += Math.PI * 2;
+        return out;
+      }
+
+      function updateHyperspaceTransition(dt) {
+        if (!hyperspaceTransition.active) return;
+
+        const targetAngle = Math.atan2(state.player.y - STAR_Y, state.player.x - STAR_X);
+        const maxTurn = state.player.shipStats.turningSpeedRad * dt;
+
+        if (hyperspaceTransition.phase === "align") {
+          const delta = normalizeAngle(targetAngle - state.player.angle);
+
+          if (Math.abs(delta) <= maxTurn) {
+            state.player.angle = targetAngle;
+            hyperspaceTransition.phase = "accelerate";
+          } else {
+            state.player.angle += Math.sign(delta) * maxTurn;
+          }
+          return;
+        }
+
+        if (hyperspaceTransition.phase === "accelerate") {
+          state.player.angle = targetAngle;
+          const speed = Math.hypot(state.player.vx, state.player.vy);
+          const nextSpeed = Math.min(2000, speed + state.player.shipStats.acceleration * dt);
+          state.player.vx = Math.cos(state.player.angle) * nextSpeed;
+          state.player.vy = Math.sin(state.player.angle) * nextSpeed;
+
+          if (nextSpeed >= 2000) {
+            hyperspaceTransition.phase = "fadeIn";
+          }
+          return;
+        }
+
+        if (hyperspaceTransition.phase === "fadeIn") {
+          hyperspaceTransition.fadeAlpha = Math.min(1, hyperspaceTransition.fadeAlpha + dt * 2.5);
+
+          if (hyperspaceTransition.fadeAlpha >= 1) {
+            discoverSystem(hyperspaceTransition.destinationSystemName);
+            state.player.systemName = hyperspaceTransition.destinationSystemName;
+            SystemInfo.name = hyperspaceTransition.destinationSystemName;
+            state.player.x = SystemInfo.size / 2;
+            state.player.y = SystemInfo.size / 2;
+            hyperspaceTransition.phase = "fadeOut";
+          }
+          return;
+        }
+
+        if (hyperspaceTransition.phase === "fadeOut") {
+          const speed = Math.hypot(state.player.vx, state.player.vy);
+          const nextSpeed = Math.max(0, speed - state.player.shipStats.acceleration * dt);
+          state.player.vx = Math.cos(state.player.angle) * nextSpeed;
+          state.player.vy = Math.sin(state.player.angle) * nextSpeed;
+          hyperspaceTransition.fadeAlpha = Math.max(0, hyperspaceTransition.fadeAlpha - dt * 1.4);
+
+          if (nextSpeed <= 0 && hyperspaceTransition.fadeAlpha <= 0) {
+            state.player.vx = 0;
+            state.player.vy = 0;
+            hyperspaceTransition.active = false;
+            hyperspaceTransition.phase = "idle";
+            hyperspaceTransition.destinationSystemName = null;
+            saveState(state);
+          }
+        }
       }
 
       function stationOverlayOpen(){
@@ -1009,7 +1089,11 @@
 
     /** Moves + rotates player (manual or docking autopilot), clamps speed, integrates position */
     function playerMoveUpdate(dt) {
-      playerManualMove(dt);
+      if (hyperspaceTransition.active) {
+        updateHyperspaceTransition(dt);
+      } else {
+        playerManualMove(dt);
+      }
       clampPlayerSpeed();
       integratePlayerPosition(dt);
       clampPlayerToWorld();
@@ -1058,7 +1142,7 @@
 
     function clampPlayerSpeed() {
       const s = Math.hypot(state.player.vx, state.player.vy);
-      const max = state.player.shipStats.speed;
+      const max = hyperspaceTransition.active ? 2000 : state.player.shipStats.speed;
       if (s <= max) return;
       const factor = max / s;
       state.player.vx *= factor;
@@ -2026,6 +2110,14 @@
           drawEnemies();
           drawShip();
           drawMinimap();
+
+          if (hyperspaceTransition.fadeAlpha > 0) {
+            ctx.save();
+            ctx.globalAlpha = hyperspaceTransition.fadeAlpha;
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, width, height);
+            ctx.restore();
+          }
         }
         requestAnimationFrame(loop);
       }
