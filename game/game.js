@@ -249,7 +249,7 @@
         if (hyperspaceTransition.phase === "accelerate") {
           state.player.angle = targetAngle;
           const speed = Math.hypot(state.player.vx, state.player.vy);
-          const nextSpeed = Math.min(2000, speed + state.player.shipStats.acceleration * dt);
+          const nextSpeed = Math.min(2000, speed + state.player.shipStats.acceleration*100 * dt);
           state.player.vx = Math.cos(state.player.angle) * nextSpeed;
           state.player.vy = Math.sin(state.player.angle) * nextSpeed;
 
@@ -275,7 +275,7 @@
 
         if (hyperspaceTransition.phase === "fadeOut") {
           const speed = Math.hypot(state.player.vx, state.player.vy);
-          const nextSpeed = Math.max(0, speed - state.player.shipStats.acceleration * dt);
+          const nextSpeed = Math.max(0, speed - state.player.shipStats.acceleration*100 * dt);
           state.player.vx = Math.cos(state.player.angle) * nextSpeed;
           state.player.vy = Math.sin(state.player.angle) * nextSpeed;
           hyperspaceTransition.fadeAlpha = Math.max(0, hyperspaceTransition.fadeAlpha - dt * 1.4);
