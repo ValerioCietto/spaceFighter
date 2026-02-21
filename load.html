@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Starfighter — Load Saves</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <canvas id="bg"></canvas>
+
+  <main class="load-wrap" role="main">
+    <header class="load-header">
+      <h1 class="game-title">LOAD SAVES</h1>
+      <p class="hint">Browse local save slots, export backups, or import save data.</p>
+      <div class="load-actions">
+        <button id="btnImportFile" class="btn">Import from File</button>
+        <button id="btnImportClipboard" class="btn">Import from Clipboard</button>
+        <a class="btn" href="index.html">Back</a>
+      </div>
+      <input id="filePicker" type="file" accept=".json,application/json" hidden />
+      <p id="statusMsg" class="load-status" aria-live="polite"></p>
+    </header>
+
+    <section id="saveGrid" class="save-grid" aria-label="Save files"></section>
+  </main>
+
+  <script>
+    (function () {
+      const SAVE_KEYS = Array.from({ length: 13 }, (_, i) => i === 0 ? 'spaceFighterSaveData' : `spaceFighterSaveData${i}`);
+      const saveGrid = document.getElementById('saveGrid');
+      const statusMsg = document.getElementById('statusMsg');
+      const btnImportFile = document.getElementById('btnImportFile');
+      const btnImportClipboard = document.getElementById('btnImportClipboard');
+      const filePicker = document.getElementById('filePicker');
+
+      function setStatus(message, isError) {
+        statusMsg.textContent = message;
+        statusMsg.classList.toggle('is-error', Boolean(isError));
+      }
+
+      function formatDate(value) {
+        if (!value) return 'Unknown date';
+        const asDate = new Date(value);
+        return Number.isNaN(asDate.getTime()) ? 'Unknown date' : asDate.toLocaleString();
+      }
+
+      function getSaveSummary(raw) {
+        if (!raw) return { title: 'Empty slot', detail: 'No save data found.' };
+
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object') {
+            const pilot = parsed.playerName || parsed.name || parsed.pilot || parsed.profile?.name;
+            const location = parsed.systemName || parsed.location || parsed.currentSystem;
+            const updated = parsed.updatedAt || parsed.lastSaved || parsed.timestamp;
+            const parts = [
+              pilot ? `Pilot: ${pilot}` : null,
+              location ? `Location: ${location}` : null,
+              `Saved: ${formatDate(updated)}`
+            ].filter(Boolean);
+            return {
+              title: pilot ? `${pilot}'s Save` : 'Save detected',
+              detail: parts.join(' • ')
+            };
+          }
+        } catch (error) {
+          return {
+            title: 'Raw save detected',
+            detail: 'Data is not JSON formatted, but can still be downloaded.'
+          };
+        }
+
+        return { title: 'Save detected', detail: 'Data is available in this slot.' };
+      }
+
+      function getDownloadPayload(key) {
+        const raw = localStorage.getItem(key);
+        if (!raw) return null;
+
+        try {
+          return JSON.stringify(JSON.parse(raw), null, 2);
+        } catch (error) {
+          return raw;
+        }
+      }
+
+      function downloadSlot(key) {
+        const payload = getDownloadPayload(key);
+        if (!payload) {
+          setStatus(`No save data in ${key}.`, true);
+          return;
+        }
+
+        const blob = new Blob([payload], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'spaceFighterSaveData.json';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+        setStatus(`Downloaded ${key} as spaceFighterSaveData.json.`, false);
+      }
+
+      function renderCards() {
+        saveGrid.innerHTML = '';
+
+        for (const key of SAVE_KEYS) {
+          const raw = localStorage.getItem(key);
+          const { title, detail } = getSaveSummary(raw);
+
+          const card = document.createElement('article');
+          card.className = 'save-card';
+
+          const heading = document.createElement('h2');
+          heading.className = 'save-card-title';
+          heading.textContent = key;
+
+          const state = document.createElement('p');
+          state.className = 'save-card-state';
+          state.textContent = raw ? title : 'Empty slot';
+
+          const meta = document.createElement('p');
+          meta.className = 'save-card-meta';
+          meta.textContent = detail;
+
+          const button = document.createElement('button');
+          button.className = 'btn';
+          button.textContent = 'Download as JSON';
+          button.disabled = !raw;
+          button.addEventListener('click', () => downloadSlot(key));
+
+          card.append(heading, state, meta, button);
+          saveGrid.appendChild(card);
+        }
+      }
+
+      async function importFromClipboard() {
+        if (!navigator.clipboard || typeof navigator.clipboard.readText !== 'function') {
+          setStatus('Clipboard import is not supported in this browser.', true);
+          return;
+        }
+
+        try {
+          const text = await navigator.clipboard.readText();
+          if (!text || !text.trim()) {
+            setStatus('Clipboard is empty.', true);
+            return;
+          }
+
+          JSON.parse(text);
+          localStorage.setItem('spaceFighterSaveData', text);
+          renderCards();
+          setStatus('Imported clipboard data into spaceFighterSaveData.', false);
+        } catch (error) {
+          setStatus('Clipboard content must be valid JSON save data.', true);
+        }
+      }
+
+      function importFromFile(file) {
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          const text = String(reader.result || '');
+          try {
+            JSON.parse(text);
+            localStorage.setItem('spaceFighterSaveData', text);
+            renderCards();
+            setStatus('Imported file into spaceFighterSaveData.', false);
+          } catch (error) {
+            setStatus('Selected file is not valid JSON.', true);
+          }
+        };
+        reader.onerror = () => {
+          setStatus('Could not read selected file.', true);
+        };
+        reader.readAsText(file);
+      }
+
+      btnImportFile.addEventListener('click', () => filePicker.click());
+      filePicker.addEventListener('change', (event) => {
+        const [file] = event.target.files || [];
+        importFromFile(file);
+        filePicker.value = '';
+      });
+      btnImportClipboard.addEventListener('click', importFromClipboard);
+
+      renderCards();
+    })();
+  </script>
+  <script>
+    (function(){
+      const canvas = document.getElementById('bg');
+      const ctx = canvas.getContext('2d', { alpha:false, desynchronized:true });
+      let W=0, H=0, DPR=1;
+
+      const LAYERS = [
+        { count: 140, speed: 12, size: [0.6, 1.2], alpha: 0.35 },
+        { count: 80,  speed: 24, size: [0.8, 1.8], alpha: 0.55 },
+        { count: 40,  speed: 46, size: [1.0, 2.4], alpha: 0.8  }
+      ];
+      const stars = [];
+
+      function rand(a,b){ return a + Math.random()*(b-a); }
+
+      function initStars(){
+        stars.length = 0;
+        for (const L of LAYERS){
+          for (let i=0;i<L.count;i++){
+            stars.push({
+              x: Math.random()*W, y: Math.random()*H,
+              r: rand(L.size[0], L.size[1])*DPR,
+              s: L.speed, a: L.alpha
+            });
+          }
+        }
+      }
+
+      function resize(){
+        DPR = Math.max(1, Math.min(window.devicePixelRatio||1, 2));
+        W = Math.floor(window.innerWidth*DPR);
+        H = Math.floor(window.innerHeight*DPR);
+        canvas.width = W; canvas.height = H;
+        canvas.style.width = '100%'; canvas.style.height = '100%';
+        initStars();
+      }
+      window.addEventListener('resize', resize, { passive:true });
+      resize();
+
+      let last = performance.now();
+      function loop(now){
+        const dt = Math.min(0.05, (now-last)/1000); last = now;
+
+        ctx.fillStyle = '#060a14';
+        ctx.fillRect(0,0,W,H);
+
+        for (const st of stars){
+          st.x += st.s * dt * DPR * 0.6;
+          if (st.x > W+8) st.x = -8, st.y = Math.random()*H;
+          ctx.globalAlpha = st.a;
+          ctx.beginPath();
+          ctx.arc(st.x, st.y, st.r, 0, Math.PI*2);
+          ctx.fillStyle = '#bcd7ff';
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+
+        requestAnimationFrame(loop);
+      }
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>
