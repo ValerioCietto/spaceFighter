@@ -1,6 +1,6 @@
  (function () {
       const state = {
-        discoveredSystems: ["Solar"],
+        discoveredSystems: ["Sol"],
         player: {
           x: SystemInfo.size / 2,
           y: SystemInfo.size / 2,
@@ -8,7 +8,7 @@
           vy: 0,
           angle: -Math.PI / 2,
           money: 0,
-          systemName: "Solar",
+          systemName: "Sol",
       
           currentSpaceshipId: 0,
       
