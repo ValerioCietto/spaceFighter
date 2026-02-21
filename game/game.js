@@ -129,14 +129,19 @@
       stationOverlayBtn.addEventListener("click", stationOverlayOpen);
 
       const hyperspaceBtn = document.getElementById("hyperspace-btn");
-      hyperspaceBtn.addEventListener("click", enterHyperspace);
-
-      const hyperspaceTransition = {
-        active: false,
-        phase: "idle", // align | accelerate | fadeIn | fadeOut
-        destinationSystemName: null,
-        fadeAlpha: 0,
-      };
+      const hyperSpaceManager = createHyperSpaceManager({
+        state,
+        systemInfo: SystemInfo,
+        buttonEl: hyperspaceBtn,
+        saveState,
+        discoverSystem,
+        starX: STAR_X,
+        starY: STAR_Y,
+        getCanvasContext: () => ctx,
+        getCanvasSize: () => ({ width, height }),
+        getLineToTarget: () => lineToTarget,
+      });
+      hyperspaceBtn.addEventListener("click", hyperSpaceManager.enterHyperspace);
 
       const shopRoot = document.getElementById("ship-shop-list");
 
@@ -160,135 +165,6 @@
       function updateStationButtonVisibility() {
         stationOverlayBtn.style.display =
           isPlayerNearSpaceStation() ? "block" : "none";
-      }
-
-      function getNearestHyperspaceGate() {
-        const gates = Array.isArray(SystemInfo?.hyperspace_gates)
-          ? SystemInfo.hyperspace_gates
-          : [];
-
-        let nearestGate = null;
-        let nearestDist = Infinity;
-
-        for (const gate of gates) {
-          if (!gate || gate.type !== "warp") continue;
-
-          const dx = state.player.x - Number(gate.position_x ?? gate.x ?? 0);
-          const dy = state.player.y - Number(gate.position_y ?? gate.y ?? 0);
-          const dist = Math.hypot(dx, dy);
-
-          if (dist < nearestDist) {
-            nearestGate = gate;
-            nearestDist = dist;
-          }
-        }
-
-        return nearestGate ? { gate: nearestGate, distance: nearestDist } : null;
-      }
-
-      function isPlayerNearHyperspaceGate() {
-        const nearest = getNearestHyperspaceGate();
-        if (!nearest) return false;
-
-        const gateSize = Math.max(1, Number(nearest.gate.width ?? 64));
-        const interactionRadius = Math.max(160, gateSize * 0.75);
-        return nearest.distance <= interactionRadius;
-      }
-
-      function updateHyperspaceButtonVisibility() {
-        hyperspaceBtn.style.display =
-          isPlayerNearHyperspaceGate() ? "block" : "none";
-      }
-
-      function enterHyperspace() {
-        const nearest = getNearestHyperspaceGate();
-        if (!nearest || !isPlayerNearHyperspaceGate()) return;
-
-        if (hyperspaceTransition.active) return;
-
-        const gateX = Number(nearest.gate.position_x ?? nearest.gate.x ?? state.player.x);
-        const gateY = Number(nearest.gate.position_y ?? nearest.gate.y ?? state.player.y);
-        const destinationSystemName = String(nearest.gate.name || "Unknown System");
-
-        state.player.x = gateX;
-        state.player.y = gateY;
-        state.player.vx = 0;
-        state.player.vy = 0;
-
-        hyperspaceTransition.active = true;
-        hyperspaceTransition.phase = "align";
-        hyperspaceTransition.destinationSystemName = destinationSystemName;
-        hyperspaceTransition.fadeAlpha = 0;
-      }
-
-      function normalizeAngle(rad) {
-        let out = rad;
-        while (out > Math.PI) out -= Math.PI * 2;
-        while (out < -Math.PI) out += Math.PI * 2;
-        return out;
-      }
-
-      function updateHyperspaceTransition(dt) {
-        if (!hyperspaceTransition.active) return;
-
-        const targetAngle = Math.atan2(state.player.y - STAR_Y, state.player.x - STAR_X);
-        const maxTurn = state.player.shipStats.turningSpeedRad * dt;
-
-        if (hyperspaceTransition.phase === "align") {
-          const delta = normalizeAngle(targetAngle - state.player.angle);
-
-          if (Math.abs(delta) <= maxTurn) {
-            state.player.angle = targetAngle;
-            hyperspaceTransition.phase = "accelerate";
-          } else {
-            state.player.angle += Math.sign(delta) * maxTurn;
-          }
-          return;
-        }
-
-        if (hyperspaceTransition.phase === "accelerate") {
-          state.player.angle = targetAngle;
-          const speed = Math.hypot(state.player.vx, state.player.vy);
-          const nextSpeed = Math.min(2000, speed + state.player.shipStats.acceleration*100 * dt);
-          state.player.vx = Math.cos(state.player.angle) * nextSpeed;
-          state.player.vy = Math.sin(state.player.angle) * nextSpeed;
-
-          if (nextSpeed >= 2000) {
-            hyperspaceTransition.phase = "fadeIn";
-          }
-          return;
-        }
-
-        if (hyperspaceTransition.phase === "fadeIn") {
-          hyperspaceTransition.fadeAlpha = Math.min(1, hyperspaceTransition.fadeAlpha + dt * 2.5);
-
-          if (hyperspaceTransition.fadeAlpha >= 1) {
-            discoverSystem(hyperspaceTransition.destinationSystemName);
-            state.player.systemName = hyperspaceTransition.destinationSystemName;
-            SystemInfo.name = hyperspaceTransition.destinationSystemName;
-            state.player.x = SystemInfo.size / 2;
-            state.player.y = SystemInfo.size / 2;
-            hyperspaceTransition.phase = "fadeOut";
-          }
-          return;
-        }
-
-        if (hyperspaceTransition.phase === "fadeOut") {
-          const speed = Math.hypot(state.player.vx, state.player.vy);
-          const nextSpeed = Math.max(0, speed - state.player.shipStats.acceleration*100 * dt);
-          state.player.vx = Math.cos(state.player.angle) * nextSpeed;
-          state.player.vy = Math.sin(state.player.angle) * nextSpeed;
-          hyperspaceTransition.fadeAlpha = Math.max(0, hyperspaceTransition.fadeAlpha - dt * 1.4);
-
-          if (nextSpeed <= 0 && hyperspaceTransition.fadeAlpha <= 0) {
-            state.player.vx = 0;
-            state.player.vy = 0;
-            hyperspaceTransition.active = false;
-            hyperspaceTransition.phase = "idle";
-            hyperspaceTransition.destinationSystemName = null;
-            saveState(state);
-          }
-        }
       }
 
       function stationOverlayOpen(){
@@ -1089,8 +965,8 @@
 
     /** Moves + rotates player (manual or docking autopilot), clamps speed, integrates position */
     function playerMoveUpdate(dt) {
-      if (hyperspaceTransition.active) {
-        updateHyperspaceTransition(dt);
+      if (hyperSpaceManager.isTransitionActive()) {
+        hyperSpaceManager.updateTransition(dt);
       } else {
         playerManualMove(dt);
       }
@@ -1142,7 +1018,7 @@
 
     function clampPlayerSpeed() {
       const s = Math.hypot(state.player.vx, state.player.vy);
-      const max = hyperspaceTransition.active ? 2000 : state.player.shipStats.speed;
+      const max = hyperSpaceManager.getSpeedLimit();
       if (s <= max) return;
       const factor = max / s;
       state.player.vx *= factor;
@@ -1585,73 +1461,8 @@
         }
       }
 
-      function drawHyperspaceGateLineIndicator() {
-        if (lineToTarget) return;
-
-        const gates = Array.isArray(SystemInfo?.hyperspace_gates)
-          ? SystemInfo.hyperspace_gates
-          : [];
-        if (!gates.length) return;
-
-        const shipX = width / 2;
-        const shipY = height / 2;
-
-        for (const gate of gates) {
-          if (!gate || gate.type !== "warp") continue;
-
-          const gateX = width / 2 + (Number(gate.position_x ?? gate.x ?? 0) - state.player.x);
-          const gateY = height / 2 + (Number(gate.position_y ?? gate.y ?? 0) - state.player.y);
-
-          const dx = gateX - shipX;
-          const dy = gateY - shipY;
-          const dist = Math.hypot(dx, dy);
-          if (dist < 1) continue;
-
-          const dirX = dx / dist;
-          const dirY = dy / dist;
-
-          const REF_DIST = 400;
-          const t = Math.min(1, dist / REF_DIST);
-
-          const offset = 30;
-          const size = 5 + 7 * t;
-
-          const centerX = shipX + dirX * offset;
-          const centerY = shipY + dirY * offset;
-
-          const perpX = -dirY;
-          const perpY = dirX;
-
-          const BASE_WIDTH = 0.22;
-          const BACK_OFFSET = 0.65;
-
-          const tipX = centerX + dirX * size;
-          const tipY = centerY + dirY * size;
-
-          const baseLeftX =
-            centerX - dirX * size * BACK_OFFSET + perpX * size * BASE_WIDTH;
-          const baseLeftY =
-            centerY - dirY * size * BACK_OFFSET + perpY * size * BASE_WIDTH;
-
-          const baseRightX =
-            centerX - dirX * size * BACK_OFFSET - perpX * size * BASE_WIDTH;
-          const baseRightY =
-            centerY - dirY * size * BACK_OFFSET - perpY * size * BASE_WIDTH;
-
-          ctx.save();
-          ctx.fillStyle = "#00e5ff";
-          ctx.beginPath();
-          ctx.moveTo(tipX, tipY);
-          ctx.lineTo(baseLeftX, baseLeftY);
-          ctx.lineTo(baseRightX, baseRightY);
-          ctx.closePath();
-          ctx.fill();
-          ctx.restore();
-        }
-      }
 
 
-      
       function drawEnemyProjectiles() {
         if (!enemyProjectiles.length) return;
 
@@ -2097,23 +1908,23 @@
           drawStarfield(ctx, width, height, starLayers, state.player.x, state.player.y, SystemInfo.size);
           attemptFireWeapon(false);
           updateStationButtonVisibility();
-          updateHyperspaceButtonVisibility();
+          hyperSpaceManager.updateButtonVisibility();
           drawGates(dt);
           drawMainStar();
           drawStation();
           drawTarget();
           drawTargetLine();
           drawEnemyLineIndicator();
-          drawHyperspaceGateLineIndicator();
+          hyperSpaceManager.drawGateLineIndicator();
           drawEnemyProjectiles();
           drawProjectiles();
           drawEnemies();
           drawShip();
           drawMinimap();
 
-          if (hyperspaceTransition.fadeAlpha > 0) {
+          if (hyperSpaceManager.getFadeAlpha() > 0) {
             ctx.save();
-            ctx.globalAlpha = hyperspaceTransition.fadeAlpha;
+            ctx.globalAlpha = hyperSpaceManager.getFadeAlpha();
             ctx.fillStyle = "white";
             ctx.fillRect(0, 0, width, height);
             ctx.restore();
