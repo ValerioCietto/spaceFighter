@@ -520,7 +520,7 @@
         : [{ type: "gun", x: 0, y: 18 }];
     
       for (const port of ports) {
-        if (!port || port.type !== "gun") continue;
+        if (!port) continue;
     
         // rotate local port coords by ship angle, then translate to world
         const p = rotatePoint(port.x, port.y, state.player.angle);
