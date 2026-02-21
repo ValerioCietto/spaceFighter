@@ -23,8 +23,8 @@ function renderInventory(state) {
 
   // ---- DATA ----
   const owned = Array.isArray(p.ownedSpaceships) ? p.ownedSpaceships : [];
-  const activeId = p.activeShipId ?? p.currentSpaceship ?? null;
-  const activeShip = owned.find((s) => s.id === activeId) || owned[0] || null;
+  const activeId = state.player.currentSpaceshipId ?? state.player.activeShipId ?? 0;
+  const activeShip = state.player.ownedSpaceships.find(s => s.id === activeId) || null;
 
   // ---- PANELS ----
   const currentPanel = bodyEl.querySelector('[data-panel="current"]');
@@ -72,7 +72,6 @@ function renderInventory(state) {
         renderInventory(state);
       });
     });
-
     return;
   }
 
@@ -80,7 +79,8 @@ function renderInventory(state) {
   if (!activeShip) {
     currentPanel.innerHTML = `<div>No active ship</div>`;
   } else {
-    const stats = activeShip.shipStats || p.shipStats || {};
+    console.log("Rendering inventory for active ship:", activeShip);
+    const stats = state.player.shipStats || p.shipStats || {};
     const outfits = Array.isArray(activeShip.outfits) ? activeShip.outfits : [];
 
     currentPanel.innerHTML = `
@@ -106,33 +106,6 @@ function renderInventory(state) {
       }
     `;
   }
-
-  // ---- RENDER OWNED TAB ----
-  ownedPanel.innerHTML = `
-    <h3 style="margin:6px 0;">Owned Ships</h3>
-    <div class="inventory-ships">
-      ${
-        owned.length
-          ? owned
-              .map((s) => {
-                const isActive = activeId === s.id;
-                return `
-                  <div class="inventory-ship">
-                    <strong>${escapeHtml(s.name)}</strong>
-                    ${isActive ? `<span class="tag-active">ACTIVE</span>` : ""}
-                    <div>Template: ${escapeHtml(s.templateName)}</div>
-                    <div>Outfits: ${s.outfits?.length || 0}</div>
-                    <button class="btn-set-active" data-set-active="${s.id}" ${isActive ? "disabled" : ""}>
-                      Set active
-                    </button>
-                  </div>
-                `;
-              })
-              .join("")
-          : `<div>No ships owned</div>`
-      }
-    </div>
-  `;
 
   // ---- BIND TAB SWITCH + ACTIONS (event delegation, once) ----
   bindInventoryTabsOnce(state);
@@ -207,7 +180,7 @@ function bindInventoryTabsOnce(state) {
 function renderInventoryTabContent(state, tab, panelEl) {
   const p = state.player;
   const owned = Array.isArray(p.ownedSpaceships) ? p.ownedSpaceships : [];
-  const activeId = p.activeShipId ?? p.currentSpaceship ?? 0;
+  const activeId = state.player.currentSpaceshipId ?? state.player.activeShipId ?? 0;
   const activeShip = owned.find(s => s.id === activeId);
   const baseUrl =
     location.hostname === "127.0.0.1" || location.hostname === "localhost"
