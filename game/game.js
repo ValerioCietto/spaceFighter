@@ -238,7 +238,7 @@
       });
 
       deathRestartBtn.addEventListener("click", () => {
-        alert("Restart from save file not yet implemented");
+        window.location.href = "/";
       });
 
       const galaxyOverlayEl = document.getElementById("galaxy-overlay");
