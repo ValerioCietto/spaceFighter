@@ -52,6 +52,8 @@
   let systems = []; // {name, serviceLevel, x, y}
   let links = [];   // {a, b, type}
   let sysByName = new Map();
+  let allSystems = [];
+  let allLinks = [];
 
   const SERVICE_COLORS = {
     5:"#59c7ff", 4:"#ffffff", 3:"#ffd84a", 2:"#ff8f8f", 1:"#b10b1e"
@@ -313,44 +315,58 @@
     }
   }
 
+  function refreshVisibleMapData(){
+    const discovered = getDiscoveredSystems();
+
+    systems = allSystems.filter((s) => discovered.has(s.name.toLowerCase()));
+
+    const visibleSystems = new Set(systems.map((s) => s.name.toLowerCase()));
+
+    links = allLinks.filter((l) =>
+      visibleSystems.has(l.a.toLowerCase()) && visibleSystems.has(l.b.toLowerCase())
+    );
+
+    sysByName = new Map(systems.map(s => [s.name.toLowerCase(), s]));
+
+    const dangling = links.filter(l => !sysByName.has(l.a.toLowerCase()) || !sysByName.has(l.b.toLowerCase())).length;
+    statusEl.textContent = `Loaded discovered: ${systems.length} systems, ${links.length} links${dangling ? ` (${dangling} dangling)` : ""}`;
+
+    resize();
+    fitToContent();
+    draw();
+  }
+
   async function load(){
     try{
-      const discovered = getDiscoveredSystems();
-
       const res = await fetch(GALAXY_JSON_URL, { cache:"no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
 
-      systems = (json.systems || []).map(s => ({
+      allSystems = (json.systems || []).map(s => ({
         name: String(s.name),
         serviceLevel: clamp(Number(s.serviceLevel ?? 3), 1, 5),
         x: Number(s.x ?? 0),
         y: Number(s.y ?? 0),
-      })).filter((s) => discovered.has(s.name.toLowerCase()));
+      }));
 
-      const visibleSystems = new Set(systems.map((s) => s.name.toLowerCase()));
-
-      links = (json.links || []).map(l => ({
+      allLinks = (json.links || []).map(l => ({
         a: String(l.a),
         b: String(l.b),
         type: String(l.type || "warp"),
-      })).filter((l) => visibleSystems.has(l.a.toLowerCase()) && visibleSystems.has(l.b.toLowerCase()));
+      }));
 
-      sysByName = new Map(systems.map(s => [s.name.toLowerCase(), s]));
-
-      // tell if some links are dangling
-      const dangling = links.filter(l => !sysByName.has(l.a.toLowerCase()) || !sysByName.has(l.b.toLowerCase())).length;
-      statusEl.textContent = `Loaded discovered: ${systems.length} systems, ${links.length} links${dangling ? ` (${dangling} dangling)` : ""}`;
-
-      resize();
-      fitToContent();
-      draw();
+      refreshVisibleMapData();
     } catch (err){
       statusEl.textContent = `Failed: ${GALAXY_JSON_URL} (${err.message})`;
       resize();
       draw();
     }
   }
+
+  window.addEventListener("message", (event) => {
+    if (event.data?.type !== "spaceFighter:refreshMap") return;
+    refreshVisibleMapData();
+  });
 
   load();
 })();

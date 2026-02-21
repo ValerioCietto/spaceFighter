@@ -287,10 +287,12 @@
 
       const galaxyOverlayEl = document.getElementById("galaxy-overlay");
       const galaxyCloseBtn = document.getElementById("galaxy-close-btn");
+      const galaxyIframeEl = document.getElementById("galaxy-iframe");
 
       function openGalaxyOverlay() {
         saveState();
         galaxyOverlayEl.classList.add("open");
+        galaxyIframeEl?.contentWindow?.postMessage({ type: "spaceFighter:refreshMap" }, "*");
       }
 
       function closeGalaxyOverlay() {
