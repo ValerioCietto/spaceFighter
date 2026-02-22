@@ -8,15 +8,33 @@
   const canContinue = SFSave.hasAnySave();
   btnContinue.disabled = !canContinue;
 
+  function handleNewGame(){
+    const saveData = localStorage.getItem('spaceFighterSaveData');
+    if (saveData) {
+      const shouldClearSave = window.confirm(
+        'A save file already exists in spaceFighterSaveData.\n\nPress OK to clear it and start a new game, or Cancel to stay on this page.'
+      );
+
+      if (!shouldClearSave) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      localStorage.removeItem('spaceFighterSaveData');
+    }
+
+    SFSave.go('new');
+  }
+
   // Button actions
   btnContinue.addEventListener('click', ()=> SFSave.go('continue'));
-  btnNew.addEventListener('click', ()=> SFSave.go('new'));
+  btnNew.addEventListener('click', handleNewGame);
   btnLoad.addEventListener('click', ()=> SFSave.go('load'));
 
   // Keyboard shortcuts
   window.addEventListener('keydown', (e)=>{
     if (e.code === 'Enter' && !btnContinue.disabled) SFSave.go('continue');
-    if (e.code === 'KeyN') SFSave.go('new');
+    if (e.code === 'KeyN') handleNewGame();
     if (e.code === 'KeyL') SFSave.go('load');
   });
 
