@@ -27,6 +27,7 @@
     </footer>
   </main>
 
+  <script src="baseUrl.js"></script>
   <script src="js/config.js"></script>
   <script src="js/save.js"></script>
   <script>
@@ -39,6 +40,23 @@
         : false;
 
       continueBtn.disabled = !hasSave;
+    })();
+  </script>
+  <script>
+    (function () {
+      const baseUrl = window.BASE_URL || '/';
+      const toAbsolute = (uri) => {
+        if (!uri || /^(?:[a-z]+:|\/\/|#|data:|mailto:|tel:)/i.test(uri)) return uri;
+        return new URL(uri, baseUrl).toString();
+      };
+
+      document.querySelectorAll('a[href], img[src]').forEach((el) => {
+        if (el.tagName === 'A') {
+          el.href = toAbsolute(el.getAttribute('href'));
+        } else if (el.tagName === 'IMG') {
+          el.src = toAbsolute(el.getAttribute('src'));
+        }
+      });
     })();
   </script>
   <!-- star special effects -->
