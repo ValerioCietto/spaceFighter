@@ -2,6 +2,14 @@
 
 (function (global) {
   const DEFAULT_TABS = ["Shipyard", "Outfits", "Weapons", "Market", "Bank", "Plaza"];
+  const TAB_CONFIG = {
+    Shipyard: ["New ship Shop", "Sell ship"],
+    Outfits: ["Outfit Shop"],
+    Weapons: ["Weapon Shop"],
+    Market: ["Sell Ships", "Sell Outfits", "Sell Weapons", "Software Shop"],
+    Bank: ["Loan", "Invest", "Deposit"],
+    Plaza: ["Bar", "Missions", "Military"],
+  };
 
   function createSafeGet(fn, fallback) {
     return function () {
@@ -19,8 +27,11 @@
     _contentEl: null,
     _titleEl: null,
     _exitBtn: null,
+    _subtabMenuEl: null,
+    _sectionTitleEl: null,
     _tabButtons: [],
     _activeTab: "info",
+    _activeSubtabs: {},
     _isOpen: false,
     _options: null,
 
@@ -31,8 +42,10 @@
       this._contentEl = document.getElementById("station-content");
       this._titleEl = document.getElementById("station-title");
       this._exitBtn = document.getElementById("station-exit-btn");
+      this._subtabMenuEl = document.getElementById("station-subtabs");
+      this._sectionTitleEl = document.getElementById("station-section-title");
       this._tabButtons = Array.from(
-        document.querySelectorAll(".station-tab-btn")
+        document.querySelectorAll(".station-tab-btn, .tab-btn")
       );
 
       if (!this._overlay || !this._contentEl || !this._titleEl) {
@@ -51,7 +64,7 @@
         });
       });
 
-      this.setActiveTab("info");
+      this.setActiveTab("Shipyard");
     },
 
     openStation(stationContext) {
@@ -73,7 +86,10 @@
 
       this._titleEl.textContent = `${stationName} – ${systemName}`;
 
-      this.setActiveTab(this._activeTab || "info");
+      this.setActiveTab(this._activeTab || "Shipyard");
+      if (typeof this._options.onOpen === "function") {
+        this._options.onOpen();
+      }
     },
 
     closeStation() {
@@ -82,6 +98,9 @@
       this._isOpen = false;
       this._overlay.classList.remove("open");
       this._overlay.setAttribute("aria-hidden", "true");
+      if (typeof this._options.onClose === "function") {
+        this._options.onClose();
+      }
     },
 
     isOpen() {
@@ -93,69 +112,77 @@
         tabId = "Shipyard";
       }
       this._activeTab = tabId;
+      this._activeSubtabs[tabId] = this._activeSubtabs[tabId] || TAB_CONFIG[tabId]?.[0] || "";
 
       this._tabButtons.forEach((btn) => {
         const t = btn.getAttribute("data-tab");
-        if (t === tabId) btn.classList.add("active");
-        else btn.classList.remove("active");
+        btn.classList.toggle("active", t === tabId);
+        btn.classList.toggle("is-active", t === tabId);
       });
 
-      this._renderTab(tabId);
+      this._renderSubtabs(tabId);
+      this._renderTab(tabId, this._activeSubtabs[tabId]);
     },
 
-    _renderTab(tabId) {
+    setActiveSubtab(tabId, subtabId) {
+      this._activeSubtabs[tabId] = subtabId;
+      this._renderSubtabs(tabId);
+      this._renderTab(tabId, subtabId);
+    },
+
+    _renderSubtabs(tabId) {
+      if (!this._subtabMenuEl) return;
+      const subtabs = TAB_CONFIG[tabId] || [];
+      const activeSubtab = this._activeSubtabs[tabId] || subtabs[0] || "";
+      this._subtabMenuEl.innerHTML = "";
+
+      subtabs.forEach((subtabLabel) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "tab-btn";
+        if (subtabLabel === activeSubtab) {
+          btn.classList.add("is-active");
+        }
+        btn.textContent = subtabLabel;
+        btn.addEventListener("click", () => this.setActiveSubtab(tabId, subtabLabel));
+        this._subtabMenuEl.appendChild(btn);
+      });
+    },
+
+    _renderTab(tabId, subtabId) {
       if (!this._contentEl) return;
 
-      const getSystemInfo = createSafeGet(
-        () => this._options.systemInfo,
-        null
-      );
-      const getPlayerState = createSafeGet(
-        () => this._options.getPlayerState && this._options.getPlayerState(),
-        null
-      );
-
-      const sys = getSystemInfo();
-      const player = getPlayerState();
+      if (this._sectionTitleEl) {
+        this._sectionTitleEl.textContent = `${tabId} · ${subtabId || ""}`;
+      }
 
       let html = "";
 
       switch (tabId) {
         case "Outfits":
-          html = `
-            <h3>Outfitter</h3>
-            <p>Here you will be able to buy and equip weapons, shields and utilities for your ship.</p>
-            <ul>
-              <li>Weapon upgrades (coming soon)</li>
-              <li>Hull and armor plating</li>
-              <li>Utility modules</li>
-            </ul>
-          `;
+          html = `<div id="outfit-shop-list"></div>`;
+          break;
+
+        case "Weapons":
+          html = `<div id="weapon-shop-list"></div>`;
           break;
 
         case "Bank":
-          html = `
-            <h3>Bank</h3>
-            <p>Station financial services.</p>
-            <ul>
-              <li>Deposit / withdraw credits (coming soon)</li>
-              <li>Contracts and bounties</li>
-              <li>Local market overview</li>
-            </ul>
-          `;
+          html = `<p>${subtabId} services are coming soon.</p>`;
           break;
 
         case "Shipyard":
-          html = `
-            <h3>Spaceships</h3>
-            <p>Shipyard interface.</p>
-            <ul>
-              <li>Browse available hulls</li>
-              <li>Trade-in current ship</li>
-              <li>Preview stats and roles</li>
-            </ul>
-            <div id="ship-shop-list"></div>
-          `;
+          html = subtabId === "New ship Shop"
+            ? `<div id="ship-shop-list"></div>`
+            : `<p>Sell ship is coming soon.</p>`;
+          break;
+
+        case "Market":
+          html = `<p>${subtabId} is coming soon.</p>`;
+          break;
+
+        case "Plaza":
+          html = `<p>${subtabId} is coming soon.</p>`;
           break;
 
         default:
@@ -163,6 +190,42 @@
       }
 
       this._contentEl.innerHTML = html;
+
+      if (tabId === "Shipyard" && subtabId === "New ship Shop") {
+        this.renderStationShipShop();
+      }
+      if (tabId === "Outfits") {
+        this.renderOutfitShop();
+      }
+      if (tabId === "Weapons") {
+        this.renderWeaponShop();
+      }
+    },
+
+    renderStationShipShop() {
+      const rootEl = document.getElementById("ship-shop-list");
+      if (!rootEl || typeof global.renderStationShipShop !== "function") return;
+
+      const state = this._options.getPlayerState ? this._options.getPlayerState() : null;
+      rootEl.innerHTML = "";
+      global.renderStationShipShop({
+        rootEl,
+        state,
+        onBuy: (shipKey, stats) => {
+          if (typeof this._options.onShipBought === "function") {
+            this._options.onShipBought(shipKey, stats);
+          }
+        },
+        onToast: (msg) => console.log("[shop]", msg),
+      });
+    },
+
+    renderOutfitShop() {
+      // new method to implement later
+    },
+
+    renderWeaponShop() {
+      // new method to implement later
     },
   };
 
