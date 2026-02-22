@@ -156,6 +156,9 @@
     (function () {
       const iframe = document.getElementById("galaxy-iframe");
       const baseUrl = window.BASE_URL || "/";
+      console.log("[Game] Base URL for galaxy map iframe:", baseUrl);
+      const galaxyMapUrl = new URL("game/galaxy-map-viewer.html", baseUrl).toString();
+      console.log("[Game] Setting galaxy map iframe src to:", galaxyMapUrl);
       iframe.src = new URL("game/galaxy-map-viewer.html", baseUrl).toString();
 
       const toAbsolute = (uri) => {

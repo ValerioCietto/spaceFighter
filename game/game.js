@@ -1,6 +1,6 @@
  (function () {
       const state = {
-        discoveredSystems: ["Sol"],
+        discoveredSystems: ["Sol", "Glacius"],
         player: {
           x: SystemInfo.size / 2,
           y: SystemInfo.size / 2,
@@ -13,8 +13,9 @@
           currentSpaceshipId: 0,
       
           shipName: "human_starfighter",
-      
+          
           ownedSpaceships: [
+            // spaceships the player has bought and can select in the inventory screen or station shipyard Equip Ship sub tab.
             {
               id: 0,
               name: "Little Raven",
@@ -71,8 +72,13 @@
                 // granted by outfits/software or story unlocks
                 // e.g. targetHighlighter: true
               },
+
+              cargo: [],
             },
           ],
+          // weapons the player has bought and can equip
+          ownedWeapons: [],
+          ownedOutfits: [],  
         },
       
         enemies: [],
