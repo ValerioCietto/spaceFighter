@@ -128,8 +128,6 @@
       const energyValueEl = document.getElementById("energy-value");
       
       // station overlay elements
-      const stationOverlayEl = document.getElementById("station-overlay");
-      const stationExitBtn = document.getElementById("station-exit-btn");
 
       const stationOverlayBtn = document.getElementById("station-overlay-btn");
       stationOverlayBtn.addEventListener("click", stationOverlayOpen);
@@ -148,8 +146,6 @@
         getLineToTarget: () => lineToTarget,
       });
       hyperspaceBtn.addEventListener("click", hyperSpaceManager.enterHyperspace);
-
-      const shopRoot = document.getElementById("ship-shop-list");
 
       function isPlayerNearSpaceStation(){
         // AnyStation software allows the player to open station overlay
@@ -174,26 +170,12 @@
       }
 
       function stationOverlayOpen(){
-        stationOverlayEl.classList.add("open");
-        state.ui.mode = "station";
-        shopRoot.innerHTML = "";
-
-        renderStationShipShop({
-          rootEl: shopRoot,
-          state,
-          onBuy: (shipKey, stats) => {
-            const templateName = shipKey;
-            onBoughtSpaceship({ state, shipStats: stats, templateName });
-            saveState(state);
-          },
-          onToast: (msg) => console.log("[shop]", msg),
+        const station = SystemInfo?.stations?.[0] || {};
+        StationManager.openStation({
+          name: station.name || "Orbital Station",
+          systemInfo: SystemInfo,
         });
       }
-
-      stationExitBtn.addEventListener("click", () => {
-        stationOverlayEl.classList.remove("open");
-        state.ui.mode = "game";
-      });
 
       const inventoryOverlayEl = document.getElementById("inventory-overlay");
       const inventoryCloseBtn = document.getElementById("inventory-close-btn");
@@ -2068,7 +2050,13 @@
         // Station manager: gli passo info di sistema e un getter dello state giocatore
         StationManager.init({
           systemInfo: SystemInfo,
-          getPlayerState: () => state
+          getPlayerState: () => state,
+          onOpen: () => { state.ui.mode = "station"; },
+          onClose: () => { state.ui.mode = "game"; },
+          onShipBought: (shipKey, stats) => {
+            onBoughtSpaceship({ state, shipStats: stats, templateName: shipKey });
+            saveState(state);
+          },
         });
 
         setupInput(
