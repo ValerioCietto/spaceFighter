@@ -8,7 +8,7 @@
           vy: 0,
           angle: -Math.PI / 2,
           money: 0,
-          systemName: "Sol",
+          systemName: "Glacius",
       
           currentSpaceshipId: 0,
       
@@ -226,7 +226,8 @@
       });
 
       deathRestartBtn.addEventListener("click", () => {
-        window.location.href = "/";
+        // redirect to 
+        window.location.href = window.BASE_URL + "/index.html";
       });
 
       const galaxyOverlayEl = document.getElementById("galaxy-overlay");

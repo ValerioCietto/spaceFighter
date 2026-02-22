@@ -219,7 +219,7 @@ const SHIPS = {
     engineFlareWidth: 20,
     engineFlareLength: 45,
     energyMax: 520,
-    energyRegen: 55,
+    energyRegen: 80,
     shieldDiameterPx: 70,
     shipCenter: { x: 0.5, y: 0.5 },
     engineCoords: [{ x: -21, y: 6 }, { x: 21, y: 6 }],
