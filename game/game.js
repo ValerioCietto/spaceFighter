@@ -286,6 +286,7 @@
 
       const projectiles = [];
       const enemyProjectiles = [];
+      const beamEffects = [];
       let target = null;
 
       function spawnTarget() {
@@ -394,6 +395,11 @@
         const dist = Math.hypot(dx, dy);
         if (dist > (w.engage_range || 0)) return false;
 
+        if (isBeamWeapon(w)) {
+          enemyFireBeam(enemy, w);
+          return true;
+        }
+
         // aim at player
         const angle = Math.atan2(dy, dx);
 
@@ -440,6 +446,25 @@
         }
 
         return true;
+      }
+
+      function enemyFireBeam(enemy, weapon) {
+        const beamDamage = Number(weapon.damage) || 0;
+        const beamColor = weapon.color || "#ffffff";
+        const beamWidth = Math.max(1, Number(weapon.width) || 1);
+        const beamLife = Math.max(0.01, Number(weapon.life_span) || 0.1);
+
+        applyDamageToPlayer({ damage: beamDamage });
+        beamEffects.push({
+          x1: enemy.x,
+          y1: enemy.y,
+          x2: state.player.x,
+          y2: state.player.y,
+          color: beamColor,
+          width: beamWidth,
+          age: 0,
+          life: beamLife,
+        });
       }
 
      function attemptFireWeapon(manual = false) {
@@ -510,6 +535,11 @@
      
      /** Fire logic: aim + spawn projectiles (no toggle/can-fire logic here) */
     function playerFireWeapon({ weapon }) {
+      if (isBeamWeapon(weapon)) {
+        playerFireBeam(weapon);
+        return;
+      }
+
       const baseAngle = resolveBaseAngleForWeapon({ weapon });
     
       const spreadRad = (weapon.spread || 0) * Math.PI / 180;
@@ -569,6 +599,55 @@
           });
         }
       }
+    }
+
+    function playerFireBeam(weapon) {
+      const engageRange = Number(weapon.engage_range) || 0;
+      if (engageRange <= 0) return;
+
+      const beamTarget = resolveBeamTarget(state.player.x, state.player.y, engageRange);
+      if (!beamTarget) return;
+
+      const beamDamage = Number(weapon.damage) || 0;
+      const beamColor = weapon.color || "#ffffff";
+      const beamWidth = Math.max(1, Number(weapon.width) || 1);
+      const beamLife = Math.max(0.01, Number(weapon.life_span) || 0.1);
+
+      if (beamTarget.kind === "enemy") {
+        applyDamageToEnemy(beamTarget.entity, { damage: beamDamage });
+      } else {
+        applyDamageToTarget(beamTarget.entity, beamDamage);
+      }
+
+      beamEffects.push({
+        x1: state.player.x,
+        y1: state.player.y,
+        x2: beamTarget.entity.x,
+        y2: beamTarget.entity.y,
+        color: beamColor,
+        width: beamWidth,
+        age: 0,
+        life: beamLife,
+      });
+    }
+
+    function resolveBeamTarget(originX, originY, range) {
+      const nearestEnemy = getNearestEnemy(originX, originY);
+      if (nearestEnemy) {
+        const enemyDist = Math.hypot(nearestEnemy.x - originX, nearestEnemy.y - originY);
+        if (enemyDist <= range) return { kind: "enemy", entity: nearestEnemy };
+      }
+
+      if (target && Number.isFinite(target.x) && Number.isFinite(target.y)) {
+        const targetDist = Math.hypot(target.x - originX, target.y - originY);
+        if (targetDist <= range) return { kind: "target", entity: target };
+      }
+
+      return null;
+    }
+
+    function isBeamWeapon(weapon) {
+      return (weapon?.aspect || "").toLowerCase() === "laser" || weapon?.beam === true;
     }
     
     function rotatePoint(x, y, angleRad) {
@@ -958,6 +1037,7 @@
       playerMoveUpdate(dt);
       updatePlayerProjectiles(dt, dtMillis);
       updateEnemyProjectiles(dt);
+      updateBeamEffects(dt);
       regenPlayerEnergy(dt);
       
       const newSpeed = Math.hypot(state.player.vx, state.player.vy);
@@ -1211,14 +1291,30 @@
 
       const damage = p.damage || 1;
       const damageMult = state.player.shipStats.damageMult || 1;
-      target.hp -= damage * damageMult;
+      applyDamageToTarget(target, damage * damageMult);
 
-      if (target.hp <= 0) {
+      return true;
+    }
+
+    function applyDamageToTarget(targetObj, damage) {
+      if (!targetObj) return;
+      targetObj.hp -= damage;
+
+      if (targetObj.hp <= 0) {
         state.player.money += MONEY_PER_TARGET;
         moneyValueEl.textContent = `${state.player.money.toFixed(0)}§`;
         spawnTarget();
       }
-      return true;
+    }
+
+    function updateBeamEffects(dt) {
+      for (let i = beamEffects.length - 1; i >= 0; i--) {
+        const beam = beamEffects[i];
+        beam.age += dt;
+        if (beam.age >= beam.life) {
+          beamEffects.splice(i, 1);
+        }
+      }
     }
 
     function projectileHitAnyEnemy(p) {
@@ -1612,6 +1708,26 @@
         ctx.restore();
       }
 
+      function drawBeamEffects() {
+        if (!beamEffects.length) return;
+
+        ctx.save();
+        for (const beam of beamEffects) {
+          const screenX1 = width / 2 + (beam.x1 - state.player.x);
+          const screenY1 = height / 2 + (beam.y1 - state.player.y);
+          const screenX2 = width / 2 + (beam.x2 - state.player.x);
+          const screenY2 = height / 2 + (beam.y2 - state.player.y);
+
+          ctx.strokeStyle = beam.color;
+          ctx.lineWidth = beam.width;
+          ctx.beginPath();
+          ctx.moveTo(screenX1, screenY1);
+          ctx.lineTo(screenX2, screenY2);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
       function drawShip() {
 
         ctx.save();
@@ -1924,6 +2040,7 @@
           hyperSpaceManager.drawGateLineIndicator();
           drawEnemyProjectiles();
           drawProjectiles();
+          drawBeamEffects();
           drawEnemies();
           drawShip();
           drawMinimap();

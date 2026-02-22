@@ -15,6 +15,22 @@
       "description": "Projectile Explosive Artillery gun, commonly nicknamed pea shooter."
     },
     {
+      "name": "BABY beam",
+      "cost": 1000,
+      "damage": 1,
+      "base_speed": 2000,
+      "life_span": 0.1,
+      "spread": 0.0,
+      "projectiles": 1,
+      "aspect": "laser",
+      "color": "#FF0000",
+      "width": "2",
+      "delay_ms": 300,
+      "energy_cost": 15,
+      "engage_range": 500,
+      "description": "Basic Auto-didactic Beam Yeeter. Weapon intended for tutorial purpose, do not deploy to battlefield scenarios."
+    },
+    {
       "name": "Drakefire Turret",
       "cost": 90000,
       "damage": 5,
