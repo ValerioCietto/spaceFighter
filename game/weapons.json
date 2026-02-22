@@ -1,7 +1,7 @@
 {
   "weapons": [
     {
-      "name": "Space Bullet",
+      "name": "PEA Shooter",
       "cost": 1000,
       "damage": 1,
       "base_speed": 250,
@@ -12,7 +12,7 @@
       "delay_ms": 500,
       "energy_cost": 10,
       "engage_range": 700,
-      "description": "Commonly nicknamed pea shooter."
+      "description": "Projectile Explosive Artillery gun, commonly nicknamed pea shooter."
     },
     {
       "name": "Drakefire Turret",
