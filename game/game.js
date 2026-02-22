@@ -200,8 +200,33 @@
 
       // optional: ESC key
       window.addEventListener("keydown", e => {
-        if (e.key === "Escape") closeInventory();
+        if (e.key === "Escape") {
+          closeInventory();
+          closeTutorialOverlay();
+        }
       });
+
+      const tutorialOverlayEl = document.getElementById("tutorial-overlay");
+      const tutorialCloseBtn = document.getElementById("tutorial-close-btn");
+
+      function isTutorialMode() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("new") === "1";
+      }
+
+      function openTutorialOverlay() {
+        tutorialOverlayEl.classList.add("open");
+      }
+
+      function closeTutorialOverlay() {
+        tutorialOverlayEl.classList.remove("open");
+      }
+
+      if (isTutorialMode()) {
+        openTutorialOverlay();
+      }
+
+      tutorialCloseBtn.addEventListener("click", closeTutorialOverlay);
 
       const deathOverlayEl = document.getElementById("death-overlay");
       const deathReloadBtn = document.getElementById("death-reload-btn");
