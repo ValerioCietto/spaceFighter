@@ -107,6 +107,9 @@ function renderInventory(state) {
     `;
   }
 
+  // Keep owned ships list in sync when active ship changes.
+  renderInventoryTabContent(state, "owned", ownedPanel);
+
   // ---- BIND TAB SWITCH + ACTIONS (event delegation, once) ----
   bindInventoryTabsOnce(state);
   bindOwnedShipsActionsOnce(state);
@@ -266,5 +269,4 @@ function escapeHtml(s) {
     "'": "&#39;",
   }[c]));
 }
-
 
