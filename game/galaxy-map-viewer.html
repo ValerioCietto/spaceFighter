@@ -52,6 +52,7 @@
   let systems = []; // {name, serviceLevel, x, y}
   let links = [];   // {a, b, type}
   let sysByName = new Map();
+  let currentSystemName = null;
 
   const SERVICE_COLORS = {
     5:"#59c7ff", 4:"#ffffff", 3:"#ffd84a", 2:"#ff8f8f", 1:"#b10b1e"
@@ -166,6 +167,17 @@
       const p = worldToScreen(s);
       const r = nodeRadius(s.serviceLevel);
       const col = SERVICE_COLORS[s.serviceLevel] || "#fff";
+      const isCurrentSystem = currentSystemName && s.name.toLowerCase() === currentSystemName;
+
+      if (isCurrentSystem) {
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,255,255,.95)";
+        ctx.lineWidth = Math.max(2, 2.5 * Math.sqrt(cam.z));
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r + Math.max(6, 8 * Math.sqrt(cam.z)), 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
 
       // halo
       ctx.save();
@@ -313,9 +325,23 @@
     }
   }
 
+  function getCurrentSystemName(){
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+
+      const parsed = JSON.parse(raw);
+      const systemName = String(parsed?.state?.player?.systemName || "").trim().toLowerCase();
+      return systemName || null;
+    } catch (_error) {
+      return null;
+    }
+  }
+
   async function load(){
     try{
       const discovered = getDiscoveredSystems();
+      currentSystemName = getCurrentSystemName();
 
       const res = await fetch(GALAXY_JSON_URL, { cache:"no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
