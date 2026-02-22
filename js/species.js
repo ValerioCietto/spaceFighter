@@ -21,7 +21,7 @@ Human retain taste toward art, big space vessel and an inexhaustible curiosity f
       desc: `Jared evolved from a moon of their gas giant home world. More accustomed to the harshness of space, jared are obsessed with space from the beginning of their civilization.
 They are wolf head mammals which make eggs and have a wolf pack society style.
 Speed and reliability are the most prized values that reflects on their ships.
-Having fun with friends is the most important thing for the Jared, and they are always looking for new friends to share their adventures with.`,
+Having fun with friends is the most important thing for theJared, and they are always looking for new friends to share their adventures with.`,
       specialties: { Armor:1, Shields:3, Regen:4, Damage:1, Firerate:4, Tactics:2 }
     },
     {
