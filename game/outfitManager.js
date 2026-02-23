@@ -11,7 +11,7 @@
  * You must provide an outfits index map: { [outfitId]: outfitDef }
  * where outfitDef is like the entries you built in outfits.json.
  */
-export class OutfitManager {
+class OutfitManager {
   constructor(outfitsIndex = []) {
     this.outfitsIndex = outfitsIndex || [];
     // load outfits index from outfits.json if not provided
