@@ -174,7 +174,7 @@
         case "Shipyard":
           html = subtabId === "New ship Shop"
             ? `<div id="ship-shop-list"></div>`
-            : `<p>Sell ship is coming soon.</p>`;
+            : `<div id="ship-shop-list"></div>`;
           break;
 
         case "Market":
@@ -193,6 +193,9 @@
 
       if (tabId === "Shipyard" && subtabId === "New ship Shop") {
         this.renderStationShipShop();
+      }
+      if (tabId === "Shipyard" && subtabId === "Sell ship") {
+        this.renderSellShipShop();
       }
       if (tabId === "Outfits") {
         this.renderOutfitShop();
@@ -215,6 +218,22 @@
           if (typeof this._options.onShipBought === "function") {
             this._options.onShipBought(shipKey, stats);
           }
+        },
+        onToast: (msg) => console.log("[shop]", msg),
+      });
+    },
+
+    renderSellShipShop() {
+      const rootEl = document.getElementById("ship-shop-list");
+      if (!rootEl || typeof global.renderSellShipShop !== "function") return;
+
+      const state = this._options.getPlayerState ? this._options.getPlayerState() : null;
+      rootEl.innerHTML = "";
+      global.renderSellShipShop({
+        rootEl,
+        state,
+        onSell: (ship, soldFor) => {
+          console.log("[shop] sold ship", ship, soldFor);
         },
         onToast: (msg) => console.log("[shop]", msg),
       });
