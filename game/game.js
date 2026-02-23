@@ -252,7 +252,7 @@
 
       deathRestartBtn.addEventListener("click", () => {
         // redirect to 
-        window.location.href = window.BASE_URL + "/index.html";
+        window.location.href = new URL('index.html', window.BASE_URL || window.location.origin + '/').toString();
       });
 
       const galaxyOverlayEl = document.getElementById("galaxy-overlay");

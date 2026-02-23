@@ -88,6 +88,8 @@ In Squid society, only the smartest idea is the one worth of fighting for and wi
   }
 
   function chooseSpecies(sp){
+    SFSave.clearForNewGame();
+
     // Save selection to localStorage
     SFSave.set('profile.chosenSpecies', { id: sp.id, name: sp.name, ts: Date.now() });
     // Optional convenience: mark a "new game" seed
@@ -100,9 +102,9 @@ In Squid society, only the smartest idea is the one worth of fighting for and wi
     SFSave.set('player', initial);
     // Navigate
     const q = new URLSearchParams({ new: '1', species: sp.id });
-    // Reset localstorage key spaceFighterSaveData
-    SFSave.del('spaceFighterSaveData');
-    window.location.href = '/game/game.html?' + q.toString();
+    const gameUrl = new URL('game/game.html', window.BASE_URL || window.location.origin + '/');
+    gameUrl.search = q.toString();
+    window.location.href = gameUrl.toString();
   }
 
   // random selection

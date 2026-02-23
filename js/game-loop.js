@@ -69,7 +69,7 @@
 
   // --------- sprite nave ----------
   const shipImg = new Image();
-  shipImg.src = 'assets/F1-Human-Icarus.png'; // aggiorna se il path è diverso
+  shipImg.src = 'assets/human_icarus.png';
 
   // --------- input ----------
   const keys = {
