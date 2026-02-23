@@ -222,6 +222,9 @@ function onBoughtSpaceship({ state, shipStats, templateName }) {
     },
     abilities: {},
   };
+  newShip.shipStats.hullMax = shipStats.hull;
+  newShip.shipStats.shieldMax = shipStats.shield;
+  newShip.shipStats.energyMax = shipStats.energyMax;
 
   state.player.ownedSpaceships.push(newShip);
   

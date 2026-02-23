@@ -2078,7 +2078,7 @@
           systemInfo: SystemInfo,
           getPlayerState: () => state,
           onOpen: () => { state.ui.mode = "station"; },
-          onClose: () => { state.ui.mode = "game"; },
+          onClose: () => { state.ui.mode = "game";console.log("Closing station UI"); },
           onShipBought: (shipKey, stats) => {
             onBoughtSpaceship({ state, shipStats: stats, templateName: shipKey });
             saveState(state);
