@@ -27,7 +27,13 @@
 
   <script>
     (function () {
-      const SAVE_KEYS = Array.from({ length: 13 }, (_, i) => i === 0 ? 'spaceFighterSaveData' : `spaceFighterSaveData${i}`);
+      const STORAGE_PREFIX = 'sf.v1.';
+      const SAVE_KEYS_V1 = ['player','profile.slot0','profile.slot1','profile.slot2','world','factions'];
+      const LEGACY_SAVE_KEYS = Array.from({ length: 13 }, (_, i) => i === 0 ? 'spaceFighterSaveData' : `spaceFighterSaveData${i}`);
+      const SAVE_KEYS = [
+        ...SAVE_KEYS_V1.map((key) => STORAGE_PREFIX + key),
+        ...LEGACY_SAVE_KEYS
+      ];
       const saveGrid = document.getElementById('saveGrid');
       const statusMsg = document.getElementById('statusMsg');
       const btnImportFile = document.getElementById('btnImportFile');
@@ -137,6 +143,11 @@
         }
       }
 
+      function mirrorIntoV1(text) {
+        localStorage.setItem('spaceFighterSaveData', text);
+        localStorage.setItem(STORAGE_PREFIX + 'player', text);
+      }
+
       async function importFromClipboard() {
         if (!navigator.clipboard || typeof navigator.clipboard.readText !== 'function') {
           setStatus('Clipboard import is not supported in this browser.', true);
@@ -151,9 +162,9 @@
           }
 
           JSON.parse(text);
-          localStorage.setItem('spaceFighterSaveData', text);
+          mirrorIntoV1(text);
           renderCards();
-          setStatus('Imported clipboard data into spaceFighterSaveData.', false);
+          setStatus('Imported clipboard data into spaceFighterSaveData and sf.v1.player.', false);
         } catch (error) {
           setStatus('Clipboard content must be valid JSON save data.', true);
         }
@@ -167,9 +178,9 @@
           const text = String(reader.result || '');
           try {
             JSON.parse(text);
-            localStorage.setItem('spaceFighterSaveData', text);
+            mirrorIntoV1(text);
             renderCards();
-            setStatus('Imported file into spaceFighterSaveData.', false);
+            setStatus('Imported file into spaceFighterSaveData and sf.v1.player.', false);
           } catch (error) {
             setStatus('Selected file is not valid JSON.', true);
           }

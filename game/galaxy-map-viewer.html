@@ -21,26 +21,24 @@
 <body>
   <div class="hud">
     <b>Galaxy Viewer</b>
-    <small id="status">Loading /spaceFighter/game/galaxy-map.json ...</small>
+    <small id="status">Loading galaxy map data ...</small>
     <small>Pan: drag · Zoom: wheel / pinch · Double click/tap: zoom in</small>
   </div>
   <canvas id="c"></canvas>
 
 <script>
 (() => {
-  const JSON_URL = "/spaceFighter/game/galaxy-map.json";
-  const LOCAL_JSON_URL = "/game/galaxy-map.json";
-
-  const isLocal =
-    location.hostname === "127.0.0.1" ||
-    location.hostname === "localhost";
-
-  const GALAXY_JSON_URL = isLocal ? LOCAL_JSON_URL : JSON_URL;
+  const baseUrl = window.BASE_URL || window.location.origin + "/";
+  const galaxyUrlCandidates = [
+    new URL("galaxy-map.json", window.location.href).toString(),
+    new URL("game/galaxy-map.json", baseUrl).toString(),
+    new URL("game/galaxy-map.json", window.location.origin + "/").toString()
+  ];
 
   const canvas = document.getElementById("c");
   const ctx = canvas.getContext("2d");
   const statusEl = document.getElementById("status");
-  const STORAGE_KEY = "spaceFighterSaveData";
+  const STORAGE_KEYS = ["sf.v1.player", "spaceFighterSaveData"];
 
   const cam = { x: 0, y: 0, z: 1 }; // world offset + zoom
   const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
@@ -305,9 +303,17 @@
   }, {passive:true});
 
   // --- load
+  function readSave(){
+    for (const key of STORAGE_KEYS){
+      const raw = localStorage.getItem(key);
+      if (raw) return raw;
+    }
+    return null;
+  }
+
   function getDiscoveredSystems(){
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = readSave();
       if (!raw) return new Set();
 
       const parsed = JSON.parse(raw);
@@ -327,7 +333,7 @@
 
   function getCurrentSystemName(){
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = readSave();
       if (!raw) return null;
 
       const parsed = JSON.parse(raw);
@@ -343,9 +349,21 @@
       const discovered = getDiscoveredSystems();
       currentSystemName = getCurrentSystemName();
 
-      const res = await fetch(GALAXY_JSON_URL, { cache:"no-store" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
+      let json = null;
+      let loadedFrom = null;
+      let lastError = null;
+      for (const candidate of galaxyUrlCandidates){
+        try {
+          const res = await fetch(candidate, { cache:"no-store" });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          json = await res.json();
+          loadedFrom = candidate;
+          break;
+        } catch (err) {
+          lastError = err;
+        }
+      }
+      if (!json) throw lastError || new Error("Could not load galaxy-map.json");
 
       systems = (json.systems || []).map(s => ({
         name: String(s.name),
@@ -366,13 +384,13 @@
 
       // tell if some links are dangling
       const dangling = links.filter(l => !sysByName.has(l.a.toLowerCase()) || !sysByName.has(l.b.toLowerCase())).length;
-      statusEl.textContent = `Loaded discovered: ${systems.length} systems, ${links.length} links${dangling ? ` (${dangling} dangling)` : ""}`;
+      statusEl.textContent = `Loaded discovered: ${systems.length} systems, ${links.length} links${dangling ? ` (${dangling} dangling)` : ""} from ${loadedFrom}`;
 
       resize();
       fitToContent();
       draw();
     } catch (err){
-      statusEl.textContent = `Failed: ${GALAXY_JSON_URL} (${err.message})`;
+      statusEl.textContent = `Failed loading galaxy map (${err.message})`;
       resize();
       draw();
     }
