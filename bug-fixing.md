@@ -18,21 +18,6 @@
 - **Risk:** imported saves may not enable **Continue**, making it look like import failed until manual data migration.
 - **Suggested fix:** unify on one storage format; add migration bridge from legacy `spaceFighterSaveData*` into `sf.v1.*` keys.
 
-## 4) `game/outfits-shop.html` throws runtime errors (const reassignment + incorrect fetch handling)
-- **Where:** `game/outfits-shop.html` script.
-- **Issue(s):**
-  - `const data = {}` is later reassigned (`data = await fetch(...)`) -> runtime `TypeError`.
-  - `fetch()` result is a `Response`; code uses `data.result` without `await response.json()`.
-  - Uses absolute path `/shops/common/outfits.json`, which can 404 on GitHub Pages subpath.
-- **Risk:** shop page fails to render entirely at runtime.
-- **Suggested fix:** use `let data`, parse JSON (`const json = await res.json()`), and resolve URL via `BASE_URL`.
-
-## 5) Station overlay fetches non-existent config folders (likely repeated 404s)
-- **Where:** `js/station-overlay.js`.
-- **Issue:** Fetch paths target `assets/config/...` JSON files, but this repository has no `assets/config` directory.
-- **Risk:** repeated network 404s, empty inventory/station metadata, noisy logs, and slower UI.
-- **Suggested fix:** point to existing data folders (`world/`, `shops/`, `game/*.json`) or add the missing config content; also cache negative lookups.
-
 ## 6) Image 404 in game loop demo
 - **Where:** `js/game-loop.js`.
 - **Issue:** ship sprite path is `assets/F1-Human-Icarus.png`, but available asset is `assets/human_icarus.png`.
