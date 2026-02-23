@@ -56,12 +56,11 @@ function renderStationShipShop({ rootEl, state, onBuy, onToast }) {
                 <div class="ship-card-info">
                   <div class="ship-card-title">${prettyName(shipKey)} - ${cost}§</div>
                   <div class="ship-card-meta">
-                    <div>Shield: ${s.shield} + ${s.shieldRegen}/s</div>
-                    <div>Hull: ${s.hull}</div>
-                    <div>Speed: ${s.speed} + ${s.acceleration}</div>
-                    <div>CPU: ${s.CPU}</div>
-                    <div>DamagePower x${(s.damageMult ?? 1).toFixed(2)}</div>
-                    <div>FireRate x${(s.firerateMult ?? 1).toFixed(2)}</div>
+                    <div>🛡️ Hull: ${s.hull}, Shield: ${s.shield} + ${s.shieldRegen}/s</div>
+                    <div>🚀 Speed: ${s.speed} + ${s.acceleration}/s</div>
+                    <div>🔧 CPU: ${s.CPU}, Outfit Space: ${s.outfitSpace}</div>
+                    <div>⚡ Energy: ${s.energyMax} + ${s.energyRegen}/s</div>
+                    <div>💥 DamagePower x${(s.damageMult ?? 1).toFixed(2)}, FireRate x${(s.firerateMult ?? 1).toFixed(2)}</div>
                     ${weaponCapacityReport ? `<div>${weaponCapacityReport}</div>` : ""}
                   </div>
                 </div>

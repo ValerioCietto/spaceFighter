@@ -1,0 +1,257 @@
+{
+  "outfits": [
+    {
+      "id": "wm_damage_5",
+      "name": "Damage Amplifier Mk1",
+      "outfitType": "weapon_mods",
+      "cost": 12000,
+      "damageMult": 0.05,
+      "outfitSpace": -5,
+      "energyRegen": -0.5
+    },
+    {
+      "id": "wm_firerate_2_5",
+      "name": "Firerate Booster Mk1",
+      "outfitType": "weapon_mods",
+      "cost": 11000,
+      "firerateMult": 0.025,
+      "outfitSpace": -5,
+      "energyRegen": -0.5
+    },
+    {
+      "id": "wm_energy_regen_5",
+      "name": "Energy Recovery Node",
+      "outfitType": "weapon_mods",
+      "cost": 15000,
+      "energyRegen": 5,
+      "outfitSpace": -5,
+      "CPU": -1
+    },
+    {
+      "id": "wm_energy_max_10",
+      "name": "Capacitor Expansion Mk1",
+      "outfitType": "weapon_mods",
+      "cost": 8000,
+      "energyMax": 10,
+      "outfitSpace": -1
+    },
+    {
+      "id": "wm_projectile_range_15",
+      "name": "Ballistics Optimizer",
+      "outfitType": "weapon_mods",
+      "cost": 18000,
+      "projectileLifespanMult": 0.15,
+      "engageRangeMult": 0.15,
+      "outfitSpace": -10,
+      "CPU": -1,
+      "energyRegen": -0.5
+    },
+    {
+      "id": "wm_multishot_plus1",
+      "name": "Multishot Array",
+      "outfitType": "weapon_mods",
+      "cost": 45000,
+      "extraProjectiles": 1,
+      "spread": 0.15,
+      "energyCostMult": 0.5,
+      "outfitSpace": -20,
+      "CPU": -5,
+      "energyRegen": -5
+    },
+    {
+      "id": "util_discount_scraper",
+      "name": "Shop Discount Scraper",
+      "outfitType": "utility_mods",
+      "cost": 10000,
+      "shopDiscountMult": 0.05,
+      "outfitSpace": -1,
+      "CPU": -1,
+      "energyRegen": -0.5
+    },
+    {
+      "id": "util_moneymaker",
+      "name": "Moneymaker Module",
+      "outfitType": "utility_mods",
+      "cost": 14000,
+      "creditGainMult": 0.05,
+      "outfitSpace": -2,
+      "CPU": -1,
+      "energyRegen": -0.5
+    },
+    {
+      "id": "util_hull_5",
+      "name": "Reinforced Plating Mk1",
+      "outfitType": "utility_mods",
+      "cost": 9000,
+      "hullMult": 0.05,
+      "outfitSpace": -2
+    },
+    {
+      "id": "util_hull_10",
+      "name": "Reinforced Plating Mk2",
+      "outfitType": "utility_mods",
+      "cost": 16000,
+      "hullMult": 0.10,
+      "outfitSpace": -3,
+      "CPU": -1
+    },
+    {
+      "id": "util_shield_5",
+      "name": "Shield Booster Mk1",
+      "outfitType": "utility_mods",
+      "cost": 12000,
+      "shieldMult": 0.05,
+      "outfitSpace": -5,
+      "CPU": -2
+    },
+    {
+      "id": "util_tank_heavy",
+      "name": "Heavy Combat Frame",
+      "outfitType": "utility_mods",
+      "cost": 30000,
+      "hullMult": 0.20,
+      "shieldMult": 0.20,
+      "speedMult": -0.20,
+      "accelerationMult": -0.10,
+      "turningMult": -0.10,
+      "outfitSpace": -10
+    },
+    {
+      "id": "util_shield_10",
+      "name": "Shield Booster Mk2",
+      "outfitType": "utility_mods",
+      "cost": 20000,
+      "shieldMult": 0.10,
+      "outfitSpace": -6,
+      "CPU": -1
+    },
+    {
+      "id": "util_speed_5",
+      "name": "Engine Tuning Mk1",
+      "outfitType": "utility_mods",
+      "cost": 8000,
+      "speedMult": 0.05,
+      "outfitSpace": -2
+    },
+    {
+      "id": "util_speed_10",
+      "name": "Engine Tuning Mk2",
+      "outfitType": "utility_mods",
+      "cost": 15000,
+      "speedMult": 0.10,
+      "outfitSpace": -3
+    },
+    {
+      "id": "util_speed_15_glass",
+      "name": "Overdrive Thrusters",
+      "outfitType": "utility_mods",
+      "cost": 22000,
+      "speedMult": 0.15,
+      "accelerationMult": -0.05
+    },
+    {
+      "id": "util_shield_regen_10",
+      "name": "Shield Regenerator Mk1",
+      "outfitType": "utility_mods",
+      "cost": 26000,
+      "shieldRegenMult": 0.10,
+      "outfitSpace": -10,
+      "energyRegen": -2,
+      "CPU": -1
+    },
+    {
+      "id": "util_shield_convert",
+      "name": "Shield Conversion Matrix",
+      "outfitType": "utility_mods",
+      "cost": 28000,
+      "hullMult": -0.10,
+      "shieldMult": 0.20,
+      "shieldRegenMult": 0.05,
+      "outfitSpace": -10,
+      "energyRegen": -5,
+      "CPU": -1
+    },
+    {
+      "id": "util_glass_runner",
+      "name": "Glass Runner Frame",
+      "outfitType": "utility_mods",
+      "cost": 25000,
+      "hullMult": -0.10,
+      "shieldMult": -0.20,
+      "speedMult": 0.20,
+      "accelerationMult": 0.10,
+      "turningMult": 0.10,
+      "outfitSpace": -10,
+      "energyRegen": -5,
+      "CPU": -1
+    },
+    {
+      "id": "reactor_light",
+      "name": "Light Reactor",
+      "outfitType": "reactors",
+      "cost": 12000,
+      "energyRegen": 1,
+      "outfitSpace": -5
+    },
+    {
+      "id": "reactor_mid",
+      "name": "Mid Reactor",
+      "outfitType": "reactors",
+      "cost": 20000,
+      "energyRegen": 2,
+      "outfitSpace": -7,
+      "turningMult": -0.05,
+      "accelerationMult": -0.05,
+      "CPU": -1
+    },
+    {
+      "id": "reactor_heavy",
+      "name": "Heavy Reactor",
+      "outfitType": "reactors",
+      "cost": 38000,
+      "energyRegen": 5,
+      "outfitSpace": -10,
+      "turningMult": -0.07,
+      "accelerationMult": -0.07,
+      "CPU": -5
+    },
+    {
+      "id": "reactor_dangerous",
+      "name": "Unstable Reactor Core",
+      "outfitType": "reactors",
+      "cost": 60000,
+      "energyRegen": 10,
+      "outfitSpace": -13,
+      "hullMult": -0.10,
+      "shieldMult": -0.15,
+      "turningMult": -0.10,
+      "accelerationMult": -0.05,
+      "CPU": -7
+    },
+    {
+      "id": "sw_crypto_miner",
+      "name": "Crypto Miner",
+      "outfitType": "software",
+      "cost": 1000,
+      "creditPerMinute": 1,
+      "CPU": -1
+    },
+    {
+      "id": "sw_indicator",
+      "name": "Threat Indicator",
+      "outfitType": "software",
+      "cost": 0,
+      "CPU": -1,
+      "maxPerShip": 1
+    },
+    {
+      "id": "sw_minimap",
+      "name": "Minimap Module",
+      "outfitType": "software",
+      "cost": 0,
+      "CPU": -1,
+      "maxPerShip": 1
+    }
+
+  ]
+}

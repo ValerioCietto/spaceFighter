@@ -2,6 +2,7 @@
   "weapons": [
     {
       "name": "PEA Shooter",
+      "image": "pea_shooter.png",
       "cost": 1000,
       "damage": 1,
       "base_speed": 250,
