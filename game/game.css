@@ -679,3 +679,78 @@ body {
   min-width:0;
 }
 
+
+#outfit-shop-list{
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.outfit-shop-toolbar{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:10px;
+}
+
+.outfit-shop-toolbar label{
+  display:grid;
+  gap:4px;
+  font-size:12px;
+}
+
+.outfit-shop-toolbar select{
+  background:#111;
+  color:#e7eefc;
+  border:1px solid #3a4f79;
+  border-radius:6px;
+  padding:6px 8px;
+}
+
+.outfit-shop-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+  gap:12px;
+}
+
+.outfit-card{
+  border:1px solid #333;
+  border-radius:10px;
+  padding:10px;
+  background:#0b1322;
+}
+
+.outfit-card-title-row{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  align-items:flex-start;
+}
+
+.outfit-card-title{
+  margin:0;
+  font-size:16px;
+}
+
+.outfit-card-category{
+  font-size:11px;
+  padding:3px 6px;
+  border:1px solid #3a4f79;
+  border-radius:999px;
+  white-space:nowrap;
+}
+
+.outfit-card-meta{
+  font-size:12px;
+  opacity:0.95;
+  display:grid;
+  gap:3px;
+  margin:8px 0;
+}
+
+.outfit-card-description{
+  margin:0 0 10px;
+  font-size:13px;
+  line-height:1.35;
+  opacity:0.88;
+}

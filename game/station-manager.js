@@ -240,7 +240,28 @@
     },
 
     renderOutfitShop() {
-      // new method to implement later
+      const rootEl = document.getElementById("outfit-shop-list");
+      if (!rootEl || typeof global.renderStationOutfitShop !== "function") return;
+
+      const state = this._options.getPlayerState ? this._options.getPlayerState() : null;
+      rootEl.innerHTML = "";
+
+      global.renderStationOutfitShop({
+        rootEl,
+        state,
+        onBuy: (outfit, ship) => {
+          if (typeof this._options.onOutfitBought === "function") {
+            this._options.onOutfitBought(outfit, ship);
+          }
+        },
+        onToast: (msg) => {
+          if (typeof this._options.onToast === "function") {
+            this._options.onToast(msg);
+            return;
+          }
+          console.log("[outfit-shop]", msg);
+        },
+      });
     },
 
     renderWeaponShop() {
