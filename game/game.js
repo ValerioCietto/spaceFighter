@@ -1926,10 +1926,19 @@
         minimapCtx.restore();
       }
 
-      const humanGateImg = new Image();
-      humanGateImg.src = location.hostname === "127.0.0.1" || location.hostname === "localhost"
-        ? "/assets/gate_human.png"
-        : "/spaceFighter/assets/gate_human.png";
+      const baseAssetPath = location.hostname === "127.0.0.1" || location.hostname === "localhost"
+        ? "/assets"
+        : "/spaceFighter/assets";
+
+      const gateImageByType = {
+        warp: new Image(),
+        chaos: new Image(),
+        hidden: new Image(),
+      };
+
+      gateImageByType.warp.src = `${baseAssetPath}/gate_human.png`;
+      gateImageByType.chaos.src = `${baseAssetPath}/gate_jared.png`;
+      gateImageByType.hidden.src = `${baseAssetPath}/gate_technician.png`;
 
       let gatePulseT = 0;
 
@@ -1940,14 +1949,15 @@
           ? SystemInfo.hyperspace_gates
           : [];
 
-        const img = humanGateImg;
-
         const pulse = 0.5 + 0.5 * Math.sin(gatePulseT * 2.5);
         const glowAlpha = 0.25 + pulse * 0.35;
         const glowScale = 0.35 + pulse * 0.15;
 
         for (const gate of gates) {
-          if (!gate || gate.type !== "warp") continue;
+          if (!gate) continue;
+
+          const gateType = String(gate.type ?? "warp").toLowerCase();
+          const img = gateImageByType[gateType] ?? gateImageByType.warp;
 
           const GATE_X = Number(gate.position_x ?? gate.x ?? 0);
           const GATE_Y = Number(gate.position_y ?? gate.y ?? 0);
@@ -1969,9 +1979,15 @@
 
           /* --- PULSATING CORE --- */
           const coreR = (size / 2) * glowScale;
+          const coreGlow = gateType === "chaos"
+            ? ["255,120,120", "255,120,120"]
+            : gateType === "hidden"
+              ? ["180,190,210", "180,190,210"]
+              : ["120,200,255", "120,200,255"];
+
           const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, coreR);
-          grad.addColorStop(0, `rgba(120,200,255,${glowAlpha})`);
-          grad.addColorStop(1, "rgba(120,200,255,0)");
+          grad.addColorStop(0, `rgba(${coreGlow[0]},${glowAlpha})`);
+          grad.addColorStop(1, `rgba(${coreGlow[1]},0)`);
 
           ctx.save();
           ctx.globalCompositeOperation = "lighter";
