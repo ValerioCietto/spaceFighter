@@ -109,6 +109,94 @@ function renderStationShipShop({ rootEl, state, onBuy, onToast }) {
   });
 }
 
+/**
+ * Renders owned ships that can be sold into #ship-shop-list
+ * @param {object} opts
+ * @param {HTMLElement} opts.rootEl
+ * @param {object} opts.state
+ * @param {(soldShip: any, soldFor: number) => void} [opts.onSell]
+ * @param {(msg: string) => void} [opts.onToast]
+ */
+function renderSellShipShop({ rootEl, state, onSell, onToast }) {
+  if (!rootEl) return;
+
+  const ownedShips = Array.isArray(state?.player?.ownedSpaceships)
+    ? state.player.ownedSpaceships
+    : [];
+  const activeId = Number(state?.player?.currentSpaceshipId ?? state?.player?.activeShipId ?? 0);
+  const sellableShips = ownedShips.filter((ship) => Number(ship?.id) !== activeId);
+
+  if (!sellableShips.length) {
+    rootEl.innerHTML = `<p>No ships available to sell.</p>`;
+    return;
+  }
+
+  const baseUrl =
+    location.hostname === "127.0.0.1" || location.hostname === "localhost"
+      ? "/assets/"
+      : "/spaceFighter/assets/";
+
+  rootEl.innerHTML = `
+    <div class="ship-shop-grid">
+      ${sellableShips
+        .map((ship) => {
+          const templateName = String(ship?.templateName || ship?.name || "");
+          const stats = getStats(templateName);
+          const newPrice = Number(stats.cost || 0);
+          const sellPrice = Math.floor(newPrice * 0.75);
+
+          return `
+            <div class="ship-card">
+              <div class="ship-card-row">
+                <div class="ship-card-thumb">
+                  <img src="${baseUrl}${stats.image}" alt="${prettyName(templateName)}">
+                </div>
+                <div class="ship-card-info">
+                  <div class="ship-card-title">${prettyName(templateName)} - ${sellPrice}§</div>
+                  <div class="ship-card-meta">
+                    <div>Template price: ${newPrice}§</div>
+                    <div>Sell value (75%): ${sellPrice}§</div>
+                  </div>
+                </div>
+              </div>
+              <button class="ship-buy-btn" data-sell-id="${ship.id}">Sell ship</button>
+            </div>
+          `;
+        })
+        .join("")}
+    </div>
+  `;
+
+  rootEl.querySelectorAll(".ship-buy-btn[data-sell-id]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const shipId = Number(btn.getAttribute("data-sell-id"));
+      if (!Number.isFinite(shipId)) return;
+
+      const list = Array.isArray(state?.player?.ownedSpaceships)
+        ? state.player.ownedSpaceships
+        : [];
+      const idx = list.findIndex((ship) => Number(ship?.id) === shipId);
+      if (idx < 0) return;
+
+      const ship = list[idx];
+      const shipStats = getStats(ship?.templateName || ship?.name || "");
+      const soldFor = Math.floor(Number(shipStats.cost || 0) * 0.75);
+
+      state.player.money = Number(state?.player?.money ?? 0) + soldFor;
+      list.splice(idx, 1);
+
+      if (typeof saveState === "function") {
+        saveState(state);
+      }
+
+      onSell?.(ship, soldFor);
+      onToast?.(`Sold ${prettyName(ship?.templateName || ship?.name || "ship")} for ${soldFor}§`);
+
+      renderSellShipShop({ rootEl, state, onSell, onToast });
+    });
+  });
+}
+
 function onBoughtSpaceship({ state, shipStats, templateName }) {
   if (!state?.player) return null;
 
