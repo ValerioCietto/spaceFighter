@@ -13,16 +13,16 @@ Goal: add a **station outfit shop** flow that behaves like the current ship shop
   - optional `renderSellOutfitShop(...)` only if station subtabs will support selling outfits now.
 
 ## 2) Define a normalized outfit data contract
-- Confirm primary source of truth (`shops/common/outfits.json`, `game/outfits.json`, `game/software_outfits.json`, `game/hull_mods.json`, etc.) and pick one aggregation strategy.
+- primary source of truth ( `game/outfits.json`)
 - Normalize each outfit record for rendering and purchase logic:
-  - `key/id`, `name`, `category`, `cost`, `mass`, `energy`, `heat`, `description`, `species/faction`, optional `tier`.
+  - `id`, `name`, `outfitType`, `cost`, `outfitSpace`, `description`, `species`
 - Add defensive defaults for optional fields so cards never break when a property is absent.
 
 ## 3) Build the outfit list renderer (`#outfit-shop-list`)
 - Render shop cards into `#outfit-shop-list` with a grid layout aligned to ship shop UX.
 - Per card include:
   - name + category
-  - key stats (cost, mass, energy/heat effects)
+  - key stats (cost, mass, effects)
   - concise description
   - buy/equip button
 - Add basic filtering controls (category/species/tier) only if data already supports it without introducing blocking dependencies.
@@ -38,15 +38,16 @@ Goal: add a **station outfit shop** flow that behaves like the current ship shop
 ## 5) Implement purchase + state integration
 - On buy click:
   - validate credits
-  - validate slot/capacity constraints (if outfit system enforces them)
+  - validate outfitSpace can not go below zero, energy regen can not go below zero, speed can not go below 5, energy max can not go below 50, hull can not go below 50
   - subtract credits
   - add to owned inventory or installed outfits list
-  - emit success/failure toast
+  - emit success/failure toast, in failure toast, say which validation check failed
 - Re-render list/UI after purchase so affordability and ownership state update immediately.
+- save state in localstorage
 
 ## 6) Styling + UX consistency
 - Reuse existing station/shop CSS tokens and class naming where possible.
-- If needed, extend `game/game.css` (or station css) with outfit-specific classes (e.g. `.outfit-shop-grid`, `.outfit-card`) paralleling ship shop styles.
+- If needed, extend `game/game.css`  with outfit-specific classes (e.g. `.outfit-shop-grid`, `.outfit-card`) paralleling ship shop styles.
 - Ensure cards remain readable for long descriptions and mobile-width layouts.
 
 ## 7) Validation checklist

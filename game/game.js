@@ -261,15 +261,17 @@
       function openGalaxyOverlay() {
         saveState();
         galaxyOverlayEl.classList.add("open");
+        state.ui.mode = "galaxyMap";
       }
 
       function closeGalaxyOverlay() {
         galaxyOverlayEl.classList.remove("open");
+        state.ui.mode = "game";
       }
 
       galaxyCloseBtn.addEventListener("click", closeGalaxyOverlay);
 
-      // optional ESC closewdwd
+      // optional ESC close
       window.addEventListener("keydown", e => {
         if (e.key === "Escape") closeGalaxyOverlay();
       });

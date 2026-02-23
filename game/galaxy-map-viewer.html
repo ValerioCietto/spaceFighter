@@ -29,16 +29,15 @@
 <script>
 (() => {
   const baseUrl = window.BASE_URL || window.location.origin + "/";
+  // the json is in baseUrl + "game/galaxy-map.json
   const galaxyUrlCandidates = [
-    new URL("galaxy-map.json", window.location.href).toString(),
     new URL("game/galaxy-map.json", baseUrl).toString(),
-    new URL("game/galaxy-map.json", window.location.origin + "/").toString()
   ];
 
   const canvas = document.getElementById("c");
   const ctx = canvas.getContext("2d");
   const statusEl = document.getElementById("status");
-  const STORAGE_KEYS = ["sf.v1.player", "spaceFighterSaveData"];
+  const STORAGE_KEYS = ["spaceFighterSaveData"];
 
   const cam = { x: 0, y: 0, z: 1 }; // world offset + zoom
   const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
@@ -384,7 +383,7 @@
 
       // tell if some links are dangling
       const dangling = links.filter(l => !sysByName.has(l.a.toLowerCase()) || !sysByName.has(l.b.toLowerCase())).length;
-      statusEl.textContent = `Loaded discovered: ${systems.length} systems, ${links.length} links${dangling ? ` (${dangling} dangling)` : ""} from ${loadedFrom}`;
+      statusEl.textContent = `Loaded discovered: ${systems.length} systems, ${links.length} links${dangling ? ` (${dangling} dangling)` : ""}`;
 
       resize();
       fitToContent();

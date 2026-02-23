@@ -4,16 +4,9 @@ This document outlines the core improvements needed to support reliable, scalabl
 
 ## 1. Galaxy Map Data & Topology
 
-- Define systems as a graph (nodes = star systems, edges = valid hyperspace lanes).
-- Add lane metadata:
-  - `distance_ly`
-  - `stability`
-  - `hazard_level`
-  - `fuel_cost_modifier`
-  - `faction_control`
-- Support dynamic lane states (open, blocked, unstable, contested).
-- Add procedural lane generation constraints so unreachable clusters cannot occur.
-- Validate all maps with connectivity checks (at least one route between major hubs).
+Galaxy map is galaxy-map.json.
+galaxy-map.html is the manager of the map.
+Separate js from galaxy
 
 ## 2. Navigation & Route Planning
 

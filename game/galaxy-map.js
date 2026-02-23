@@ -32,6 +32,8 @@ const edges = [];
 let nodeDegrees = [];
 let playerIndex = -1; // nodo dove è posizionato il giocatore
 
+
+
 function generateNodes() {
   nodes.length = 0;
   for (let i = 0; i < numNodes; i++) {
@@ -452,6 +454,33 @@ function draw() {
 
 draw();
 
+// on windowload load galaxy map data (nodes, edges) from JSON file
+// and then call regenerateMap() to populate the map with that data instead of random generation
+window.onload = () => {
+  fetch('galaxy-map-data.json')
+    .then(response => response.json())
+    .then(data => {
+      if (data.nodes && data.edges) {
+        // replace random generation with loaded data
+        nodes.length = 0;
+        edges.length = 0;
+        nodeDegrees.length = 0;
+        for (const n of data.nodes) {
+          nodes.push({ x: n.x, y: n.y });
+        }
+        for (const e of data.edges) {
+          edges.push({ a: e.a, b: e.b });
+          nodeDegrees[e.a] = (nodeDegrees[e.a] || 0) + 1;
+          nodeDegrees[e.b] = (nodeDegrees[e.b] || 0) + 1;
+        }
+        pickPlayerNode();
+      }
+    })
+    .catch(err => {
+      console.warn("Failed to load galaxy map data, using random generation", err);
+      regenerateMap();
+    });
+};
 (function () {
   const baseUrl = window.BASE_URL || '/';
   const toAbsolute = (uri) => {
