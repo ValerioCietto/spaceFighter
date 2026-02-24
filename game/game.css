@@ -292,67 +292,6 @@ body {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
-.tutorial-callout::before {
-  content: "";
-  position: absolute;
-  width: var(--line-length, 36px);
-  height: 2px;
-  left: var(--line-start-x, 50%);
-  top: var(--line-start-y, 100%);
-  transform-origin: left center;
-  transform: rotate(var(--line-angle, 90deg));
-  background: #5cc3ff;
-}
-
-.tutorial-callout::after {
-  content: "";
-  position: absolute;
-  left: calc(var(--line-start-x, 50%) + var(--line-length, 36px));
-  top: var(--line-start-y, 100%);
-  transform: translate(-50%, -50%) rotate(var(--line-angle, 90deg));
-  transform-origin: center;
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
-  border-left: 8px solid #5cc3ff;
-}
-
-.tutorial-callout[data-direction="up"] {
-  --line-start-x: 50%;
-  --line-start-y: 0px;
-}
-
-.tutorial-callout[data-direction="down"] {
-  --line-start-x: 50%;
-  --line-start-y: 100%;
-}
-
-.tutorial-callout[data-direction="ne"] {
-  --line-start-x: 100%;
-  --line-start-y: 0px;
-}
-
-.tutorial-callout[data-direction="nw"] {
-  --line-start-x: 0px;
-  --line-start-y: 0px;
-}
-
-.tutorial-callout[data-direction="sw"] {
-  --line-start-x: 0px;
-  --line-start-y: 100%;
-}
-
-.tutorial-callout[data-direction="up"]::after,
-.tutorial-callout[data-direction="down"]::after,
-.tutorial-callout[data-direction="ne"]::after,
-.tutorial-callout[data-direction="nw"]::after,
-.tutorial-callout[data-direction="sw"]::after {
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
-  border-left: 8px solid #5cc3ff;
-}
-
 .inventory-header-actions {
   display: flex;
   gap: 8px;
