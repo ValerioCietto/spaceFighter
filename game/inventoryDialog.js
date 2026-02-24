@@ -76,39 +76,8 @@ function renderInventory(state) {
     return;
   }
 
-  // ---- RENDER CURRENT TAB ----
-  if (!activeShip) {
-    currentPanel.innerHTML = `<div>No active ship</div>`;
-  } else {
-    console.log("Rendering inventory for active ship:", activeShip);
-    const stats = state.player.shipStats || p.shipStats || {};
-    const outfits = Array.isArray(activeShip.outfits) ? activeShip.outfits : [];
-
-    currentPanel.innerHTML = `
-      <h3 style="margin:6px 0;">${escapeHtml(activeShip.name)}</h3>
-      <div style="opacity:.85;">Template: ${escapeHtml(activeShip.templateName)}</div>
-      <hr>
-
-      <div><strong>Hull:</strong> ${Number(stats.hull ?? 0)}</div>
-      <div><strong>Shield:</strong> ${Number(stats.shield ?? 0)} <span style="opacity:.8">(regen ${Number(stats.shieldRegen ?? 0)}/s)</span></div>
-      <div><strong>Speed:</strong> ${Number(stats.speed ?? 0)}</div>
-      <div><strong>Acceleration:</strong> ${Number(stats.acceleration ?? 0)}</div>
-      <div><strong>Damage mult:</strong> ${Number(stats.damageMult ?? 1)}</div>
-      <div><strong>Fire rate mult:</strong> ${Number(stats.firerateMult ?? 1)}</div>
-
-      <hr>
-      <h4 style="margin:10px 0 6px;">Equipped outfits</h4>
-      ${
-        outfits.length
-          ? `<ul style="margin:0; padding-left:18px;">
-              ${outfits.map(o => `<li>${escapeHtml(o.name ?? "Outfit")}</li>`).join("")}
-            </ul>`
-          : `<div style="opacity:.7;">No outfits equipped</div>`
-      }
-    `;
-  }
-
   // Keep tab contents in sync when active ship changes.
+  renderInventoryTabContent(state, "current", currentPanel);
   renderInventoryTabContent(state, "owned", ownedPanel);
   renderInventoryTabContent(state, "missions", missionsPanel);
 
@@ -221,22 +190,28 @@ function renderInventoryTabContent(state, tab, panelEl) {
       return;
     }
 
+    const activeShipStats = activeShip.shipStats || p.shipStats || {};
+    const baseShipStats =
+      activeShip.__baseShipStats ||
+      (typeof getStats === "function" ? getStats(activeShip.templateName) : {}) ||
+      {};
+    const outfits = Array.isArray(activeShip.outfits) ? activeShip.outfits : [];
+
     panelEl.innerHTML = `
       <h3>${activeShip.name}</h3>
       <div>Template: ${activeShip.templateName}</div>
       <hr>
-      <div><strong>Hull:</strong> ${p.shipStats?.hull ?? 0}</div>
-      <div><strong>Shield:</strong> ${p.shipStats?.shield ?? 0}</div>
-      <div><strong>Speed:</strong> ${p.shipStats?.speed ?? 0}</div>
-      <div><strong>Acceleration:</strong> ${p.shipStats?.acceleration ?? 0}</div>
-      <div><strong>Damage mult:</strong> ${p.shipStats?.damageMult ?? 1}</div>
-      <div><strong>Fire rate mult:</strong> ${p.shipStats?.firerateMult ?? 1}</div>
+
+      <h4 style="margin:8px 0;">Ship stats</h4>
+      <div style="opacity:.75; margin-bottom:8px;">Showing base template values + cumulative outfit bonus.</div>
+      ${renderShipStatsWithBonuses(baseShipStats, activeShipStats)}
+
       <hr>
       <h4>Equipped outfits</h4>
       ${
-        activeShip.outfits?.length
-          ? `<ul>${activeShip.outfits
-              .map(o => `<li>${o.name}</li>`)
+        outfits.length
+          ? `<ul>${outfits
+              .map(o => `<li>${escapeHtml(o?.name ?? o?.id ?? "Outfit")}</li>`)
               .join("")}</ul>`
           : `<div style="opacity:.7">No outfits equipped</div>`
       }
@@ -329,3 +304,53 @@ function escapeHtml(s) {
   }[c]));
 }
 
+function renderShipStatsWithBonuses(baseStats, currentStats) {
+  const base = baseStats && typeof baseStats === "object" ? baseStats : {};
+  const current = currentStats && typeof currentStats === "object" ? currentStats : {};
+
+  const statKeys = Array.from(
+    new Set([...Object.keys(base), ...Object.keys(current)])
+  )
+    .filter((key) => Number.isFinite(Number(base[key])) || Number.isFinite(Number(current[key])))
+    .sort((a, b) => a.localeCompare(b));
+
+  if (!statKeys.length) {
+    return `<div style="opacity:.7">No ship stats available</div>`;
+  }
+
+  const rows = statKeys.map((key) => {
+    const baseValue = Number(base[key] ?? 0);
+    const currentValue = Number(current[key] ?? 0);
+    const bonusValue = currentValue - baseValue;
+    const bonusText = bonusValue > 0 ? `+${formatStatValue(bonusValue)}` : formatStatValue(bonusValue);
+
+    return `
+      <tr>
+        <td style="padding:2px 6px 2px 0;"><strong>${escapeHtml(key)}</strong></td>
+        <td style="padding:2px 10px;">${formatStatValue(baseValue)}</td>
+        <td style="padding:2px 10px; color:${bonusValue >= 0 ? "#73d66b" : "#ff8484"};">${bonusText}</td>
+        <td style="padding:2px 0;">${formatStatValue(currentValue)}</td>
+      </tr>
+    `;
+  }).join("");
+
+  return `
+    <table style="width:100%; border-collapse:collapse; font-size:.95rem;">
+      <thead>
+        <tr style="opacity:.8; text-align:left;">
+          <th>Stat</th>
+          <th>Base</th>
+          <th>Outfits</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+function formatStatValue(value) {
+  if (!Number.isFinite(value)) return "0";
+  const rounded = Math.round(value * 100) / 100;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2);
+}
