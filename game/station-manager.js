@@ -11,6 +11,8 @@
     Plaza: ["Bar", "Missions", "Military"],
   };
 
+  const MISSION_STORAGE_KEY = "spacefighter.station.missions.v1";
+
   function createSafeGet(fn, fallback) {
     return function () {
       try {
@@ -20,6 +22,14 @@
         return fallback;
       }
     };
+  }
+
+  function randomPick(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
   const StationManager = {
@@ -34,6 +44,8 @@
     _activeSubtabs: {},
     _isOpen: false,
     _options: null,
+    _storyMissionCatalog: [],
+    _storyMissionLoaded: false,
 
     init(options) {
       console.log("[StationManager] Initializing with options:", options);
@@ -85,6 +97,7 @@
       const systemName = sys?.name || "Unknown System";
 
       this._titleEl.textContent = `${stationName} – ${systemName}`;
+      this.refreshMissionsForSystem(systemName, { force: false });
 
       this.setActiveTab(this._activeTab || "Shipyard");
       if (typeof this._options.onOpen === "function") {
@@ -105,6 +118,85 @@
 
     isOpen() {
       return !!this._isOpen;
+    },
+
+    async loadStoryMissions() {
+      if (this._storyMissionLoaded) return;
+      try {
+        const res = await fetch("missions/story-missions.json");
+        if (res.ok) {
+          const data = await res.json();
+          this._storyMissionCatalog = Array.isArray(data?.missions) ? data.missions : [];
+        }
+      } catch (err) {
+        console.warn("[StationManager] Failed loading story missions", err);
+      }
+      this._storyMissionLoaded = true;
+    },
+
+    _loadMissionState() {
+      try {
+        return JSON.parse(localStorage.getItem(MISSION_STORAGE_KEY) || "{}");
+      } catch {
+        return {};
+      }
+    },
+
+    _saveMissionState(state) {
+      try {
+        localStorage.setItem(MISSION_STORAGE_KEY, JSON.stringify(state));
+      } catch (err) {
+        console.warn("[StationManager] Failed saving missions", err);
+      }
+    },
+
+    _ensureMissionState(systemName, forceRefresh = false) {
+      const safeSystemName = String(systemName || "Unknown System");
+      const all = this._loadMissionState();
+      const current = all[safeSystemName] || {
+        randomMissions: [],
+        accepted: [],
+        completedStoryIds: [],
+      };
+
+      if (forceRefresh || !current.randomMissions.length) {
+        current.randomMissions = this._buildRandomMissions(safeSystemName);
+      }
+
+      all[safeSystemName] = current;
+      this._saveMissionState(all);
+      return { all, current, systemName: safeSystemName };
+    },
+
+    _buildRandomMissions(systemName) {
+      const templates = [
+        { type: "delivery", title: "Quick Courier", text: "Deliver data package to nearby relay.", payMin: 450, payMax: 900 },
+        { type: "bounty", title: "Local Bounty", text: "Take down a pirate scout near the station.", payMin: 700, payMax: 1300 },
+        { type: "escort", title: "Civilian Escort", text: "Escort a freighter through local lanes.", payMin: 600, payMax: 1200 },
+        { type: "patrol", title: "Security Patrol", text: "Patrol the perimeter and report hostiles.", payMin: 500, payMax: 1000 },
+      ];
+
+      return Array.from({ length: 3 }, (_, idx) => {
+        const t = randomPick(templates);
+        return {
+          id: `rnd-${systemName}-${Date.now()}-${idx}-${Math.floor(Math.random() * 10000)}`,
+          kind: "random",
+          type: t.type,
+          title: t.title,
+          description: t.text,
+          system: systemName,
+          rewards: {
+            money: randomInt(t.payMin, t.payMax),
+          },
+        };
+      });
+    },
+
+    refreshMissionsForSystem(systemName, { force = true } = {}) {
+      this._ensureMissionState(systemName, !!force);
+      if (this._activeTab === "Plaza" && this._activeSubtabs.Plaza === "Missions") {
+        this._renderTab("Plaza", "Missions");
+      }
     },
 
     setActiveTab(tabId) {
@@ -182,7 +274,9 @@
           break;
 
         case "Plaza":
-          html = `<p>${subtabId} is coming soon.</p>`;
+          html = subtabId === "Missions"
+            ? `<div class="missions-board" id="missions-board"></div>`
+            : `<p>${subtabId} is coming soon.</p>`;
           break;
 
         default:
@@ -202,6 +296,142 @@
       }
       if (tabId === "Weapons") {
         this.renderWeaponShop();
+      }
+      if (tabId === "Plaza" && subtabId === "Missions") {
+        this.renderMissions();
+      }
+    },
+
+    async renderMissions() {
+      const board = document.getElementById("missions-board");
+      if (!board) return;
+
+      const systemName = this._options.systemInfo?.name || "Unknown System";
+      await this.loadStoryMissions();
+      const missionState = this._ensureMissionState(systemName, false);
+      const completed = missionState.current.completedStoryIds || [];
+      const storyMissions = this._storyMissionCatalog.filter((m) => {
+        const systemMatch = !m.system || m.system === systemName;
+        return systemMatch && !completed.includes(m.id);
+      });
+
+      const randomMissions = missionState.current.randomMissions || [];
+
+      board.innerHTML = `
+        <h4>Quick Missions</h4>
+        <div class="missions-grid" id="quick-missions"></div>
+        <h4>Story Missions</h4>
+        <div class="missions-grid" id="story-missions"></div>
+      `;
+
+      const quickEl = board.querySelector("#quick-missions");
+      const storyEl = board.querySelector("#story-missions");
+      this._renderMissionCards(quickEl, randomMissions, missionState.systemName);
+      this._renderMissionCards(storyEl, storyMissions, missionState.systemName);
+
+      if (!randomMissions.length) {
+        quickEl.innerHTML = '<p class="muted">No quick missions available right now.</p>';
+      }
+      if (!storyMissions.length) {
+        storyEl.innerHTML = '<p class="muted">No story missions available in this system.</p>';
+      }
+    },
+
+    _renderMissionCards(root, missions, systemName) {
+      if (!root) return;
+      root.innerHTML = "";
+
+      missions.forEach((mission) => {
+        const article = document.createElement("article");
+        article.className = "mission-card";
+
+        const reward = mission.rewards || {};
+        const rewardBits = [];
+        if (reward.money) rewardBits.push(`${reward.money}§`);
+        if (reward.weapon) rewardBits.push(`Weapon: ${reward.weapon}`);
+        if (reward.outfit) rewardBits.push(`Outfit: ${reward.outfit}`);
+        if (reward.spaceship) rewardBits.push(`Ship: ${reward.spaceship}`);
+
+        article.innerHTML = `
+          <h5>${mission.title || "Mission"}</h5>
+          <p>${mission.description || "No description."}</p>
+          <p><strong>Rewards:</strong> ${rewardBits.join(" · ") || "None"}</p>
+        `;
+
+        const button = document.createElement("button");
+        button.className = "tab-btn is-active";
+        button.textContent = "Complete";
+        button.addEventListener("click", () => this.completeMission(systemName, mission));
+
+        article.appendChild(button);
+        root.appendChild(article);
+      });
+    },
+
+    completeMission(systemName, mission) {
+      const missionState = this._ensureMissionState(systemName, false);
+      const sys = missionState.current;
+
+      if (mission.kind === "random") {
+        sys.randomMissions = (sys.randomMissions || []).filter((m) => m.id !== mission.id);
+      } else {
+        sys.completedStoryIds = Array.isArray(sys.completedStoryIds) ? sys.completedStoryIds : [];
+        if (!sys.completedStoryIds.includes(mission.id)) {
+          sys.completedStoryIds.push(mission.id);
+        }
+      }
+
+      this._grantMissionRewards(mission.rewards || {});
+
+      missionState.all[missionState.systemName] = sys;
+      this._saveMissionState(missionState.all);
+      this.renderMissions();
+    },
+
+    _grantMissionRewards(rewards) {
+      const state = this._options.getPlayerState ? this._options.getPlayerState() : null;
+      if (!state?.player) return;
+      const p = state.player;
+
+      if (Number.isFinite(rewards.money)) {
+        p.money += rewards.money;
+      }
+
+      if (rewards.weapon) {
+        p.ownedWeapons = Array.isArray(p.ownedWeapons) ? p.ownedWeapons : [];
+        p.ownedWeapons.push({
+          name: rewards.weapon,
+          source: "story_mission",
+        });
+      }
+
+      if (rewards.outfit) {
+        p.ownedOutfits = Array.isArray(p.ownedOutfits) ? p.ownedOutfits : [];
+        p.ownedOutfits.push({
+          name: rewards.outfit,
+          source: "story_mission",
+          status: "stored",
+        });
+      }
+
+      if (rewards.spaceship) {
+        p.ownedSpaceships = Array.isArray(p.ownedSpaceships) ? p.ownedSpaceships : [];
+        const nextId = p.ownedSpaceships.reduce((max, s) => Math.max(max, Number(s?.id) || 0), 0) + 1;
+        const templateName = rewards.spaceship;
+        const shipStats = typeof global.getStats === "function" ? global.getStats(templateName) : {};
+        p.ownedSpaceships.push({
+          id: nextId,
+          name: `Reward: ${templateName}`,
+          templateName,
+          shipStats,
+          outfits: [],
+          weapons: { gunPorts: [], turretPorts: [], dronePorts: [] },
+          cargo: [],
+        });
+      }
+
+      if (typeof this._options.onMissionRewardsGranted === "function") {
+        this._options.onMissionRewardsGranted(rewards, state);
       }
     },
 

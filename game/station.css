@@ -143,3 +143,28 @@
   }
 }
 
+
+.missions-board h4 {
+  margin: 10px 0 8px;
+}
+
+.missions-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.mission-card {
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.mission-card h5 {
+  margin: 0 0 6px;
+}
+
+.mission-card p {
+  margin: 4px 0;
+}
