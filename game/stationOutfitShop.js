@@ -20,17 +20,14 @@ async function renderStationOutfitShop({ rootEl, state, onBuy, onToast, filters 
   const currentFilters = {
     category: filters?.category || "all",
     species: filters?.species || "all",
-    tier: filters?.tier || "all",
   };
 
   const categories = ["all", ...new Set(outfits.map((o) => o.outfitType))];
   const species = ["all", ...new Set(outfits.map((o) => o.species))];
-  const tiers = ["all", ...new Set(outfits.map((o) => o.tier))];
 
   const filtered = outfits.filter((o) => {
     if (currentFilters.category !== "all" && o.outfitType !== currentFilters.category) return false;
     if (currentFilters.species !== "all" && o.species !== currentFilters.species) return false;
-    if (currentFilters.tier !== "all" && o.tier !== currentFilters.tier) return false;
     return true;
   });
 
@@ -47,11 +44,6 @@ async function renderStationOutfitShop({ rootEl, state, onBuy, onToast, filters 
       <label>Species
         <select data-filter="species">
           ${species.map((value) => `<option value="${escapeHtml(value)}" ${value === currentFilters.species ? "selected" : ""}>${escapeHtml(prettyLabel(value))}</option>`).join("")}
-        </select>
-      </label>
-      <label>Tier
-        <select data-filter="tier">
-          ${tiers.map((value) => `<option value="${escapeHtml(value)}" ${value === currentFilters.tier ? "selected" : ""}>${escapeHtml(prettyLabel(value))}</option>`).join("")}
         </select>
       </label>
     </div>
@@ -73,7 +65,6 @@ async function renderStationOutfitShop({ rootEl, state, onBuy, onToast, filters 
               <div>💰 Cost: ${outfit.cost}§</div>
               <div>🧩 Space: ${outfit.outfitSpace}</div>
               <div>🧬 Species: ${escapeHtml(prettyLabel(outfit.species))}</div>
-              <div>🏷️ Tier: ${escapeHtml(prettyLabel(outfit.tier))}</div>
               ${outfit.effectSummary.length ? `<div>📈 ${escapeHtml(outfit.effectSummary.join(" • "))}</div>` : ""}
             </div>
             <p class="outfit-card-description">${escapeHtml(outfit.description)}</p>
@@ -102,7 +93,6 @@ async function renderStationOutfitShop({ rootEl, state, onBuy, onToast, filters 
         filters: {
           category: rootEl.querySelector('[data-filter="category"]')?.value || "all",
           species: rootEl.querySelector('[data-filter="species"]')?.value || "all",
-          tier: rootEl.querySelector('[data-filter="tier"]')?.value || "all",
         },
       });
     });
@@ -193,7 +183,6 @@ async function renderStationOutfitShop({ rootEl, state, onBuy, onToast, filters 
         filters: {
           category: rootEl.querySelector('[data-filter="category"]')?.value || "all",
           species: rootEl.querySelector('[data-filter="species"]')?.value || "all",
-          tier: rootEl.querySelector('[data-filter="tier"]')?.value || "all",
         },
       });
     });
