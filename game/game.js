@@ -225,15 +225,15 @@
       const tutorialCloseBtn = document.getElementById("tutorial-close-btn");
 
       const tutorialSteps = [
-        { selector: "#inventory-btn", text: "Manage stuff", direction: "up" },
+        { selector: "#inventory-btn", text: "Manage stuff", direction: "sw" },
         { selector: "#galaxy-map-btn", text: "Plan where to go", direction: "up" },
-        { selector: '.touch-btn[data-action="left"]', text: "Turn\nleft", direction: "down" },
-        { selector: '.touch-btn[data-action="right"]', text: "Turn\nright", direction: "down" },
+        { selector: '.touch-btn[data-action="left"]', text: "Turn\nleft.", direction: "down" },
+        { selector: '.touch-btn[data-action="right"]', text: "Turn\nright.", direction: "ne" },
         { selector: '.touch-btn[data-action="fire"]', text: "Fire", direction: "down" },
         { selector: '.touch-btn[data-action="lock"]', text: "Targeting", direction: "down" },
         { selector: '.touch-btn[data-action="weapon-cycle"]', text: "Cycle weapons", direction: "down" },
         { selector: '.touch-btn[data-action="thrust"]', text: "Forward", direction: "down" },
-        { selector: '.touch-btn[data-action="brake"]', text: "Brake", direction: "down" },
+        { selector: '.touch-btn[data-action="brake"]', text: "Brake", direction: "nw" },
       ];
 
       function isTutorialMode() {
@@ -269,26 +269,49 @@
           const boxRect = callout.getBoundingClientRect();
           const centerX = rect.left + rect.width / 2;
           const gap = 10;
-          let top = step.direction === "up"
-            ? rect.top + rect.height + gap
-            : rect.top - boxRect.height - gap;
+          let top = rect.top - boxRect.height - gap;
           let left = centerX - boxRect.width / 2;
+
+          if (step.direction === "up") {
+            top = rect.top + rect.height + gap;
+          } else if (step.direction === "ne") {
+            top = rect.top + rect.height + gap;
+            left = rect.left - boxRect.width - gap;
+          } else if (step.direction === "nw") {
+            top = rect.top + rect.height + gap;
+            left = rect.right + gap;
+          } else if (step.direction === "sw") {
+            top = rect.top - boxRect.height - gap;
+            left = rect.right + gap;
+          }
 
           const maxLeft = window.innerWidth - boxRect.width - 8;
           left = Math.max(8, Math.min(left, maxLeft));
 
-          if (step.direction === "up") {
-            const maxTop = window.innerHeight - boxRect.height - 8;
-            top = Math.max(8, Math.min(top, maxTop));
-          } else {
-            top = Math.max(8, top);
-          }
+          const maxTop = window.innerHeight - boxRect.height - 8;
+          top = Math.max(8, Math.min(top, maxTop));
 
-          const targetY = step.direction === "up" ? rect.top : rect.bottom;
-          const lineLength = Math.max(16, Math.abs(targetY - (step.direction === "up" ? top : (top + boxRect.height))))-50;
+          const lineAnchors = {
+            up: { x: boxRect.width / 2, y: 0, tx: centerX, ty: rect.top },
+            down: { x: boxRect.width / 2, y: boxRect.height, tx: centerX, ty: rect.bottom },
+            ne: { x: boxRect.width, y: 0, tx: rect.right, ty: rect.top },
+            nw: { x: 0, y: 0, tx: rect.left, ty: rect.top },
+            sw: { x: 0, y: boxRect.height, tx: rect.left, ty: rect.bottom },
+          };
+
+          const anchor = lineAnchors[step.direction] || lineAnchors.down;
+          const startX = left + anchor.x;
+          const startY = top + anchor.y;
+          const dx = anchor.tx - startX;
+          const dy = anchor.ty - startY;
+          const lineAngle = Math.atan2(dy, dx) * (180 / Math.PI);
+          const lineLength = Math.max(16, Math.hypot(dx, dy) - 8);
 
           callout.style.left = `${left}px`;
           callout.style.top = `${top}px`;
+          callout.style.setProperty("--line-start-x", `${anchor.x}px`);
+          callout.style.setProperty("--line-start-y", `${anchor.y}px`);
+          callout.style.setProperty("--line-angle", `${lineAngle}deg`);
           callout.style.setProperty("--line-length", `${lineLength}px`);
         });
       }
