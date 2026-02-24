@@ -87,7 +87,7 @@
         targets: [],
       
         ui: {
-          mode: "game", // "inventory" | "galaxyMap" | "station" | "game"
+          mode: "game", // "inventory" | "galaxyMap" | "station" | "tutorialMode" | "game"
           deathModal: false,
         },
       };
@@ -179,6 +179,7 @@
 
       const inventoryOverlayEl = document.getElementById("inventory-overlay");
       const inventoryCloseBtn = document.getElementById("inventory-close-btn");
+      const inventoryTutorialBtn = document.getElementById("inventory-tutorial-btn");
       const inventoryBtn = document.getElementById("inventory-btn");
 
       inventoryBtn.addEventListener("click", openInventory);
@@ -190,10 +191,16 @@
 
       function closeInventory() {
         inventoryOverlayEl.classList.remove("open");
-        state.ui.mode = "game";
+        if (state.ui.mode === "inventory") {
+          state.ui.mode = "game";
+        }
       }
 
       inventoryCloseBtn.addEventListener("click", closeInventory);
+      inventoryTutorialBtn.addEventListener("click", () => {
+        closeInventory();
+        enterTutorialMode();
+      });
 
       const galaxyMapBtn = document.getElementById("galaxy-map-btn");
       galaxyMapBtn.addEventListener("click", openGalaxyOverlay);
@@ -202,12 +209,27 @@
       window.addEventListener("keydown", e => {
         if (e.key === "Escape") {
           closeInventory();
-          closeTutorialOverlay();
+          exitTutorialMode();
         }
       });
 
       const tutorialOverlayEl = document.getElementById("tutorial-overlay");
+      const tutorialAnnotationsEl = document.getElementById("tutorial-annotations");
       const tutorialCloseBtn = document.getElementById("tutorial-close-btn");
+
+      const tutorialSteps = [
+        { selector: "#inventory-btn", text: "Inventory: open your ships and equipment.", direction: "up" },
+        { selector: "#galaxy-map-btn", text: "Galaxy Map: plan hyperspace routes.", direction: "up" },
+        { selector: "#station-overlay-btn", text: "Station: dock to buy ships, outfits, and weapons.", direction: "up" },
+        { selector: "#hyperspace-btn", text: "Hyperspace: travel to discovered systems.", direction: "up" },
+        { selector: '.touch-btn[data-action="left"]', text: "Turn left.", direction: "down" },
+        { selector: '.touch-btn[data-action="right"]', text: "Turn right.", direction: "down" },
+        { selector: '.touch-btn[data-action="fire"]', text: "Fire your current weapon.", direction: "down" },
+        { selector: '.touch-btn[data-action="lock"]', text: "Toggle target lock/highlighter.", direction: "down" },
+        { selector: '.touch-btn[data-action="weapon-cycle"]', text: "Cycle to the next weapon.", direction: "down" },
+        { selector: '.touch-btn[data-action="thrust"]', text: "Main engines forward thrust.", direction: "down" },
+        { selector: '.touch-btn[data-action="brake"]', text: "Brake and reduce velocity.", direction: "down" },
+      ];
 
       function isTutorialMode() {
         const params = new URLSearchParams(window.location.search);
@@ -216,17 +238,75 @@
 
       function openTutorialOverlay() {
         tutorialOverlayEl.classList.add("open");
+        renderTutorialAnnotations();
       }
 
       function closeTutorialOverlay() {
         tutorialOverlayEl.classList.remove("open");
+        tutorialAnnotationsEl.innerHTML = "";
       }
 
-      if (isTutorialMode()) {
+      function renderTutorialAnnotations() {
+        tutorialAnnotationsEl.innerHTML = "";
+
+        tutorialSteps.forEach((step) => {
+          const target = document.querySelector(step.selector);
+          if (!target) return;
+
+          const rect = target.getBoundingClientRect();
+          const callout = document.createElement("div");
+          callout.className = "tutorial-callout";
+          callout.setAttribute("data-direction", step.direction);
+          callout.textContent = step.text;
+          tutorialAnnotationsEl.appendChild(callout);
+
+          const boxRect = callout.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const gap = 10;
+          let top = step.direction === "up"
+            ? rect.top + rect.height + gap
+            : rect.top - boxRect.height - gap;
+          let left = centerX - boxRect.width / 2;
+
+          const maxLeft = window.innerWidth - boxRect.width - 8;
+          left = Math.max(8, Math.min(left, maxLeft));
+
+          if (step.direction === "up") {
+            const maxTop = window.innerHeight - boxRect.height - 8;
+            top = Math.max(8, Math.min(top, maxTop));
+          } else {
+            top = Math.max(8, top);
+          }
+
+          const targetY = step.direction === "up" ? rect.top : rect.bottom;
+          const lineLength = Math.max(16, Math.abs(targetY - (step.direction === "up" ? top : (top + boxRect.height))));
+
+          callout.style.left = `${left}px`;
+          callout.style.top = `${top}px`;
+          callout.style.setProperty("--line-length", `${lineLength}px`);
+        });
+      }
+
+      function enterTutorialMode() {
+        state.ui.mode = "tutorialMode";
         openTutorialOverlay();
       }
 
-      tutorialCloseBtn.addEventListener("click", closeTutorialOverlay);
+      function exitTutorialMode() {
+        state.ui.mode = "game";
+        closeTutorialOverlay();
+      }
+
+      if (isTutorialMode()) {
+        enterTutorialMode();
+      }
+
+      tutorialCloseBtn.addEventListener("click", exitTutorialMode);
+      window.addEventListener("resize", () => {
+        if (state.ui.mode === "tutorialMode") {
+          renderTutorialAnnotations();
+        }
+      });
 
       const deathOverlayEl = document.getElementById("death-overlay");
       const deathReloadBtn = document.getElementById("death-reload-btn");

@@ -90,7 +90,10 @@
       <div class="inventory-dialog" role="dialog" aria-modal="true">
         <div class="inventory-header">
           <h2>Inventory <span id="stat-credits">0</span>§</h2>
-          <button id="inventory-close-btn" type="button">Close</button>
+          <div class="inventory-header-actions">
+            <button id="inventory-tutorial-btn" type="button">Tutorial</button>
+            <button id="inventory-close-btn" type="button">Close</button>
+          </div>
         </div>
 
         <div class="inventory-body">
@@ -113,20 +116,11 @@
 
     <!-- Death screen overlay -->
     <div class="tutorial-overlay" id="tutorial-overlay" aria-hidden="true">
-      <div class="tutorial-dialog" role="dialog" aria-modal="true" aria-labelledby="tutorial-title">
+      <div id="tutorial-annotations"></div>
+      <div class="tutorial-dialog tutorial-center-dialog" role="dialog" aria-modal="true" aria-labelledby="tutorial-title">
         <h2 id="tutorial-title">Tutorial</h2>
-        <p>Hello captain,</p>
-        <p>the galaxy needs you!</p>
-        <p>There is no time for academy training.</p>
-        <p>Move with arrow buttons on the bottom of the screen or WASD keys on PC.</p>
-        <p>Fire the weapon with SPACE or the first button.</p>
-        <p>Enable targeting with TAB or double circle button</p>
-        <p>Change weapon clicking bottom right middle button.</p>
-        <p>Good luck captain.</p>
-        <p>Dock to the station to get upgrades and shoot green targets.</p>
-
         <div class="tutorial-actions">
-          <button id="tutorial-close-btn" type="button">Start mission</button>
+          <button id="tutorial-close-btn" type="button">Exit tutorial</button>
         </div>
       </div>
     </div>
