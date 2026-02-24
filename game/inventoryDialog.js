@@ -84,6 +84,7 @@ function renderInventory(state) {
   // ---- BIND TAB SWITCH + ACTIONS (event delegation, once) ----
   bindInventoryTabsOnce(state);
   bindOwnedShipsActionsOnce(state);
+  bindCurrentShipOutfitActionsOnce(state);
   bindMissionRewardActionsOnce(state);
 
   // ensure a panel is visible + has content on open
@@ -115,6 +116,42 @@ function bindOwnedShipsActionsOnce(state) {
     if (!Number.isFinite(id)) return;
 
     setActiveShip(state, id);
+    renderInventory(state);
+  });
+}
+
+function bindCurrentShipOutfitActionsOnce(state) {
+  const bodyEl = document.querySelector(".inventory-body");
+  if (!bodyEl || bodyEl.__invCurrentOutfitBound) return;
+  bodyEl.__invCurrentOutfitBound = true;
+
+  bodyEl.addEventListener("click", async (e) => {
+    const btn = e.target.closest("[data-unequip-outfit-index]");
+    if (!btn) return;
+
+    const outfitIndex = Number(btn.getAttribute("data-unequip-outfit-index"));
+    if (!Number.isInteger(outfitIndex) || outfitIndex < 0) return;
+
+    const p = state?.player;
+    const owned = Array.isArray(p?.ownedSpaceships) ? p.ownedSpaceships : [];
+    const activeId = p?.currentSpaceshipId ?? p?.activeShipId ?? 0;
+    const activeShip = owned.find((s) => s.id === activeId);
+    if (!activeShip || !Array.isArray(activeShip.outfits) || !activeShip.outfits[outfitIndex]) return;
+
+    const [removedOutfit] = activeShip.outfits.splice(outfitIndex, 1);
+    await recomputeShipStatsFromEquippedOutfits(activeShip);
+
+    const removedId = String(removedOutfit?.id ?? removedOutfit ?? "");
+    if (removedId && Array.isArray(p.ownedOutfits)) {
+      const equippedIdx = p.ownedOutfits.findIndex(
+        (o) => String(o?.id ?? "") === removedId && Number(o?.equippedOnShipId) === Number(activeShip.id)
+      );
+      if (equippedIdx >= 0) {
+        p.ownedOutfits[equippedIdx].equippedOnShipId = null;
+      }
+    }
+
+    if (typeof saveState === "function") saveState(state);
     renderInventory(state);
   });
 }
@@ -211,7 +248,12 @@ function renderInventoryTabContent(state, tab, panelEl) {
       ${
         outfits.length
           ? `<ul>${outfits
-              .map(o => `<li>${escapeHtml(o?.name ?? o?.id ?? "Outfit")}</li>`)
+              .map((o, idx) => `
+                <li style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0;">
+                  <span>${escapeHtml(o?.name ?? o?.id ?? o ?? "Outfit")}</span>
+                  <button data-unequip-outfit-index="${idx}">Unequip</button>
+                </li>
+              `)
               .join("")}</ul>`
           : `<div style="opacity:.7">No outfits equipped</div>`
       }
@@ -353,4 +395,37 @@ function formatStatValue(value) {
   if (!Number.isFinite(value)) return "0";
   const rounded = Math.round(value * 100) / 100;
   return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2);
+}
+
+
+async function recomputeShipStatsFromEquippedOutfits(ship) {
+  if (!ship || typeof ship !== "object") return;
+
+  const baseStats = ship.__baseShipStats || { ...(ship.shipStats || {}) };
+  ship.__baseShipStats = { ...baseStats };
+  let nextStats = { ...baseStats };
+
+  const outfitsCatalog = await getOutfitsCatalogById();
+  const equipped = Array.isArray(ship.outfits) ? ship.outfits : [];
+  for (const outfit of equipped) {
+    const outfitId = String(outfit?.id ?? outfit ?? "");
+    const raw = outfitsCatalog[outfitId];
+    if (!raw) continue;
+
+    if (typeof projectOutfitStats === "function") {
+      nextStats = projectOutfitStats(nextStats, raw);
+    }
+  }
+
+  ship.shipStats = nextStats;
+}
+
+async function getOutfitsCatalogById() {
+  const normalized = typeof loadNormalizedOutfits === "function" ? await loadNormalizedOutfits() : [];
+  const byId = {};
+  for (const outfit of normalized) {
+    if (!outfit?.id) continue;
+    byId[String(outfit.id)] = outfit.raw || null;
+  }
+  return byId;
 }
