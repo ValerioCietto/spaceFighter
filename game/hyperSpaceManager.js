@@ -10,6 +10,7 @@
     getCanvasContext,
     getCanvasSize,
     getLineToTarget,
+    onSystemEntered,
   }) {
     const transition = {
       active: false,
@@ -120,6 +121,9 @@
           discoverSystem(transition.destinationSystemName);
           state.player.systemName = transition.destinationSystemName;
           systemInfo.name = transition.destinationSystemName;
+          if (typeof onSystemEntered === "function") {
+            onSystemEntered(transition.destinationSystemName);
+          }
           state.player.x = systemInfo.size / 2;
           state.player.y = systemInfo.size / 2;
           transition.phase = "fadeOut";

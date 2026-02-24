@@ -1,0 +1,36 @@
+{
+  "missions": [
+    {
+      "id": "story-glacius-signal",
+      "kind": "story",
+      "title": "Echo Under the Ice",
+      "description": "Investigate a repeating distress signal bouncing off Glacius ice rings.",
+      "system": "Glacius",
+      "rewards": {
+        "money": 2500,
+        "weapon": "Prototype Pulse Emitter"
+      }
+    },
+    {
+      "id": "story-sol-smuggler",
+      "kind": "story",
+      "title": "Smuggler Ledger",
+      "description": "Recover a smuggler ledger from Sol customs patrol before it is erased.",
+      "system": "Sol",
+      "rewards": {
+        "money": 1800,
+        "outfit": "Encrypted Cargo Hold"
+      }
+    },
+    {
+      "id": "story-any-drifter",
+      "kind": "story",
+      "title": "The Drifter's Debt",
+      "description": "Help a stranded captain and claim rights to their exclusive chassis design.",
+      "rewards": {
+        "money": 3200,
+        "spaceship": "human_mercury"
+      }
+    }
+  ]
+}
