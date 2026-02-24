@@ -144,6 +144,12 @@
         getCanvasContext: () => ctx,
         getCanvasSize: () => ({ width, height }),
         getLineToTarget: () => lineToTarget,
+        onSystemEntered: (systemName) => {
+          if (globalThis.StationManager?.refreshMissionsForSystem) {
+            globalThis.StationManager.refreshMissionsForSystem(systemName, { force: true });
+          }
+          saveState();
+        },
       });
       hyperspaceBtn.addEventListener("click", hyperSpaceManager.enterHyperspace);
 
@@ -2179,6 +2185,10 @@
           onClose: () => { state.ui.mode = "game";console.log("Closing station UI"); },
           onShipBought: (shipKey, stats) => {
             onBoughtSpaceship({ state, shipStats: stats, templateName: shipKey });
+            saveState(state);
+          },
+          onMissionRewardsGranted: () => {
+            moneyValueEl.textContent = `${state.player.money.toFixed(0)}§`;
             saveState(state);
           },
         });
