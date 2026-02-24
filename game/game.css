@@ -212,10 +212,7 @@ body {
 .tutorial-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.85);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: rgba(0,0,0,0.72);
   opacity: 0;
   pointer-events: none;
   transition: opacity .25s;
@@ -239,6 +236,16 @@ body {
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
 }
 
+.tutorial-center-dialog {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  text-align: center;
+  width: min(280px, 90vw);
+}
+
 .tutorial-dialog h2 {
   margin-top: 0;
   color: #67c7ff;
@@ -250,8 +257,8 @@ body {
 
 .tutorial-actions {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 18px;
+  justify-content: center;
+  margin-top: 10px;
 }
 
 .tutorial-actions button {
@@ -265,6 +272,65 @@ body {
 
 .tutorial-actions button:hover {
   background: #14456a;
+}
+
+#tutorial-annotations {
+  position: absolute;
+  inset: 0;
+}
+
+.tutorial-callout {
+  position: absolute;
+  max-width: 210px;
+  background: rgba(4, 18, 32, 0.95);
+  border: 1px solid #2f88bf;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: #e4f5ff;
+  line-height: 1.35;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.tutorial-callout::before {
+  content: "";
+  position: absolute;
+  width: 2px;
+  height: var(--line-length, 36px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #5cc3ff;
+}
+
+.tutorial-callout::after {
+  content: "";
+  position: absolute;
+  left: calc(50% - 5px);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+}
+
+.tutorial-callout[data-direction="up"]::before {
+  bottom: calc(100% + 10px);
+}
+
+.tutorial-callout[data-direction="up"]::after {
+  bottom: 100%;
+  border-top: 8px solid #5cc3ff;
+}
+
+.tutorial-callout[data-direction="down"]::before {
+  top: calc(100% + 10px);
+}
+
+.tutorial-callout[data-direction="down"]::after {
+  top: 100%;
+  border-bottom: 8px solid #5cc3ff;
+}
+
+.inventory-header-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .death-dialog {
