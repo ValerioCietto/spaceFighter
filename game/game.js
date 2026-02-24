@@ -227,8 +227,8 @@
       const tutorialSteps = [
         { selector: "#inventory-btn", text: "Manage stuff", direction: "up" },
         { selector: "#galaxy-map-btn", text: "Plan where to go", direction: "up" },
-        { selector: '.touch-btn[data-action="left"]', text: "Turn\nleft.", direction: "down" },
-        { selector: '.touch-btn[data-action="right"]', text: "Turn\nright.", direction: "down" },
+        { selector: '.touch-btn[data-action="left"]', text: "Turn\nleft", direction: "down" },
+        { selector: '.touch-btn[data-action="right"]', text: "Turn\nright", direction: "down" },
         { selector: '.touch-btn[data-action="fire"]', text: "Fire", direction: "down" },
         { selector: '.touch-btn[data-action="lock"]', text: "Targeting", direction: "down" },
         { selector: '.touch-btn[data-action="weapon-cycle"]', text: "Cycle weapons", direction: "down" },
@@ -257,7 +257,8 @@
         tutorialSteps.forEach((step) => {
           const target = document.querySelector(step.selector);
           if (!target) return;
-
+          // add 50 px to bottom of the arrow to create some distance from the target element, preventing overlap and improving readability of the callout text. This also helps to ensure that the callout remains fully visible on the screen, especially for elements located near the edges.
+          const offset = 50;
           const rect = target.getBoundingClientRect();
           const callout = document.createElement("div");
           callout.className = "tutorial-callout";
@@ -284,7 +285,7 @@
           }
 
           const targetY = step.direction === "up" ? rect.top : rect.bottom;
-          const lineLength = Math.max(16, Math.abs(targetY - (step.direction === "up" ? top : (top + boxRect.height))));
+          const lineLength = Math.max(16, Math.abs(targetY - (step.direction === "up" ? top : (top + boxRect.height))))-50;
 
           callout.style.left = `${left}px`;
           callout.style.top = `${top}px`;
