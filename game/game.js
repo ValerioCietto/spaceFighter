@@ -224,17 +224,15 @@
       const tutorialCloseBtn = document.getElementById("tutorial-close-btn");
 
       const tutorialSteps = [
-        { selector: "#inventory-btn", text: "Inventory: open your ships and equipment.", direction: "up" },
-        { selector: "#galaxy-map-btn", text: "Galaxy Map: plan hyperspace routes.", direction: "up" },
-        { selector: "#station-overlay-btn", text: "Station: dock to buy ships, outfits, and weapons.", direction: "up" },
-        { selector: "#hyperspace-btn", text: "Hyperspace: travel to discovered systems.", direction: "up" },
-        { selector: '.touch-btn[data-action="left"]', text: "Turn left.", direction: "down" },
-        { selector: '.touch-btn[data-action="right"]', text: "Turn right.", direction: "down" },
-        { selector: '.touch-btn[data-action="fire"]', text: "Fire your current weapon.", direction: "down" },
-        { selector: '.touch-btn[data-action="lock"]', text: "Toggle target lock/highlighter.", direction: "down" },
-        { selector: '.touch-btn[data-action="weapon-cycle"]', text: "Cycle to the next weapon.", direction: "down" },
-        { selector: '.touch-btn[data-action="thrust"]', text: "Main engines forward thrust.", direction: "down" },
-        { selector: '.touch-btn[data-action="brake"]', text: "Brake and reduce velocity.", direction: "down" },
+        { selector: "#inventory-btn", text: "Manage stuff", direction: "up" },
+        { selector: "#galaxy-map-btn", text: "Plan where to go", direction: "up" },
+        { selector: '.touch-btn[data-action="left"]', text: "Turn\nleft.", direction: "down" },
+        { selector: '.touch-btn[data-action="right"]', text: "Turn\nright.", direction: "down" },
+        { selector: '.touch-btn[data-action="fire"]', text: "Fire", direction: "down" },
+        { selector: '.touch-btn[data-action="lock"]', text: "Targeting", direction: "down" },
+        { selector: '.touch-btn[data-action="weapon-cycle"]', text: "Cycle weapons", direction: "down" },
+        { selector: '.touch-btn[data-action="thrust"]', text: "Forward", direction: "down" },
+        { selector: '.touch-btn[data-action="brake"]', text: "Brake", direction: "down" },
       ];
 
       function isTutorialMode() {
