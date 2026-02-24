@@ -29,9 +29,10 @@ function renderInventory(state) {
   // ---- PANELS ----
   const currentPanel = bodyEl.querySelector('[data-panel="current"]');
   const ownedPanel = bodyEl.querySelector('[data-panel="owned"]');
+  const missionsPanel = bodyEl.querySelector('[data-panel="missions"]');
 
   // If your HTML didn't include panels yet, fallback to old behavior (optional)
-  if (!currentPanel || !ownedPanel) {
+  if (!currentPanel || !ownedPanel || !missionsPanel) {
     // minimal fallback: render owned list like before
     const old = bodyEl.querySelector("#owned-ships-section");
     if (old) old.remove();
@@ -107,12 +108,14 @@ function renderInventory(state) {
     `;
   }
 
-  // Keep owned ships list in sync when active ship changes.
+  // Keep tab contents in sync when active ship changes.
   renderInventoryTabContent(state, "owned", ownedPanel);
+  renderInventoryTabContent(state, "missions", missionsPanel);
 
   // ---- BIND TAB SWITCH + ACTIONS (event delegation, once) ----
   bindInventoryTabsOnce(state);
   bindOwnedShipsActionsOnce(state);
+  bindMissionRewardActionsOnce(state);
 
   // ensure a panel is visible + has content on open
   ensureInventoryActivePanelHasContent(state);
@@ -148,6 +151,28 @@ function bindOwnedShipsActionsOnce(state) {
 }
 
 
+
+function bindMissionRewardActionsOnce(state) {
+  const bodyEl = document.querySelector(".inventory-body");
+  if (!bodyEl || bodyEl.__invMissionBound) return;
+  bodyEl.__invMissionBound = true;
+
+  bodyEl.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-claim-mission]");
+    if (!btn) return;
+
+    const missionId = btn.getAttribute("data-claim-mission");
+    const missions = Array.isArray(state?.player?.missions) ? state.player.missions : [];
+    const mission = missions.find((m) => m?.id === missionId);
+    if (!mission || !mission.completed || mission.rewarded) return;
+
+    if (globalThis.StationManager?._grantMissionRewards) {
+      globalThis.StationManager._grantMissionRewards(mission.rewards || {});
+    }
+    mission.rewarded = true;
+    renderInventory(state);
+  });
+}
 
 function bindInventoryTabsOnce(state) {
   const bodyEl = document.querySelector(".inventory-body");
@@ -255,6 +280,40 @@ function renderInventoryTabContent(state, tab, panelEl) {
             `;
           })
           .join("")}
+      </div>
+    `;
+  }
+
+  if (tab === "missions") {
+    const missions = Array.isArray(p.missions) ? p.missions : [];
+    if (!missions.length) {
+      panelEl.innerHTML = '<div style="opacity:.7">No current missions. Visit Station Plaza to accept one.</div>';
+      return;
+    }
+
+    panelEl.innerHTML = `
+      <div class="inv-missions-list">
+        ${missions.map((mission) => {
+          const destroyTargets = Number(mission.destroyTargets) || 1;
+          const destroyedTargets = Number(mission.destroyedTargets) || 0;
+          const progressRatio = Math.max(0, Math.min(1, destroyedTargets / destroyTargets));
+          const canClaim = !!mission.completed && !mission.rewarded;
+          const claimed = !!mission.rewarded;
+          const rewardMoney = Number(mission?.rewards?.money) || 0;
+
+          return `
+            <article class="inv-mission-card">
+              <h4>${escapeHtml(mission.title || "Mission")}</h4>
+              <p>${escapeHtml(mission.description || "")}</p>
+              <p><strong>Progress:</strong> ${destroyedTargets} / ${destroyTargets}</p>
+              <div class="inv-progress"><div class="inv-progress-fill" style="width:${Math.round(progressRatio * 100)}%"></div></div>
+              <p><strong>Reward:</strong> ${rewardMoney}§</p>
+              ${canClaim
+                ? `<button data-claim-mission="${escapeHtml(mission.id)}">Get reward</button>`
+                : `<button disabled>${claimed ? "Reward collected" : "In progress"}</button>`}
+            </article>
+          `;
+        }).join("")}
       </div>
     `;
   }
