@@ -596,6 +596,50 @@ body {
 .inv-panel { display: none; }
 .inv-panel.is-active { display: block; }
 
+.inv-missions-list {
+  display: grid;
+  gap: 12px;
+  max-height: 52vh;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.inv-mission-card {
+  background: rgba(20,30,60,0.85);
+  border: 1px solid #2c4aa0;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.inv-progress {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.15);
+  overflow: hidden;
+  margin: 8px 0;
+}
+
+.inv-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2c7cff, #38d39f);
+}
+
+.inv-mission-card button {
+  background: #2c7cff;
+  border: none;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.inv-mission-card button:disabled {
+  background: #555;
+  cursor: not-allowed;
+}
+
+
 /* Owned tab grid */
 .inv-owned-grid {
   display: grid;
