@@ -3,12 +3,14 @@
     {
       "name": "Alpha Centauri",
       "serviceLevel": 4,
+      "maxEnemies": 1,
       "x": -33.99,
       "y": 607.31
     },
     {
       "name": "Arachne",
       "serviceLevel": 5,
+      "maxEnemies": 0,
       "x": 871.41,
       "y": 249.51
     },
@@ -69,6 +71,7 @@
     {
       "name": "Glacius",
       "serviceLevel": 1,
+      "maxEnemies": 0,
       "x": -406.94,
       "y": 657.72
     },
