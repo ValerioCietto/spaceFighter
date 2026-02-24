@@ -559,6 +559,11 @@ body {
 
 .inv-panel { display: none; }
 .inv-panel.is-active { display: block; }
+.inv-panel[data-panel="current"].is-active {
+  max-height: 52vh;
+  overflow-y: auto;
+  padding-right: 6px;
+}
 
 .inv-missions-list {
   display: grid;
