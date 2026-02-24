@@ -78,7 +78,8 @@
           ],
           // weapons the player has bought and can equip
           ownedWeapons: [],
-          ownedOutfits: [],  
+          ownedOutfits: [],
+          missions: [],
         },
       
         enemies: [],
@@ -874,6 +875,10 @@
             state.player.currentSpaceshipId = saved.player.activeShipId;
           }
 
+          if (Array.isArray(saved.player.missions)) {
+            state.player.missions = saved.player.missions;
+          }
+
           applyActiveShip(state); 
         } catch (e) {
           console.warn("Impossibile caricare lo stato:", e);
@@ -1397,6 +1402,7 @@
       if (targetObj.hp <= 0) {
         state.player.money += MONEY_PER_TARGET;
         moneyValueEl.textContent = `${state.player.money.toFixed(0)}§`;
+        progressDestroyTargetMissions();
         spawnTarget();
       }
     }
@@ -1432,6 +1438,28 @@
 
 
 
+
+    function progressDestroyTargetMissions() {
+      const missions = Array.isArray(state.player?.missions) ? state.player.missions : [];
+      let changed = false;
+
+      missions.forEach((mission) => {
+        if (!mission || mission.completed) return;
+        if (!Number.isFinite(mission.destroyTargets) || !Number.isFinite(mission.destroyedTargets)) return;
+
+        mission.destroyedTargets += 1;
+        if (mission.destroyedTargets >= mission.destroyTargets) {
+          mission.destroyedTargets = mission.destroyTargets;
+          mission.completed = true;
+        }
+        changed = true;
+      });
+
+      if (changed) {
+        saveState();
+      }
+    }
+
     function applyDamageToEnemy(enemy, projectile) {
       const damage = projectile.damage || 1;
       // formula to expand with enemy shield reduction
@@ -1464,6 +1492,7 @@
         moneyValueEl.textContent = `${state.player.money.toFixed(0)}§`;
 
         state.enemies.splice(idx, 1);
+        progressDestroyTargetMissions();
         return true;
       }
 
@@ -2187,6 +2216,9 @@
           },
           onMissionRewardsGranted: () => {
             moneyValueEl.textContent = `${state.player.money.toFixed(0)}§`;
+            saveState(state);
+          },
+          onMissionAccepted: () => {
             saveState(state);
           },
         });

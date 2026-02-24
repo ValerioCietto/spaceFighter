@@ -169,24 +169,21 @@
     },
 
     _buildRandomMissions(systemName) {
-      const templates = [
-        { type: "delivery", title: "Quick Courier", text: "Deliver data package to nearby relay.", payMin: 450, payMax: 900 },
-        { type: "bounty", title: "Local Bounty", text: "Take down a pirate scout near the station.", payMin: 700, payMax: 1300 },
-        { type: "escort", title: "Civilian Escort", text: "Escort a freighter through local lanes.", payMin: 600, payMax: 1200 },
-        { type: "patrol", title: "Security Patrol", text: "Patrol the perimeter and report hostiles.", payMin: 500, payMax: 1000 },
-      ];
-
       return Array.from({ length: 3 }, (_, idx) => {
-        const t = randomPick(templates);
+        const destroyTargets = randomInt(2, 8);
         return {
           id: `rnd-${systemName}-${Date.now()}-${idx}-${Math.floor(Math.random() * 10000)}`,
           kind: "random",
-          type: t.type,
-          title: t.title,
-          description: t.text,
+          type: "destroy",
+          title: `Eliminate Hostiles (${destroyTargets})`,
+          description: `Destroy ${destroyTargets} hostile targets around ${systemName}.`,
           system: systemName,
+          destroyTargets,
+          destroyedTargets: 0,
+          completed: false,
+          rewarded: false,
           rewards: {
-            money: randomInt(t.payMin, t.payMax),
+            money: randomInt(500, 1500),
           },
         };
       });
@@ -302,6 +299,40 @@
       }
     },
 
+    _normalizeMissionForPlayer(mission, systemName) {
+      const destroyTargets = Number(mission?.destroyTargets) || 1;
+      return {
+        id: mission.id,
+        title: mission.title || "Mission",
+        description: mission.description || "No description.",
+        kind: mission.kind || "story",
+        type: mission.type || "destroy",
+        system: systemName,
+        destroyTargets,
+        destroyedTargets: Number(mission?.destroyedTargets) || 0,
+        completed: !!mission.completed,
+        rewarded: false,
+        rewards: mission.rewards || {},
+      };
+    },
+
+    acceptMission(systemName, mission) {
+      const state = this._options.getPlayerState ? this._options.getPlayerState() : null;
+      if (!state?.player || !mission?.id) return;
+
+      state.player.missions = Array.isArray(state.player.missions) ? state.player.missions : [];
+      const alreadyAccepted = state.player.missions.some((m) => m?.id === mission.id);
+      if (alreadyAccepted) return;
+
+      state.player.missions.push(this._normalizeMissionForPlayer(mission, systemName));
+
+      if (typeof this._options.onMissionAccepted === "function") {
+        this._options.onMissionAccepted(mission, state);
+      }
+
+      this.renderMissions();
+    },
+
     async renderMissions() {
       const board = document.getElementById("missions-board");
       if (!board) return;
@@ -341,6 +372,11 @@
       if (!root) return;
       root.innerHTML = "";
 
+      const state = this._options.getPlayerState ? this._options.getPlayerState() : null;
+      const acceptedIds = new Set(
+        (Array.isArray(state?.player?.missions) ? state.player.missions : []).map((m) => m?.id)
+      );
+
       missions.forEach((mission) => {
         const article = document.createElement("article");
         article.className = "mission-card";
@@ -352,40 +388,24 @@
         if (reward.outfit) rewardBits.push(`Outfit: ${reward.outfit}`);
         if (reward.spaceship) rewardBits.push(`Ship: ${reward.spaceship}`);
 
+        const destroyTargets = Number(mission.destroyTargets) || 1;
         article.innerHTML = `
           <h5>${mission.title || "Mission"}</h5>
           <p>${mission.description || "No description."}</p>
+          <p><strong>Objective:</strong> Destroy ${destroyTargets} targets</p>
           <p><strong>Rewards:</strong> ${rewardBits.join(" · ") || "None"}</p>
         `;
 
         const button = document.createElement("button");
         button.className = "tab-btn is-active";
-        button.textContent = "Complete";
-        button.addEventListener("click", () => this.completeMission(systemName, mission));
+        const isAccepted = acceptedIds.has(mission.id);
+        button.textContent = isAccepted ? "Accepted" : "Accept";
+        button.disabled = isAccepted;
+        button.addEventListener("click", () => this.acceptMission(systemName, mission));
 
         article.appendChild(button);
         root.appendChild(article);
       });
-    },
-
-    completeMission(systemName, mission) {
-      const missionState = this._ensureMissionState(systemName, false);
-      const sys = missionState.current;
-
-      if (mission.kind === "random") {
-        sys.randomMissions = (sys.randomMissions || []).filter((m) => m.id !== mission.id);
-      } else {
-        sys.completedStoryIds = Array.isArray(sys.completedStoryIds) ? sys.completedStoryIds : [];
-        if (!sys.completedStoryIds.includes(mission.id)) {
-          sys.completedStoryIds.push(mission.id);
-        }
-      }
-
-      this._grantMissionRewards(mission.rewards || {});
-
-      missionState.all[missionState.systemName] = sys;
-      this._saveMissionState(missionState.all);
-      this.renderMissions();
     },
 
     _grantMissionRewards(rewards) {
