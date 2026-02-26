@@ -172,7 +172,7 @@
       "outfitType": "utility_mods",
       "species": "human",
       "cost": 5000,
-      "accelerationMult": +0.25,
+      "accelerationMult": 0.25,
       "outfitSpace": -5,
     },
     {
