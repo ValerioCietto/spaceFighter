@@ -535,21 +535,27 @@
 
       function enemyFireBeam(enemy, weapon) {
         const beamDamage = Number(weapon.damage) || 0;
+        const beamDamageEnergy = Number(weapon.damageEnergy) || 0;
         const beamColor = weapon.color || "#ffffff";
         const beamWidth = Math.max(1, Number(weapon.width) || 1);
         const beamLife = Math.max(0.01, Number(weapon.life_span) || 0.1);
+        const beamAspect = weapon.aspect || "laser";
+        const beamProjectiles = Math.max(1, Number(weapon.projectiles) || 1);
 
-        applyDamageToPlayer({ damage: beamDamage });
-        beamEffects.push({
-          x1: enemy.x,
-          y1: enemy.y,
-          x2: state.player.x,
-          y2: state.player.y,
-          color: beamColor,
-          width: beamWidth,
-          age: 0,
-          life: beamLife,
-        });
+        for (let i = 0; i < beamProjectiles; i++) {
+          applyDamageToPlayer({ damage: beamDamage, damageEnergy: beamDamageEnergy });
+          beamEffects.push({
+            x1: enemy.x,
+            y1: enemy.y,
+            x2: state.player.x,
+            y2: state.player.y,
+            color: beamColor,
+            width: beamWidth,
+            age: 0,
+            life: beamLife,
+            aspect: beamAspect,
+          });
+        }
       }
 
      function attemptFireWeapon(manual = false) {
@@ -694,26 +700,32 @@
       if (!beamTarget) return;
 
       const beamDamage = Number(weapon.damage) || 0;
+      const beamDamageEnergy = Number(weapon.damageEnergy) || 0;
       const beamColor = weapon.color || "#ffffff";
       const beamWidth = Math.max(1, Number(weapon.width) || 1);
       const beamLife = Math.max(0.01, Number(weapon.life_span) || 0.1);
+      const beamAspect = weapon.aspect || "laser";
+      const beamProjectiles = Math.max(1, Number(weapon.projectiles) || 1);
 
-      if (beamTarget.kind === "enemy") {
-        applyDamageToEnemy(beamTarget.entity, { damage: beamDamage });
-      } else {
-        applyDamageToTarget(beamTarget.entity, beamDamage);
+      for (let i = 0; i < beamProjectiles; i++) {
+        if (beamTarget.kind === "enemy") {
+          applyDamageToEnemy(beamTarget.entity, { damage: beamDamage, damageEnergy: beamDamageEnergy });
+        } else {
+          applyDamageToTarget(beamTarget.entity, beamDamage);
+        }
+
+        beamEffects.push({
+          x1: state.player.x,
+          y1: state.player.y,
+          x2: beamTarget.entity.x,
+          y2: beamTarget.entity.y,
+          color: beamColor,
+          width: beamWidth,
+          age: 0,
+          life: beamLife,
+          aspect: beamAspect,
+        });
       }
-
-      beamEffects.push({
-        x1: state.player.x,
-        y1: state.player.y,
-        x2: beamTarget.entity.x,
-        y2: beamTarget.entity.y,
-        color: beamColor,
-        width: beamWidth,
-        age: 0,
-        life: beamLife,
-      });
     }
 
     function resolveBeamTarget(originX, originY, range) {
@@ -732,7 +744,8 @@
     }
 
     function isBeamWeapon(weapon) {
-      return (weapon?.aspect || "").toLowerCase() === "laser" || weapon?.beam === true;
+      const aspect = (weapon?.aspect || "").toLowerCase();
+      return aspect === "laser" || aspect === "lightning" || weapon?.beam === true;
     }
     
     function rotatePoint(x, y, angleRad) {
@@ -1350,7 +1363,15 @@
     function applyDamageToPlayer(p){
       const projectile = p;
       const damage = projectile.damage || 1;
+      const damageEnergy = Number(projectile.damageEnergy) || 0;
       let totalDamage = damage;
+
+      if (damageEnergy > 0) {
+        const playerStats = state?.player?.shipStats;
+        if (playerStats) {
+          playerStats.energy = Math.max(0, (Number(playerStats.energy) || 0) - damageEnergy);
+        }
+      }
 
       if (state.player.shipStats.shield > 0 && totalDamage > 0) {
         const absorbed = Math.min(state.player.shipStats.shield, totalDamage);
@@ -1452,8 +1473,13 @@
 
     function applyDamageToEnemy(enemy, projectile) {
       const damage = projectile.damage || 1;
+      const damageEnergy = Number(projectile.damageEnergy) || 0;
       // formula to expand with enemy shield reduction
       let totalDamage = damage;
+
+      if (damageEnergy > 0 && enemy?.shipStats) {
+        enemy.shipStats.energy = Math.max(0, (Number(enemy.shipStats.energy) || 0) - damageEnergy);
+      }
 
       if (enemy.shield > 0 && totalDamage > 0) {
         const absorbed = Math.min(enemy.shield, totalDamage);
@@ -1821,6 +1847,29 @@
         ctx.restore();
       }
 
+      function drawLightningBolt(x1, y1, x2, y2) {
+        const segments = 12;
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const len = Math.hypot(dx, dy) || 1;
+        const nx = -dy / len;
+        const ny = dx / len;
+
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+
+        for (let i = 1; i < segments; i++) {
+          const t = i / segments;
+          const baseX = x1 + dx * t;
+          const baseY = y1 + dy * t;
+          const jitter = (Math.random() - 0.5) * 12;
+          ctx.lineTo(baseX + nx * jitter, baseY + ny * jitter);
+        }
+
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
+
       function drawBeamEffects() {
         if (!beamEffects.length) return;
 
@@ -1831,12 +1880,18 @@
           const screenX2 = width / 2 + (beam.x2 - state.player.x);
           const screenY2 = height / 2 + (beam.y2 - state.player.y);
 
+          const aspect = (beam.aspect || "laser").toLowerCase();
           ctx.strokeStyle = beam.color;
           ctx.lineWidth = beam.width;
-          ctx.beginPath();
-          ctx.moveTo(screenX1, screenY1);
-          ctx.lineTo(screenX2, screenY2);
-          ctx.stroke();
+
+          if (aspect === "lightning") {
+            drawLightningBolt(screenX1, screenY1, screenX2, screenY2);
+          } else {
+            ctx.beginPath();
+            ctx.moveTo(screenX1, screenY1);
+            ctx.lineTo(screenX2, screenY2);
+            ctx.stroke();
+          }
         }
         ctx.restore();
       }
