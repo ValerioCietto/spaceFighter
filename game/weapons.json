@@ -16,6 +16,24 @@
       "description": "Projectile Explosive Artillery gun, commonly nicknamed pea shooter."
     },
     {
+      "name": "Thorino lightning",
+      "cost": 1000,
+      "damage": 0.1,
+      "damageEnergy": 0.2,
+      "base_speed": 2000,
+      "life_span": 0.02,
+      "spread": 0.0,
+      "projectiles": 2,
+      "aspect": "lightning",
+      "color": "#FFFFFF",
+      "width": "1",
+      "delay_ms": 20,
+      "energy_cost": 1,
+      "engage_range": 800,
+      "autofire_toggle": true,
+      "description": "Basic Lightning weapon, "
+    },
+    {
       "name": "BABY beam",
       "cost": 1000,
       "damage": 0.1,
@@ -37,7 +55,7 @@
       "cost": 10000,
       "damage": 0.5,
       "base_speed": 2000,
-      "life_span": 0.020,
+      "life_span": 0.02,
       "spread": 0.0,
       "projectiles": 1,
       "aspect": "laser",
@@ -54,7 +72,7 @@
       "cost": 40000,
       "damage": 2,
       "base_speed": 2000,
-      "life_span": 0.020,
+      "life_span": 0.02,
       "spread": 0.0,
       "projectiles": 1,
       "aspect": "laser",
@@ -71,7 +89,7 @@
       "cost": 120000,
       "damage": 2,
       "base_speed": 2000,
-      "life_span": 0.020,
+      "life_span": 0.02,
       "spread": 0.0,
       "projectiles": 1,
       "aspect": "laser",
@@ -108,7 +126,7 @@
       "base_speed": 500,
       "acceleration": -100,
       "life_span": 3.0,
-      "speed": 500, 
+      "speed": 500,
       "spread": 1.0,
       "projectiles": 1,
       "aspect": "bullet",
@@ -126,7 +144,7 @@
       "base_speed": 1000,
       "acceleration": -100,
       "life_span": 3.0,
-      "speed": 500, 
+      "speed": 500,
       "spread": 1.0,
       "projectiles": 1,
       "aspect": "bullet",
@@ -144,7 +162,7 @@
       "base_speed": 1500,
       "acceleration": -100,
       "life_span": 3.0,
-      "speed": 1500, 
+      "speed": 1500,
       "spread": 3.0,
       "projectiles": 2,
       "aspect": "bullet",
@@ -154,7 +172,7 @@
       "auto_aim": 4.0,
       "autofire_toggle": true,
       "description": "A starter autofire auto aim turret gun."
-    },  
+    },
     {
       "name": "AutoSniper",
       "cost": 1000,
@@ -162,7 +180,7 @@
       "base_speed": 1000,
       "acceleration": -100,
       "life_span": 3.0,
-      "speed": 1000, 
+      "speed": 1000,
       "spread": 1.0,
       "projectiles": 1,
       "aspect": "line",
@@ -351,7 +369,6 @@
       "homing": true,
       "description": "A static mine cluster, ideal for speedster bombing on static installations."
     },
-    
     {
       "name": "Sniper",
       "cost": 2000,
@@ -453,7 +470,7 @@
       "name": "Death Pulse",
       "cost": 1000000,
       "damage": 5,
-      "base_speed": 1 ,
+      "base_speed": 1,
       "acceleration": 100,
       "life_span": 120.0,
       "speed": 300,
@@ -468,5 +485,9 @@
       "description": "Floods the whole star system of high speed accelerating missiles."
     }
   ],
-  "enemyWeaponPool": ["Space Bullet", "Shockwave", "Shotgun"]
+  "enemyWeaponPool": [
+    "Space Bullet",
+    "Shockwave",
+    "Shotgun"
+  ]
 }
