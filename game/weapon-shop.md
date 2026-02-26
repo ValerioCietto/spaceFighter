@@ -2,13 +2,10 @@
 
 Goal: implement the station **Weapons** shop (`#weapon-shop-list`) using `game/weapons.json` as source data, with purchase flow that **adds bought weapons to `state.player.weaponsOwned`** and does **not auto-equip** them.
 
-## 1) Align player-state inventory naming for weapons
-- Introduce `state.player.weaponsOwned` as the canonical owned-weapon collection, matching the naming pattern requested for `spaceshipsOwned` / `outfitsOwned`.
-- Add compatibility shim during transition:
-  - if `weaponsOwned` is missing but `ownedWeapons` exists, initialize `weaponsOwned = ownedWeapons`.
-  - keep read fallback for legacy saves to avoid breaking existing users.
+## 1) Read from save file ownedWeapons, 
+- Introduce `state.player.ownedWeapons` as the canonical owned-weapon collection, matching the naming pattern requested for `ownedSpaceships` / `ownedOutfits`.
 - Keep equipped weapons separate from ownership:
-  - ownership lives in `state.player.weaponsOwned`
+  - ownership lives in `state.player.ownedWeapons`
   - equipped/active loadout continues in ship weapon port structures (gun/turret/drone/spinal loadout).
 
 ## 2) Define normalized weapon contract from `game/weapons.json`
