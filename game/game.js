@@ -225,15 +225,15 @@
       const tutorialCloseBtn = document.getElementById("tutorial-close-btn");
 
       const tutorialSteps = [
-        { selector: "#inventory-btn", text: "Manage stuff", offsetX: 70, offsetY: -40 },
-        { selector: "#galaxy-map-btn", text: "Plan where to go", offsetX: -30, offsetY: 45 },
-        { selector: '.touch-btn[data-action="left"]', text: "Turn\nleft.", offsetX: -30, offsetY: 45 },
-        { selector: '.touch-btn[data-action="right"]', text: "Turn\nright.", offsetX: -95, offsetY: 45 },
-        { selector: '.touch-btn[data-action="fire"]', text: "Fire", offsetX: -15, offsetY: 45 },
-        { selector: '.touch-btn[data-action="lock"]', text: "Targeting", offsetX: -35, offsetY: 45 },
-        { selector: '.touch-btn[data-action="weapon-cycle"]', text: "Cycle weapons", offsetX: -45, offsetY: 45 },
-        { selector: '.touch-btn[data-action="thrust"]', text: "Forward", offsetX: -25, offsetY: 45 },
-        { selector: '.touch-btn[data-action="brake"]', text: "Brake", offsetX: 45, offsetY: 45 },
+        { selector: "#inventory-btn", text: "Manage stuff", offsetX: -120, offsetY: -5 },
+        { selector: "#galaxy-map-btn", text: "Plan where to go", offsetX: -130, offsetY: 5 },
+        { selector: '.touch-btn[data-action="left"]', text: `Turn ↺`, offsetX: -30, offsetY: -50 },
+        { selector: '.touch-btn[data-action="right"]', text: "Turn ↻", offsetX: 0, offsetY: -50 },
+        { selector: '.touch-btn[data-action="fire"]', text: "Fire", offsetX: -10, offsetY: -50 },
+        { selector: '.touch-btn[data-action="lock"]', text: "Targeting", offsetX: -15, offsetY: -50 },
+        { selector: '.touch-btn[data-action="weapon-cycle"]', text: "Weapons", offsetX: -5, offsetY: -50 },
+        { selector: '.touch-btn[data-action="thrust"]', text: "Forward", offsetX: 25, offsetY: -85 },
+        { selector: '.touch-btn[data-action="brake"]', text: "Brake", offsetX: 45, offsetY: -110 },
       ];
 
       function isTutorialMode() {
