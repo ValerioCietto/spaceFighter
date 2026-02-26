@@ -164,7 +164,7 @@
       "cost": 22000,
       "speedMult": 0.15,
       "accelerationMult": -0.05,
-      "outfitSpace": -5,
+      "outfitSpace": -5
     },
     {
       "id": "util_reactivity_glass",
@@ -173,7 +173,7 @@
       "species": "human",
       "cost": 5000,
       "accelerationMult": 0.25,
-      "outfitSpace": -5,
+      "outfitSpace": -5
     },
     {
       "id": "util_shield_regen_10",
