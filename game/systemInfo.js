@@ -29,9 +29,6 @@ window.addEventListener("load", () => {
     fetch("galaxy-map.json")
         .then(response => response.json())
         .then(data => {
-            console.log("Loaded galaxy map data:", data);
-            // the player is in state.player.systemName, so find that system in the data and use its hyperspace gates
-            // find the sistemName from localStorage key spaceFighterSaveData, parse it as JSON, and get the systemName from state.player.systemName
             const saveDataStr = localStorage.getItem("spaceFighterSaveData");
             if (saveDataStr) {
                 try {
@@ -43,10 +40,9 @@ window.addEventListener("load", () => {
                            console.log(`Found current system in galaxy map: ${systemName}`, currentSystem);
                         }
                         SystemInfo.name = currentSystem?.name || SystemInfo.name;
-                        // reconstruct hyperspace gate positions from the map using xy positions
-                        // first we get all links in the galaxy map that connect to this system
+
                         const connectedLinks = data.links.filter(link => link.a === systemName || link.b === systemName);
-                        // print all links
+
                         const normalizedLinks = connectedLinks.map(link => {
                             if (link.a === systemName) {
                                 return { ...link };
@@ -54,10 +50,6 @@ window.addEventListener("load", () => {
                                 return { a: systemName, b: link.a, type: link.type };
                             }
                         });
-                        // print normalized links
-                        console.log(`Normalized links for system ${systemName}:`, normalizedLinks);
-                        // the xy position of the gates is the relative position in the galaxy map.
-                        // so we find the position of the current system in the galaxy map, and then we find the position of the connected system, and we calculate the relative position of the gate as the midpoint between the two systems, but closer to the current system.
                         const currentSystemData = data.systems.find(s => s.name === systemName);
                         if (currentSystemData) {
                             const gates = normalizedLinks.map(link => {
@@ -68,10 +60,7 @@ window.addEventListener("load", () => {
                                     const dy = otherSystemData.y - currentSystemData.y;
                                     const angle = Math.atan2(dy, dx);
                                     const distance = Math.sqrt(dx * dx + dy * dy);
-                                    // log gate angle and distance
-                                    console.log(`Gate to ${link.b}: angle=${angle.toFixed(2)}, distance=${distance.toFixed(2)}`);
-                                    // place the gate at the angle between tthe two systems, distant distance*10 from the central star (3000, 3000), but not further than 3000 px and less than 1000 px from (3000, 3000)
-                                    // round gate position to the nearest unit to avoid subpixel rendering issues
+                                
                                     const gateX = Math.round(currentSystemData.x + Math.cos(angle) * Math.min(3000, Math.max(1000, distance * 10)));
                                     const gateY = Math.round(currentSystemData.y + Math.sin(angle) * Math.min(3000, Math.max(1000, distance * 10)));
                                     return {

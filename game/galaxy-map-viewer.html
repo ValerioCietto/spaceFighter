@@ -375,6 +375,17 @@
         y: Number(s.y ?? 0),
       })).filter((s) => discovered.has(s.name.toLowerCase()));
 
+      // if "show=all" is in the URL query params, show all systems regardless of discovery
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("show") === "all") {
+        systems = (json.systems || []).map(s => ({
+          name: String(s.name),
+          serviceLevel: clamp(Number(s.serviceLevel ?? 3), 1, 5),
+          x: Number(s.x ?? 0),
+          y: Number(s.y ?? 0),
+        }));
+      }
+
       const visibleSystems = new Set(systems.map((s) => s.name.toLowerCase()));
 
       links = (json.links || []).map(l => ({

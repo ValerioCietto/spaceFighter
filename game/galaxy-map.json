@@ -2,69 +2,195 @@
   "systems": [
     {
       "name": "Alpha Centauri",
+      "description": "Alpha Centauri, is the second star system of Humanity.",
       "serviceLevel": 4,
-      "maxEnemies": 1,
+      "enemies": [
+        {
+          "type": "human_stealth",
+          "faction": "pirate",
+          "spawn_rate": 30,
+          "max_count": 1
+        }
+      ],
+      "stations": [
+        {
+          "name": "Alpha Centauri Station",
+          "position_x": 2300,
+          "position_y": 4500,
+          "station_radius": 100,
+          "station_rot_speed": 0.01
+        }
+      ],
       "x": -33.99,
       "y": 607.31
     },
     {
       "name": "Arachne",
+      "description": "Arachne is the main Jared system.",
       "serviceLevel": 5,
-      "maxEnemies": 0,
+      "enemies": [
+        {
+          "type": "jared_stealth",
+          "faction": "pirate",
+          "spawn_rate": 30,
+          "max_count": 1
+        }
+      ],
       "x": 871.41,
       "y": 249.51
     },
     {
       "name": "Arnack",
+      "description": "Arnack is a dangerous system controlled by the Jared faction.",
       "serviceLevel": 1,
+      "enemies": [
+        {
+          "type": "jared_boss",
+          "faction": "pirate",
+          "spawn_rate": 1,
+          "max_count": 1
+        }
+      ],
       "x": 559.35,
       "y": 237.32
     },
     {
       "name": "Aslan",
+      "description": "Aslan is a Jared system known for its treacherous asteroid belts and hidden pirate bases.",
       "serviceLevel": 2,
+      "enemies": [
+        {
+          "type": "jared_basic",
+          "faction": "pirate",
+          "spawn_rate": 5,
+          "max_count": 2
+        }
+      ],
       "x": 1064.97,
       "y": 94.91
     },
     {
       "name": "Dwarf's End",
+      "description": "Dwarf's End is a remote and hazardous system known for its dense asteroid fields and hidden pirate outposts.",
       "serviceLevel": 1,
+      "enemies": [
+        {
+          "type": "technician_basic",
+          "faction": "pirate",
+          "spawn_rate": 3,
+          "max_count": 1
+        }
+      ],
       "x": -198.24,
       "y": -159.65
     },
     {
       "name": "Eos",
+      "description": "Eos is a Human system near the battlefront.",
       "serviceLevel": 4,
+      "enemies": [
+        {
+          "type": "human_stealth",
+          "faction": "pirate",
+          "spawn_rate": 3,
+          "max_count": 1
+        },
+        {
+          "type": "jared_stealth",
+          "faction": "pirate",
+          "spawn_rate": 2,
+          "max_count": 2
+        }
+      ],
       "x": 149.92,
       "y": 166.08
     },
     {
       "name": "Fandango",
+      "description": "Fandango is a system known for its bustling trade routes and occasional pirate activity.",
       "serviceLevel": 2,
+      "enemies": [
+        {
+          "type": "human_stealth",
+          "faction": "pirate",
+          "spawn_rate": 10,
+          "max_count": 1
+        },
+        {
+          "type": "jared_stealth",
+          "faction": "pirate",
+          "spawn_rate": 2,
+          "max_count": 1
+        }
+      ],
       "x": 121.69,
       "y": 508.93
     },
     {
       "name": "Far space 1",
       "serviceLevel": 2,
+      "enemies": [
+        {
+          "type": "technician_basic",
+          "faction": "pirate",
+          "spawn_rate": 30,
+          "max_count": 1
+        }
+      ],
       "x": -42.95,
       "y": 935.66
     },
     {
       "name": "Far space 2",
       "serviceLevel": 1,
+      "enemies": [
+        {
+          "type": "technician_basic",
+          "faction": "pirate",
+          "spawn_rate": 30,
+          "max_count": 1
+        }
+      ],
       "x": 39.93,
       "y": 1217.28
     },
     {
       "name": "Far space 3",
       "serviceLevel": 1,
+      "enemies": [
+        {
+          "type": "technician_basic",
+          "faction": "pirate",
+          "spawn_rate": 30,
+          "max_count": 1
+        }
+      ],
       "x": 563.87,
       "y": 1421.62
     },
     {
       "name": "Gargantua",
       "serviceLevel": 1,
+      "enemies": [
+        {
+          "type": "human_war",
+          "faction": "pirate",
+          "spawn_rate": 1,
+          "max_count": 10
+        },
+        {
+          "type": "jared_war",
+          "faction": "pirate",
+          "spawn_rate": 1,
+          "max_count": 10
+        },
+        {
+          "type": "technician_war",
+          "faction": "pirate",
+          "spawn_rate": 1,
+          "max_count": 10
+        }
+      ],
       "x": 314.62,
       "y": 316.87
     },
@@ -72,66 +198,128 @@
       "name": "Glacius",
       "serviceLevel": 1,
       "maxEnemies": 0,
+      "enemies":[],
       "x": -406.94,
       "y": 657.72
     },
     {
       "name": "Greenfield",
       "serviceLevel": 3,
+      "enemies":[{
+          "type": "human_stealth",
+          "faction": "pirate",
+          "spawn_rate": 10,
+          "max_count": 1
+      }],
       "x": -240.9,
       "y": 123.39
     },
     {
       "name": "Ludum",
       "serviceLevel": 1,
+      "enemies":[{
+          "type": "human_boss",
+          "faction": "pirate",
+          "spawn_rate": 30,
+          "max_count": 1
+      }],
       "x": 163.78,
       "y": 366.55
     },
     {
       "name": "Lx 1",
       "serviceLevel": 2,
+      "enemies":[{
+        "type": "jared_stealth",
+        "faction": "pirate",
+        "spawn_rate": 30,
+        "max_count": 1
+      }],
       "x": 730.65,
       "y": -347.37
     },
     {
       "name": "Lx 2",
       "serviceLevel": 1,
+      "enemies":[{
+        "type": "jared_stealth",
+        "faction": "pirate",
+        "spawn_rate": 30,
+        "max_count": 1
+      }],
       "x": 561.33,
       "y": -531.97
     },
     {
       "name": "Lx 3",
       "serviceLevel": 1,
+      "enemies":[{
+        "type": "jared_stealth",
+        "faction": "pirate",
+        "spawn_rate": 30,
+        "max_count": 1
+      }],
       "x": 210.81,
       "y": -682.58
     },
     {
       "name": "Nemo",
       "serviceLevel": 1,
+      "enemies":[{
+        "type": "human_stealth",
+        "faction": "pirate",
+        "spawn_rate": 3,
+        "max_count": 4
+      }],
       "x": -398.36,
       "y": 94.55
     },
     {
       "name": "Nimrod",
       "serviceLevel": 2,
+      "enemies":[{
+        "type": "jared_stealth",
+        "faction": "pirate",
+        "spawn_rate": 10,
+        "max_count": 2
+      }],
       "x": 855.51,
       "y": 604.59
     },
     {
       "name": "Nisil",
       "serviceLevel": 1,
+      "enemies":[],
       "x": 1136.68,
       "y": -110.63
     },
     {
       "name": "Numbus",
       "serviceLevel": 3,
+      "enemies":[{
+        "type": "technician_war",
+        "faction": "pirate",
+        "spawn_rate": 10,
+        "max_count": 2
+      }],
       "x": 106.2,
       "y": 6.21
     },
     {
       "name": "Nyx Fall",
       "serviceLevel": 4,
+      "enemies":[{
+        "type": "jared_war",
+        "faction": "pirate",
+        "spawn_rate": 10,
+        "max_count": 2
+      },
+      {
+        "type": "human_war",
+        "faction": "pirate",
+        "spawn_rate": 10,
+        "max_count": 2
+      }],
       "x": 498.93,
       "y": 91.31
     },
