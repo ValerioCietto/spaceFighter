@@ -128,6 +128,7 @@
     },
     {
       "name": "Far space 1",
+      "description":"",
       "serviceLevel": 2,
       "enemies": [
         {
@@ -142,6 +143,7 @@
     },
     {
       "name": "Far space 2",
+      "description":"",
       "serviceLevel": 1,
       "enemies": [
         {
@@ -156,6 +158,7 @@
     },
     {
       "name": "Far space 3",
+      "description":"",
       "serviceLevel": 1,
       "enemies": [
         {
@@ -170,6 +173,7 @@
     },
     {
       "name": "Gargantua",
+      "description":"",
       "serviceLevel": 1,
       "enemies": [
         {
@@ -196,6 +200,7 @@
     },
     {
       "name": "Glacius",
+      "description":"",
       "serviceLevel": 1,
       "maxEnemies": 0,
       "enemies":[],
@@ -204,6 +209,7 @@
     },
     {
       "name": "Greenfield",
+      "description":"",
       "serviceLevel": 3,
       "enemies":[{
           "type": "human_stealth",
@@ -216,6 +222,7 @@
     },
     {
       "name": "Ludum",
+      "description":"",
       "serviceLevel": 1,
       "enemies":[{
           "type": "human_boss",
@@ -228,6 +235,7 @@
     },
     {
       "name": "Lx 1",
+      "description":"",
       "serviceLevel": 2,
       "enemies":[{
         "type": "jared_stealth",
@@ -240,6 +248,7 @@
     },
     {
       "name": "Lx 2",
+      "description":"",
       "serviceLevel": 1,
       "enemies":[{
         "type": "jared_stealth",
@@ -252,6 +261,7 @@
     },
     {
       "name": "Lx 3",
+      "description":"",
       "serviceLevel": 1,
       "enemies":[{
         "type": "jared_stealth",
