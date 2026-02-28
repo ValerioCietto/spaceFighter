@@ -164,18 +164,32 @@ function bindMissionRewardActionsOnce(state) {
   bodyEl.__invMissionBound = true;
 
   bodyEl.addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-claim-mission]");
-    if (!btn) return;
+    const claimBtn = e.target.closest("[data-claim-mission]");
+    if (claimBtn) {
+      const missionId = claimBtn.getAttribute("data-claim-mission");
+      const missions = Array.isArray(state?.player?.missions) ? state.player.missions : [];
+      const mission = missions.find((m) => m?.id === missionId);
+      if (!mission || !mission.completed || mission.rewarded) return;
 
-    const missionId = btn.getAttribute("data-claim-mission");
-    const missions = Array.isArray(state?.player?.missions) ? state.player.missions : [];
-    const mission = missions.find((m) => m?.id === missionId);
-    if (!mission || !mission.completed || mission.rewarded) return;
-
-    if (globalThis.StationManager?._grantMissionRewards) {
-      globalThis.StationManager._grantMissionRewards(mission.rewards || {});
+      if (globalThis.StationManager?._grantMissionRewards) {
+        globalThis.StationManager._grantMissionRewards(mission.rewards || {});
+      }
+      mission.rewarded = true;
+      if (typeof saveState === "function") saveState(state);
+      renderInventory(state);
+      return;
     }
-    mission.rewarded = true;
+
+    const deleteBtn = e.target.closest("[data-delete-mission]");
+    if (!deleteBtn) return;
+
+    const missionId = deleteBtn.getAttribute("data-delete-mission");
+    const missions = Array.isArray(state?.player?.missions) ? state.player.missions : [];
+    const missionIdx = missions.findIndex((m) => m?.id === missionId);
+    if (missionIdx < 0 || !missions[missionIdx]?.rewarded) return;
+
+    missions.splice(missionIdx, 1);
+    if (typeof saveState === "function") saveState(state);
     renderInventory(state);
   });
 }
@@ -327,7 +341,9 @@ function renderInventoryTabContent(state, tab, panelEl) {
               <p><strong>Reward:</strong> ${rewardMoney}§</p>
               ${canClaim
                 ? `<button data-claim-mission="${escapeHtml(mission.id)}">Get reward</button>`
-                : `<button disabled>${claimed ? "Reward collected" : "In progress"}</button>`}
+                : claimed
+                  ? `<button data-delete-mission="${escapeHtml(mission.id)}">Delete mission</button>`
+                  : `<button disabled>In progress</button>`}
             </article>
           `;
         }).join("")}
