@@ -372,6 +372,14 @@
     {
       "name": "Sol",
       "serviceLevel": 5,
+      "enemies":[
+        {
+          "type": "human_basic",
+          "faction": "pirate",
+          "spawn_rate": 10,
+          "max_count": 1
+        }
+      ],
       "x": -102.35,
       "y": 339.24
     },
