@@ -6,7 +6,7 @@
       "serviceLevel": 4,
       "enemies": [
         {
-          "type": "human_stealth",
+          "type": "human_basic",
           "faction": "pirate",
           "spawn_rate": 30,
           "max_count": 1
@@ -30,7 +30,7 @@
       "serviceLevel": 5,
       "enemies": [
         {
-          "type": "jared_stealth",
+          "type": "jared_basic",
           "faction": "pirate",
           "spawn_rate": 30,
           "max_count": 1
@@ -45,7 +45,7 @@
       "serviceLevel": 1,
       "enemies": [
         {
-          "type": "jared_boss",
+          "type": "jared_capital",
           "faction": "pirate",
           "spawn_rate": 1,
           "max_count": 1
@@ -90,13 +90,13 @@
       "serviceLevel": 4,
       "enemies": [
         {
-          "type": "human_stealth",
+          "type": "human_basic",
           "faction": "pirate",
           "spawn_rate": 3,
           "max_count": 1
         },
         {
-          "type": "jared_stealth",
+          "type": "jared_basic",
           "faction": "pirate",
           "spawn_rate": 2,
           "max_count": 2
@@ -111,13 +111,13 @@
       "serviceLevel": 2,
       "enemies": [
         {
-          "type": "human_stealth",
+          "type": "human_basic",
           "faction": "pirate",
           "spawn_rate": 10,
           "max_count": 1
         },
         {
-          "type": "jared_stealth",
+          "type": "jared_basic",
           "faction": "pirate",
           "spawn_rate": 2,
           "max_count": 1
@@ -177,19 +177,19 @@
       "serviceLevel": 1,
       "enemies": [
         {
-          "type": "human_war",
+          "type": "human_elite",
           "faction": "pirate",
           "spawn_rate": 1,
           "max_count": 10
         },
         {
-          "type": "jared_war",
+          "type": "jared_elite",
           "faction": "pirate",
           "spawn_rate": 1,
           "max_count": 10
         },
         {
-          "type": "technician_war",
+          "type": "technician_elite",
           "faction": "pirate",
           "spawn_rate": 1,
           "max_count": 10
@@ -212,7 +212,7 @@
       "description":"",
       "serviceLevel": 3,
       "enemies":[{
-          "type": "human_stealth",
+          "type": "human_basic",
           "faction": "pirate",
           "spawn_rate": 10,
           "max_count": 1
@@ -225,7 +225,7 @@
       "description":"",
       "serviceLevel": 1,
       "enemies":[{
-          "type": "human_boss",
+          "type": "human_capital",
           "faction": "pirate",
           "spawn_rate": 30,
           "max_count": 1
@@ -238,7 +238,7 @@
       "description":"",
       "serviceLevel": 2,
       "enemies":[{
-        "type": "jared_stealth",
+        "type": "jared_basic",
         "faction": "pirate",
         "spawn_rate": 30,
         "max_count": 1
@@ -251,7 +251,7 @@
       "description":"",
       "serviceLevel": 1,
       "enemies":[{
-        "type": "jared_stealth",
+        "type": "jared_basic",
         "faction": "pirate",
         "spawn_rate": 30,
         "max_count": 1
@@ -264,7 +264,7 @@
       "description":"",
       "serviceLevel": 1,
       "enemies":[{
-        "type": "jared_stealth",
+        "type": "jared_basic",
         "faction": "pirate",
         "spawn_rate": 30,
         "max_count": 1
@@ -276,7 +276,7 @@
       "name": "Nemo",
       "serviceLevel": 1,
       "enemies":[{
-        "type": "human_stealth",
+        "type": "human_basic",
         "faction": "pirate",
         "spawn_rate": 3,
         "max_count": 4
@@ -288,7 +288,7 @@
       "name": "Nimrod",
       "serviceLevel": 2,
       "enemies":[{
-        "type": "jared_stealth",
+        "type": "jared_basic",
         "faction": "pirate",
         "spawn_rate": 10,
         "max_count": 2
@@ -307,7 +307,7 @@
       "name": "Numbus",
       "serviceLevel": 3,
       "enemies":[{
-        "type": "technician_war",
+        "type": "technician_elite",
         "faction": "pirate",
         "spawn_rate": 10,
         "max_count": 2
@@ -319,13 +319,13 @@
       "name": "Nyx Fall",
       "serviceLevel": 4,
       "enemies":[{
-        "type": "jared_war",
+        "type": "jared_elite",
         "faction": "pirate",
         "spawn_rate": 10,
         "max_count": 2
       },
       {
-        "type": "human_war",
+        "type": "human_elite",
         "faction": "pirate",
         "spawn_rate": 10,
         "max_count": 2
