@@ -885,6 +885,11 @@
             state.player.currentSpaceshipId = saved.player.activeShipId;
           }
 
+          const migratedWeapons = Array.isArray(saved.player.ownedWeapons)
+            ? saved.player.ownedWeapons
+            : (Array.isArray(saved.player.weaponsOwned) ? saved.player.weaponsOwned : []);
+          state.player.ownedWeapons = migratedWeapons;
+
           if (Array.isArray(saved.player.missions)) {
             state.player.missions = saved.player.missions;
           }
@@ -918,6 +923,13 @@
 
       function saveState() {
         try {
+          const inventory = Array.isArray(state?.player?.ownedWeapons)
+            ? state.player.ownedWeapons
+            : (Array.isArray(state?.player?.weaponsOwned) ? state.player.weaponsOwned : []);
+          state.player.ownedWeapons = inventory;
+          if (state.player && Object.prototype.hasOwnProperty.call(state.player, "weaponsOwned")) {
+            delete state.player.weaponsOwned;
+          }
           localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
         } catch (e) {
           console.warn("Impossibile salvare lo stato:", e);

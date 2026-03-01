@@ -418,11 +418,15 @@
       }
 
       if (rewards.weapon) {
-        p.ownedWeapons = Array.isArray(p.ownedWeapons) ? p.ownedWeapons : [];
-        p.ownedWeapons.push({
+        const inventory = Array.isArray(p.ownedWeapons)
+          ? p.ownedWeapons
+          : (Array.isArray(p.weaponsOwned) ? p.weaponsOwned : []);
+        inventory.push({
+          id: String(rewards.weapon).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""),
           name: rewards.weapon,
           source: "story_mission",
         });
+        p.ownedWeapons = inventory;
       }
 
       if (rewards.outfit) {
@@ -515,7 +519,28 @@
     },
 
     renderWeaponShop() {
-      // new method to implement later
+      const rootEl = document.getElementById("weapon-shop-list");
+      if (!rootEl || typeof global.renderStationWeaponShop !== "function") return;
+
+      const state = this._options.getPlayerState ? this._options.getPlayerState() : null;
+      rootEl.innerHTML = "";
+
+      global.renderStationWeaponShop({
+        rootEl,
+        state,
+        onBuy: (weapon) => {
+          if (typeof this._options.onWeaponBought === "function") {
+            this._options.onWeaponBought(weapon, state);
+          }
+        },
+        onToast: (msg) => {
+          if (typeof this._options.onToast === "function") {
+            this._options.onToast(msg);
+            return;
+          }
+          console.log("[weapon-shop]", msg);
+        },
+      });
     },
   };
 
