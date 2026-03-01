@@ -111,6 +111,87 @@ async function renderStationWeaponShop({ rootEl, state, onBuy, onToast }) {
   });
 }
 
+/**
+ * Renders owned weapons that can be sold.
+ * @param {object} opts
+ * @param {HTMLElement} opts.rootEl
+ * @param {object} opts.state
+ * @param {(weapon: any, soldFor: number) => void} [opts.onSell]
+ * @param {(msg: string) => void} [opts.onToast]
+ */
+async function renderSellWeaponShop({ rootEl, state, onSell, onToast }) {
+  if (!rootEl) return;
+
+  rootEl.innerHTML = `<p>Loading weapons…</p>`;
+
+  const player = state?.player;
+  const inventory = getOwnedWeaponInventory(player);
+  if (!inventory.length) {
+    rootEl.innerHTML = `<p>No weapons available to sell.</p>`;
+    return;
+  }
+
+  const weapons = await loadNormalizedWeapons();
+  const weaponById = new Map(weapons.map((weapon) => [weapon.id, weapon]));
+
+  rootEl.innerHTML = `
+    <div class="outfit-shop-grid">
+      ${inventory
+        .map((weapon, index) => {
+          const weaponId = toWeaponIdentity(weapon);
+          const catalogWeapon = weaponById.get(weaponId);
+          const name = String(weapon?.name || catalogWeapon?.name || "Unknown weapon");
+          const originalCost = Number(weapon?.cost ?? catalogWeapon?.cost ?? 0);
+          const sellPrice = Math.floor(originalCost * 0.75);
+
+          return `
+            <article class="outfit-card">
+              <div class="outfit-card-title-row">
+                <h4 class="outfit-card-title">${escapeHtml(name)}</h4>
+                <span class="outfit-card-category">${escapeHtml(catalogWeapon?.aspect || "owned")}</span>
+              </div>
+              <div class="outfit-card-meta">
+                <div>💰 Template price: ${originalCost}§</div>
+                <div>🏷️ Sell value (75%): ${sellPrice}§</div>
+              </div>
+              <button class="ship-buy-btn" data-sell-weapon-index="${index}">Sell weapon</button>
+            </article>
+          `;
+        })
+        .join("")}
+    </div>
+  `;
+
+  rootEl.querySelectorAll(".ship-buy-btn[data-sell-weapon-index]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const weaponIndex = Number(btn.getAttribute("data-sell-weapon-index"));
+      if (!Number.isInteger(weaponIndex)) return;
+
+      const currentInventory = getOwnedWeaponInventory(state?.player);
+      const soldWeapon = currentInventory[weaponIndex];
+      if (!soldWeapon) return;
+
+      const soldWeaponId = toWeaponIdentity(soldWeapon);
+      const catalogWeapon = weaponById.get(soldWeaponId);
+      const baseCost = Number(soldWeapon?.cost ?? catalogWeapon?.cost ?? 0);
+      const soldFor = Math.floor(baseCost * 0.75);
+
+      currentInventory.splice(weaponIndex, 1);
+      state.player.ownedWeapons = currentInventory;
+      state.player.money = Number(state?.player?.money ?? 0) + soldFor;
+
+      if (typeof saveState === "function") {
+        saveState(state);
+      }
+
+      onSell?.(soldWeapon, soldFor);
+      onToast?.(`Sold ${soldWeapon?.name || catalogWeapon?.name || "weapon"} for ${soldFor}§`);
+
+      renderSellWeaponShop({ rootEl, state, onSell, onToast });
+    });
+  });
+}
+
 function getOwnedWeaponInventory(player) {
   const ownedWeapons = Array.isArray(player?.ownedWeapons)
     ? player.ownedWeapons
