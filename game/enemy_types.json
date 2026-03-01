@@ -1,0 +1,88 @@
+{
+    "enemy_types": [
+        {
+            "name": "human_stealth",
+            "spaceships": [
+                {
+                    "name": "stealth_fighter"
+                },
+                {
+                    "name": "stealth_bomber"
+                }
+            ]
+        },
+        {
+            "name": "human_boss",
+            "spaceships": [
+                {
+                    "name": "zeus"
+                }
+            ]
+        },
+        {
+            "name": "jared_stealth",
+            "spaceships": [
+                {
+                    "name": "stealth_fighter"
+                },
+                {
+                    "name": "stealth_bomber"
+                }
+            ]
+        },
+        {
+            "name": "technician_basic",
+            "spaceships": [
+                {
+                    "name": "drone"
+                }
+            ]
+        },
+        {
+            "name": "human_war",
+            "spaceships": [
+                {
+                    "name": "war_fighter"
+                },
+                {
+                    "name": "war_bomber"
+                }
+            ]
+        },
+        {
+            "name": "jared_war",
+            "spaceships": [
+                {
+                    "name": "war_fighter"
+                },
+                {
+                    "name": "war_bomber"
+                }
+            ]
+        },
+        {
+            "name": "jared_boss",
+            "spaceships": [
+                {
+                    "name": "queen"
+                }
+            ]
+        },
+        {
+            "name": "jared_basic",
+            "spaceships": [
+                {
+                    "name": "basic_fighter"
+                }
+            ]
+        },
+        {
+            "name": "technician_advanced",
+            "spaceships": [
+                {
+                    "name": "advanced_drone"
+                }
+            ]
+        }
+    ]
+}
