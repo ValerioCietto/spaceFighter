@@ -267,7 +267,9 @@
           break;
 
         case "Market":
-          html = `<p>${subtabId} is coming soon.</p>`;
+          html = subtabId === "Sell Weapons"
+            ? `<div id="weapon-shop-list"></div>`
+            : `<p>${subtabId} is coming soon.</p>`;
           break;
 
         case "Plaza":
@@ -293,6 +295,9 @@
       }
       if (tabId === "Weapons") {
         this.renderWeaponShop();
+      }
+      if (tabId === "Market" && subtabId === "Sell Weapons") {
+        this.renderSellWeaponShop();
       }
       if (tabId === "Plaza" && subtabId === "Missions") {
         this.renderMissions();
@@ -532,6 +537,29 @@
           if (typeof this._options.onWeaponBought === "function") {
             this._options.onWeaponBought(weapon, state);
           }
+        },
+        onToast: (msg) => {
+          if (typeof this._options.onToast === "function") {
+            this._options.onToast(msg);
+            return;
+          }
+          console.log("[weapon-shop]", msg);
+        },
+      });
+    },
+
+    renderSellWeaponShop() {
+      const rootEl = document.getElementById("weapon-shop-list");
+      if (!rootEl || typeof global.renderSellWeaponShop !== "function") return;
+
+      const state = this._options.getPlayerState ? this._options.getPlayerState() : null;
+      rootEl.innerHTML = "";
+
+      global.renderSellWeaponShop({
+        rootEl,
+        state,
+        onSell: (weapon, soldFor) => {
+          console.log("[weapon-shop] sold weapon", weapon, soldFor);
         },
         onToast: (msg) => {
           if (typeof this._options.onToast === "function") {
