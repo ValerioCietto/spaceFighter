@@ -396,9 +396,16 @@
         const centerY = SystemInfo.size / 2;
 
         const a = Math.random() * Math.PI * 2;
+        // enemy spawn distance from star
         const r = ENEMY_SPAWN_R_MIN + Math.random() * (ENEMY_SPAWN_R_MAX - ENEMY_SPAWN_R_MIN);
 
-        const shipName = ENEMY_TYPES[(Math.random() * ENEMY_TYPES.length) | 0];
+        // from SystemInfo.enemy_types find the name of the group of enemies to spawn based on their spawn_weight, then pick a random ship from that group to spawn
+        const enemyTypeName = SystemInfo.enemies[0].type;
+        // find in ENEMY_TYPES the object equal to enemyTypeName and get the spaceships array
+        const enemyType = ENEMY_TYPES.find(type => type.name === enemyTypeName);
+        const spaceships = enemyType ? enemyType.spaceships : [];
+
+        const shipName = spaceships[(Math.random() * spaceships.length) | 0];
         const shipStats = getStats(shipName);
 
         const maxShield = shipStats?.shield ?? 20;

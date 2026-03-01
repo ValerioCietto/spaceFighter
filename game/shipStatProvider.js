@@ -34,7 +34,51 @@
 // spike razor
 // spike razor upgraded
 // * capital hivemind
-const ENEMY_TYPES = ["jared_zuque", "jared_three_eyes", "jared_three_eyes_spike_hybrid"];
+const ENEMY_TYPES = [{
+    name: "jared_basic",
+    spaceships: ["jared_zuque", "jared_three_eyes", "jared_three_eyes_spike_hybrid"]
+  },
+  {
+    name: "jared_raider",
+    spaceships: ["jared_zuque", "jared_three_eyes", "jared_three_eyes_spike_hybrid"]
+  },
+  {
+    name: "jared_elite",
+    spaceships: ["jared_zuque", "jared_three_eyes", "jared_three_eyes_spike_hybrid", "jared_baihu", "jared_qilin"]
+  },
+  {
+    name: "jared_capital",
+    spaceships: ["jared_sun_tzu_queen"]
+  },
+  {
+    name: "human_basic",
+    spaceships: ["human_perseus", "human_icarus", "human_hermes"]
+  },{
+    name: "human_raider",
+    spaceships: ["human_mercury", "human_icarus", "human_hermes", "human_gunship"]
+  },
+  {
+    name: "human_elite",
+    spaceships: ["human_icarus", "human_hermes", "human_gunship", "human_artemis", "human_ares"]
+  },
+  {
+    name: "human_capital",
+    spaceships: ["human_zeus"]
+  },
+  {
+    name: "technician_basic",
+    spaceships: ["technician_hard_shell_v1", "technician_hard_shell_double_closed", "technician_spike_razor"]
+  },
+  {
+    name: "technician_elite",
+    spaceships: ["technician_hard_shell_double_closed", "technician_spike_razor", "technician_spike_razor_upgraded"]
+  },
+  {
+    name: "technician_capital",
+    spaceships: ["technician_hivemind"]
+  }
+];
+
 
 
 const SHIPS = {
