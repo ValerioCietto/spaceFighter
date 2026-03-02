@@ -84,6 +84,7 @@ function renderInventory(state) {
   // ---- BIND TAB SWITCH + ACTIONS (event delegation, once) ----
   bindInventoryTabsOnce(state);
   bindOwnedShipsActionsOnce(state);
+  bindCurrentShipRenameActionsOnce(state);
   bindCurrentShipOutfitActionsOnce(state);
   bindMissionRewardActionsOnce(state);
 
@@ -151,6 +152,34 @@ function bindCurrentShipOutfitActionsOnce(state) {
       }
     }
 
+    if (typeof saveState === "function") saveState(state);
+    renderInventory(state);
+  });
+}
+
+function bindCurrentShipRenameActionsOnce(state) {
+  const bodyEl = document.querySelector(".inventory-body");
+  if (!bodyEl || bodyEl.__invCurrentRenameBound) return;
+  bodyEl.__invCurrentRenameBound = true;
+
+  bodyEl.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-rename-active-ship]");
+    if (!btn) return;
+
+    const p = state?.player;
+    const owned = Array.isArray(p?.ownedSpaceships) ? p.ownedSpaceships : [];
+    const activeId = p?.currentSpaceshipId ?? p?.activeShipId ?? 0;
+    const activeShip = owned.find((s) => s.id === activeId);
+    if (!activeShip) return;
+
+    const currentName = String(activeShip.name ?? "").trim();
+    const nextName = prompt("Rename your ship:", currentName);
+    if (nextName === null) return;
+
+    const trimmedName = nextName.trim();
+    if (!trimmedName || trimmedName === currentName) return;
+
+    activeShip.name = trimmedName;
     if (typeof saveState === "function") saveState(state);
     renderInventory(state);
   });
@@ -262,7 +291,10 @@ function renderInventoryTabContent(state, tab, panelEl) {
     const outfits = Array.isArray(activeShip.outfits) ? activeShip.outfits : [];
 
     panelEl.innerHTML = `
-      <h3>${activeShip.name}</h3>
+      <h3 style="display:flex;align-items:center;gap:8px;">
+        <span>${escapeHtml(activeShip.name)}</span>
+        <button type="button" data-rename-active-ship>Rename</button>
+      </h3>
       <div>Template: ${activeShip.templateName}</div>
       <hr>
 
