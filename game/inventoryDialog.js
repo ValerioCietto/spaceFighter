@@ -199,10 +199,8 @@ function bindInventoryTabsOnce(state) {
   if (!bodyEl || bodyEl.__invTabsBound) return;
   bodyEl.__invTabsBound = true;
 
-  bodyEl.addEventListener("click", (e) => {
-    const tabBtn = e.target.closest("[data-tab]");
+  const activateInventoryTab = (tabBtn) => {
     if (!tabBtn) return;
-
     const tab = tabBtn.getAttribute("data-tab");
 
     // toggle tab buttons
@@ -221,6 +219,21 @@ function bindInventoryTabsOnce(state) {
         renderInventoryTabContent(state, tab, p);
       }
     });
+  };
+
+  bodyEl.addEventListener("click", (e) => {
+    const tabBtn = e.target.closest("[data-tab]");
+    if (!tabBtn) return;
+
+    activateInventoryTab(tabBtn);
+  });
+
+  bodyEl.addEventListener("touchstart", (e) => {
+    const tabBtn = e.target.closest("[data-tab]");
+    if (!tabBtn) return;
+
+    e.preventDefault();
+    activateInventoryTab(tabBtn);
   });
 }
 
