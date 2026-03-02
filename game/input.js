@@ -51,6 +51,9 @@ function setupInput(
       case "4":
         setWeaponIndex(3);
         break;
+      case "Shift":
+        console.log("outfit_key");
+        break;
     }
   });
 
