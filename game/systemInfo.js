@@ -91,6 +91,8 @@ function loadGatesFromGalaxyMap(){
                             gates.forEach(gate => {
                                 console.log(`Gate ${gate.name}: x=${gate.position_x}, y=${gate.position_y}`);
                             });
+                            SystemInfo.enemies = currentSystemData.enemies || [];
+                            console.log("enemies:", SystemInfo.enemies);
                             console.log(`Updated SystemInfo for ${systemName}:`, SystemInfo);
                         } else {
                             console.warn(`Current system ${systemName} not found in galaxy map systems data`);
