@@ -16,6 +16,33 @@
       padding:8px 10px;font-size:12px;max-width:min(360px,calc(100vw - 20px));
     }
     .hud small{opacity:.75;display:block;margin-top:2px;line-height:1.25}
+    .system-info{
+      position:fixed;
+      left:10px;
+      right:10px;
+      bottom:10px;
+      z-index:2;
+      max-width:min(520px,calc(100vw - 20px));
+      margin:0 auto;
+      background:rgba(4,8,20,.8);
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:14px;
+      padding:12px 14px;
+      backdrop-filter:blur(10px);
+      box-shadow:0 12px 28px rgba(0,0,0,.35);
+    }
+    .system-info[hidden]{display:none}
+    .system-info h2{margin:0 0 6px;font-size:15px;line-height:1.2}
+    .system-info p{margin:5px 0 0;font-size:13px;line-height:1.35;color:rgba(232,238,252,.9)}
+    .system-info .threat-badge{
+      display:inline-block;
+      margin-top:2px;
+      padding:3px 8px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:600;
+      border:1px solid rgba(255,255,255,.2);
+    }
   </style>
 </head>
 <body>
@@ -25,6 +52,11 @@
     <small>Pan: drag · Zoom: wheel / pinch · Double click/tap: zoom in</small>
   </div>
   <canvas id="c"></canvas>
+  <section id="systemInfo" class="system-info" hidden>
+    <h2 id="systemInfoName"></h2>
+    <span id="systemThreatBadge" class="threat-badge"></span>
+    <p id="systemInfoDesc"></p>
+  </section>
 
 <script>
 (() => {
@@ -42,6 +74,10 @@
   const ctx = canvas.getContext("2d");
   const statusEl = document.getElementById("status");
   const STORAGE_KEYS = ["spaceFighterSaveData"];
+  const systemInfoEl = document.getElementById("systemInfo");
+  const systemInfoNameEl = document.getElementById("systemInfoName");
+  const systemThreatBadgeEl = document.getElementById("systemThreatBadge");
+  const systemInfoDescEl = document.getElementById("systemInfoDesc");
 
   const cam = { x: 0, y: 0, z: 1 }; // world offset + zoom
   const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
@@ -50,7 +86,7 @@
   let W=0, H=0;
 
   // Data in your exact schema
-  let systems = []; // {name, serviceLevel, x, y}
+  let systems = []; // {name, serviceLevel, x, y, description, enemies, maxEnemies}
   let links = [];   // {a, b, type}
   let sysByName = new Map();
   let currentSystemName = null;
@@ -64,6 +100,15 @@
     hybrid:{ color:"#b86bff", dash:[] },
     hidden:{ color:"#9aa3b3", dash:[8,8] }
   };
+  const THREAT_LEVELS = {
+    0: { label: "0 · absent", guidance: "No hostiles detected.", color: "#8dc3ff" },
+    1: { label: "1 · minor", guidance: "Minor threat.", color: "#a6db6d" },
+    2: { label: "2 · caution advised", guidance: "Proceed with caution.", color: "#ffd84a" },
+    3: { label: "3 · battle gear advised", guidance: "Battle gear advised.", color: "#ffad66" },
+    4: { label: "4 · capital ship spotted", guidance: "Capital ship sighted.", color: "#ff6b6b" },
+    5: { label: "5 · doom", guidance: "Extreme threat. Doom-level risk.", color: "#c28bff" },
+  };
+  let selectedSystemName = null;
 
   function resize(){
     const r = canvas.getBoundingClientRect();
@@ -169,6 +214,7 @@
       const r = nodeRadius(s.serviceLevel);
       const col = SERVICE_COLORS[s.serviceLevel] || "#fff";
       const isCurrentSystem = currentSystemName && s.name.toLowerCase() === currentSystemName;
+      const isSelectedSystem = selectedSystemName && s.name.toLowerCase() === selectedSystemName;
 
       if (isCurrentSystem) {
         ctx.save();
@@ -176,6 +222,17 @@
         ctx.lineWidth = Math.max(2, 2.5 * Math.sqrt(cam.z));
         ctx.beginPath();
         ctx.arc(p.x, p.y, r + Math.max(6, 8 * Math.sqrt(cam.z)), 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      if (isSelectedSystem) {
+        ctx.save();
+        ctx.strokeStyle = "rgba(89,199,255,.95)";
+        ctx.lineWidth = Math.max(2, 2 * Math.sqrt(cam.z));
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r + Math.max(10, 12 * Math.sqrt(cam.z)), 0, Math.PI * 2);
         ctx.stroke();
         ctx.restore();
       }
@@ -236,14 +293,69 @@
     }
   }
 
+  function getThreatLevel(system){
+    const enemies = Array.isArray(system.enemies) ? system.enemies : [];
+    if (!enemies.length || Number(system.maxEnemies) === 0) return 0;
+
+    const maxSpawnRate = enemies.reduce((max, enemy) => {
+      const rate = Number(enemy?.spawn_rate || 0);
+      return Math.max(max, Number.isFinite(rate) ? rate : 0);
+    }, 0);
+    const hasCapital = enemies.some((enemy) => String(enemy?.type || "").toLowerCase().includes("capital"));
+    const hasElite = enemies.some((enemy) => String(enemy?.type || "").toLowerCase().includes("elite"));
+
+    if (hasCapital || hasElite || maxSpawnRate <= 1) return 4;
+    if (maxSpawnRate <= 3) return 3;
+    if (maxSpawnRate <= 10) return 2;
+    return 1;
+  }
+
+  function showSystemInfo(system){
+    const level = clamp(getThreatLevel(system), 0, 5);
+    const threat = THREAT_LEVELS[level] || THREAT_LEVELS[0];
+
+    systemInfoNameEl.textContent = system.name;
+    systemThreatBadgeEl.textContent = `Threat ${threat.label}`;
+    systemThreatBadgeEl.style.color = threat.color;
+    systemThreatBadgeEl.style.borderColor = `${threat.color}55`;
+    systemThreatBadgeEl.style.background = `${threat.color}1f`;
+
+    const description = String(system.description || "").trim();
+    systemInfoDescEl.textContent = description || threat.guidance;
+    systemInfoEl.hidden = false;
+  }
+
+  function hideSystemInfo(){
+    selectedSystemName = null;
+    systemInfoEl.hidden = true;
+    draw();
+  }
+
+  function pickSystemAt(screenPt){
+    let hitSystem = null;
+    let minDistance = Infinity;
+    for (const system of systems){
+      const p = worldToScreen(system);
+      const r = nodeRadius(system.serviceLevel) + 12;
+      const distance = Math.hypot(screenPt.x - p.x, screenPt.y - p.y);
+      if (distance <= r && distance < minDistance){
+        minDistance = distance;
+        hitSystem = system;
+      }
+    }
+    return hitSystem;
+  }
+
   // --- input
   let dragging=false;
   let last = { x:0, y:0 };
+  let downPoint = null;
 
   canvas.addEventListener("pointerdown", (e) => {
     canvas.setPointerCapture(e.pointerId);
     dragging = true;
     last.x = e.clientX; last.y = e.clientY;
+    downPoint = { x: e.clientX, y: e.clientY };
   }, {passive:true});
 
   canvas.addEventListener("pointermove", (e) => {
@@ -256,7 +368,26 @@
     draw();
   }, {passive:true});
 
-  canvas.addEventListener("pointerup", () => dragging=false, {passive:true});
+  canvas.addEventListener("pointerup", (e) => {
+    dragging=false;
+
+    if (!downPoint || touches.size > 1) return;
+    const travel = Math.hypot(e.clientX - downPoint.x, e.clientY - downPoint.y);
+    downPoint = null;
+    if (travel > 8) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const pt = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    const hitSystem = pickSystemAt(pt);
+    if (hitSystem){
+      selectedSystemName = hitSystem.name.toLowerCase();
+      showSystemInfo(hitSystem);
+      draw();
+      return;
+    }
+
+    hideSystemInfo();
+  }, {passive:true});
   canvas.addEventListener("pointercancel", () => dragging=false, {passive:true});
 
   // wheel zoom (desktop)
@@ -395,7 +526,10 @@
 
       systems = (json.systems || []).map(s => ({
         name: String(s.name),
+        description: String(s.description || ""),
         serviceLevel: clamp(Number(s.serviceLevel ?? 3), 1, 5),
+        enemies: Array.isArray(s.enemies) ? s.enemies : [],
+        maxEnemies: Number(s.maxEnemies),
         x: Number(s.x ?? 0),
         y: Number(s.y ?? 0),
       })).filter((s) => discovered.has(s.name.toLowerCase()));
@@ -405,7 +539,10 @@
       if (urlParams.get("show") === "all") {
         systems = (json.systems || []).map(s => ({
           name: String(s.name),
+          description: String(s.description || ""),
           serviceLevel: clamp(Number(s.serviceLevel ?? 3), 1, 5),
+          enemies: Array.isArray(s.enemies) ? s.enemies : [],
+          maxEnemies: Number(s.maxEnemies),
           x: Number(s.x ?? 0),
           y: Number(s.y ?? 0),
         }));
