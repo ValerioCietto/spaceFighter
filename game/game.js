@@ -885,10 +885,36 @@
             state.player.currentSpaceshipId = saved.player.activeShipId;
           }
 
-          const migratedWeapons = Array.isArray(saved.player.ownedWeapons)
+          const loadedOwnedWeapons = Array.isArray(saved.player.ownedWeapons)
             ? saved.player.ownedWeapons
-            : (Array.isArray(saved.player.weaponsOwned) ? saved.player.weaponsOwned : []);
-          state.player.ownedWeapons = migratedWeapons;
+                .filter((weapon) => {
+                  if (!weapon) return false;
+                  if (typeof weapon === "string") return weapon.trim().length > 0;
+                  if (typeof weapon === "object") {
+                    const id = String(weapon.id || "").trim();
+                    const name = String(weapon.name || "").trim();
+                    return Boolean(id || name);
+                  }
+                  return false;
+                })
+                .map((weapon) => {
+                  if (typeof weapon === "string") {
+                    return {
+                      id: weapon.trim(),
+                      name: weapon.trim(),
+                      cost: 0,
+                    };
+                  }
+
+                  return {
+                    ...weapon,
+                    id: String(weapon.id || "").trim() || String(weapon.name || "").trim(),
+                    name: String(weapon.name || "").trim() || String(weapon.id || "").trim(),
+                    cost: Number.isFinite(Number(weapon.cost)) ? Number(weapon.cost) : 0,
+                  };
+                })
+            : [];
+          state.player.ownedWeapons = loadedOwnedWeapons;
 
           if (Array.isArray(saved.player.missions)) {
             state.player.missions = saved.player.missions;
@@ -925,11 +951,8 @@
         try {
           const inventory = Array.isArray(state?.player?.ownedWeapons)
             ? state.player.ownedWeapons
-            : (Array.isArray(state?.player?.weaponsOwned) ? state.player.weaponsOwned : []);
+            : [];
           state.player.ownedWeapons = inventory;
-          if (state.player && Object.prototype.hasOwnProperty.call(state.player, "weaponsOwned")) {
-            delete state.player.weaponsOwned;
-          }
           localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
         } catch (e) {
           console.warn("Impossibile salvare lo stato:", e);

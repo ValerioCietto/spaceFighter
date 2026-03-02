@@ -19,15 +19,15 @@ async function renderStationWeaponShop({ rootEl, state, onBuy, onToast }) {
 
   const player = state?.player;
   const money = Number(player?.money ?? 0);
-  const ownedWeaponIds = new Set(getOwnedWeaponInventory(player).map(toWeaponIdentity));
+  const ownedWeaponCounts = getOwnedWeaponCounts(player);
 
   rootEl.innerHTML = `
     <div class="outfit-shop-grid">
       ${weapons
         .map((weapon) => {
           const canAfford = money >= weapon.cost;
-          const isOwned = ownedWeaponIds.has(weapon.id);
-          const disabled = !canAfford || isOwned;
+          const ownedQuantity = ownedWeaponCounts.get(weapon.id) || 0;
+          const disabled = !canAfford;
 
           return `
             <article class="outfit-card">
@@ -42,6 +42,7 @@ async function renderStationWeaponShop({ rootEl, state, onBuy, onToast }) {
                 <div>🎯 Range: ${formatStat(weapon.engage_range)}</div>
                 <div>🔋 Energy: ${formatStat(weapon.energy_cost)}</div>
                 <div>🧨 Projectiles: ${formatStat(weapon.projectiles)}</div>
+                <div>📦 Owned: ${ownedQuantity}</div>
               </div>
               <p class="outfit-card-description">${escapeHtml(weapon.description)}</p>
               <button
@@ -49,10 +50,9 @@ async function renderStationWeaponShop({ rootEl, state, onBuy, onToast }) {
                 data-buy-weapon="${escapeHtml(weapon.id)}"
                 ${disabled ? "disabled" : ""}
               >
-                ${isOwned ? "Owned" : "Buy"}
+                Buy (+1)
               </button>
               ${!canAfford ? '<div class="ship-card-warn">Not enough money</div>' : ""}
-              ${isOwned ? '<div class="ship-card-warn">Already owned</div>' : ""}
             </article>
           `;
         })
@@ -78,10 +78,6 @@ async function renderStationWeaponShop({ rootEl, state, onBuy, onToast }) {
       }
 
       const inventory = getOwnedWeaponInventory(playerState);
-      if (inventory.some((entry) => toWeaponIdentity(entry) === weapon.id)) {
-        onToast?.(`You already own ${weapon.name}.`);
-        return;
-      }
 
       const curMoney = Number(playerState.money ?? 0);
       if (curMoney < weapon.cost) {
@@ -204,6 +200,19 @@ function getOwnedWeaponInventory(player) {
   }
 
   return inventory;
+}
+
+function getOwnedWeaponCounts(player) {
+  const inventory = getOwnedWeaponInventory(player);
+  const counts = new Map();
+
+  inventory.forEach((weapon) => {
+    const weaponId = toWeaponIdentity(weapon);
+    if (!weaponId) return;
+    counts.set(weaponId, (counts.get(weaponId) || 0) + 1);
+  });
+
+  return counts;
 }
 
 function toWeaponIdentity(weapon) {
