@@ -151,7 +151,7 @@ const SHIPS = {
     engineFlareLength: 35,
     energyMax: 160,
     energyRegen: 14,
-    image: "human_mercury.png",
+    image: "human_mercury1.png",
     shieldDiameterPx: 35,
     shieldRegen:1.5,
     firerateMult: 0.5,
