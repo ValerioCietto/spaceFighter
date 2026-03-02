@@ -147,6 +147,8 @@
           saveState(state);
         }
       }
+      // update SystemInfo.hyperspace_gates based on the current system's connections in galaxy-map.json
+      loadGatesFromGalaxyMap();
     }
 
     function drawGateLineIndicator() {
