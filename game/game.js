@@ -391,21 +391,13 @@
         };
       }
 
-      function spawnEnemy() {
+      function spawnEnemy(shipName) {
         const centerX = SystemInfo.size / 2;
         const centerY = SystemInfo.size / 2;
-
-        const a = Math.random() * Math.PI * 2;
         // enemy spawn distance from star
         const r = ENEMY_SPAWN_R_MIN + Math.random() * (ENEMY_SPAWN_R_MAX - ENEMY_SPAWN_R_MIN);
 
-        // from SystemInfo.enemy_types find the name of the group of enemies to spawn based on their spawn_weight, then pick a random ship from that group to spawn
-        const enemyTypeName = SystemInfo.enemies[0].type;
-        // find in ENEMY_TYPES the object equal to enemyTypeName and get the spaceships array
-        const enemyType = ENEMY_TYPES.find(type => type.name === enemyTypeName);
-        const spaceships = enemyType ? enemyType.spaceships : [];
-
-        const shipName = spaceships[(Math.random() * spaceships.length) | 0];
+        const a = Math.random() * Math.PI * 2;
         const shipStats = getStats(shipName);
 
         const maxShield = shipStats?.shield ?? 20;
@@ -438,20 +430,49 @@
         console.log(state.enemies);
       }
 
-      let enemySpawnAcc = 0;
       let enemyIdSeq = 0;
       state.enemies = [];
       function updateEnemySpawning(dt) {
-        const maxN = SystemInfo.max_enemy_number || 0;
-        const rate = SystemInfo.spawn_rate || 0;
-        if (maxN <= 0 || rate <= 0) return;
+        // enemies are now defined in systemInfo.enemies as an array of { type: "enemyTypeName", spawn_weight: number } objects, where enemyTypeName corresponds to an object in ENEMY_TYPES which defines the spaceships that can spawn for that enemy type
+        for(const enemyGroup of SystemInfo.enemies){
+          // each group has its own spawn rate and max number
+          const enemyGroupType = ENEMY_TYPES.find(type => type.name === enemyGroup.type);
+          if(enemyGroupType){
 
-        enemySpawnAcc += dt;
-        while (enemySpawnAcc >= rate) {
-          enemySpawnAcc -= rate;
+            const enemyGroupSpaceships = enemyGroupType.spaceships;
+            // if the group doesn't have an enemySpawnAcc, create one in the enemyGroup
+            if(enemyGroup.enemySpawnAcc === undefined || enemyGroup.enemySpawnAcc === NaN){
+              SystemInfo.enemies = SystemInfo.enemies.map(g => {
+                if(g === enemyGroup){
+                  return { ...g, enemySpawnAcc: 0, enemyCurrentCount: 0 };
+                }
+                else{
+                  return g;
+                }              
+              });
+            }
+            console.log("adding spawn ", enemyGroup.type, enemyGroup.enemySpawnAcc, enemyGroup.spawn_rate, enemyGroup.max_count, enemyGroup.enemyCurrentCount);
+            // so now the enemyGroup has an enemySpawnAcc that we can use to track spawning for that group
+            enemyGroup.enemySpawnAcc += dt;
+            const spawnRate = enemyGroup.spawn_rate || 1;
+            const maxNumber = enemyGroup.max_count || 0;
+            // if we already have maxNumber, skip spawning for this group
+            const currentNumber = enemyGroup.enemyCurrentCount || 0;
+            console.log("current number for group", enemyGroup.type, "is", currentNumber, "max number is", maxNumber);
+            if(currentNumber < maxNumber){
+              console.log("spawning enemy from group", enemyGroup.type, "current number", currentNumber, "max number", maxNumber);
+              // if enemySpawnAcc exceeds spawnRate, spawn an enemy from this group and reset the acc
+              if(enemyGroup.enemySpawnAcc >= spawnRate){
+                enemyGroup.enemySpawnAcc -= spawnRate;
+                // spawn an enemy from this group by picking a random spaceship from enemyGroupSpaceships and using its stats to create the enemy, then add the enemy to state.enemies
+                const shipName = enemyGroupSpaceships[(Math.random() * enemyGroupSpaceships.length) | 0];
+                // call spawnEnemy with the shipName to create the enemy and add it to state.enemies
+                spawnEnemy(shipName);
+                enemyGroup.enemyCurrentCount = (enemyGroup.enemyCurrentCount || 0) + 1;
+              }
+            }
 
-          if (state?.enemies && state.enemies.length < maxN) {
-            spawnEnemy();
+
           }
         }
         
