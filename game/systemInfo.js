@@ -26,6 +26,10 @@ const SystemInfo = {
 };
 // on window load, fetch galaxy-map.json and populate SystemInfo.hyperspace_gates with the data, then export SystemInfo
 window.addEventListener("load", () => {
+    loadGatesFromGalaxyMap();
+});
+
+function loadGatesFromGalaxyMap(){
     fetch("galaxy-map.json")
         .then(response => response.json())
         .then(data => {
@@ -92,7 +96,7 @@ window.addEventListener("load", () => {
         .catch(err => {
             console.warn("Failed to load galaxy map data, using default hyperspace gates", err);
         });
-});
+}
 
 function getSystemInfo(){
     // this function compiles hyperspace_gates from galaxy-map.json
