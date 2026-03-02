@@ -67,6 +67,7 @@ function loadGatesFromGalaxyMap(){
                                 
                                     const gateX = Math.round(currentSystemData.x + Math.cos(angle) * Math.min(3000, Math.max(1000, distance * 10)));
                                     const gateY = Math.round(currentSystemData.y + Math.sin(angle) * Math.min(3000, Math.max(1000, distance * 10)));
+
                                     return {
                                         name: link.b,
                                         position_x: gateX+3000,
@@ -78,6 +79,13 @@ function loadGatesFromGalaxyMap(){
                                 }
                                 return null;
                             }).filter(gate => gate !== null);
+                            // for each gate of type "hybrid", add a gate in same position but type "warp" and a gate in same position but type "chaos" with opposite rotation
+                            const hybridGates = gates.filter(gate => gate.type === "hybrid");
+                            hybridGates.forEach(gate => {
+                                gates.push({ ...gate, type: "warp" });
+                                gates.push({ ...gate, type: "chaos", rotation: -gate.rotation });
+                            });
+
                             SystemInfo.hyperspace_gates = gates;
                             // print gate positions
                             gates.forEach(gate => {
