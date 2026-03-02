@@ -290,6 +290,7 @@
     {
       "name": "Nemo",
       "serviceLevel": 1,
+      "threatLevel": 2,
       "enemies":[{
         "type": "human_basic",
         "faction": "pirate",
@@ -302,6 +303,7 @@
     {
       "name": "Nimrod",
       "serviceLevel": 2,
+      "threatLevel": 2,
       "enemies":[{
         "type": "jared_basic",
         "faction": "pirate",
@@ -314,6 +316,7 @@
     {
       "name": "Nisil",
       "serviceLevel": 1,
+      "threatLevel": 0,
       "enemies":[],
       "x": 1136.68,
       "y": -110.63
@@ -321,6 +324,7 @@
     {
       "name": "Numbus",
       "serviceLevel": 3,
+      "threatLevel": 2,
       "enemies":[{
         "type": "technician_elite",
         "faction": "pirate",
