@@ -106,7 +106,7 @@ const SHIPS = {
     engineFlareLength: 26,
     energyMax: 100,
     energyRegen: 10,
-    image: "human_perseus1.png",
+    image: "human_perseus2.png",
     shieldDiameterPx: 33,
     shieldRegen:1,
     CPU: 10,
