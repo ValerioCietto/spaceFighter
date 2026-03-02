@@ -4,6 +4,7 @@
       "name": "Alpha Centauri",
       "description": "Alpha Centauri, is the second star system of Humanity.",
       "serviceLevel": 4,
+      "threatLevel": 2,
       "enemies": [
         {
           "type": "human_basic",
@@ -28,6 +29,7 @@
       "name": "Arachne",
       "description": "Arachne is the main Jared system.",
       "serviceLevel": 5,
+      "threatLevel": 2,
       "enemies": [
         {
           "type": "jared_basic",
@@ -43,6 +45,7 @@
       "name": "Arnack",
       "description": "Arnack is a dangerous system controlled by the Jared faction.",
       "serviceLevel": 1,
+      "threatLevel": 4,
       "enemies": [
         {
           "type": "jared_capital",
@@ -58,6 +61,7 @@
       "name": "Aslan",
       "description": "Aslan is a Jared system known for its treacherous asteroid belts and hidden pirate bases.",
       "serviceLevel": 2,
+      "threatLevel": 2,
       "enemies": [
         {
           "type": "jared_basic",
@@ -73,6 +77,7 @@
       "name": "Dwarf's End",
       "description": "Dwarf's End is a remote and hazardous system known for its dense asteroid fields and hidden pirate outposts.",
       "serviceLevel": 1,
+      "threatLevel": 1,
       "enemies": [
         {
           "type": "technician_basic",
@@ -88,6 +93,7 @@
       "name": "Eos",
       "description": "Eos is a Human system near the battlefront.",
       "serviceLevel": 4,
+      "threatLevel": 2,
       "enemies": [
         {
           "type": "human_basic",
@@ -109,6 +115,7 @@
       "name": "Fandango",
       "description": "Fandango is a system known for its bustling trade routes and occasional pirate activity.",
       "serviceLevel": 2,
+      "threatLevel": 2,
       "enemies": [
         {
           "type": "human_basic",
@@ -130,6 +137,7 @@
       "name": "Far space 1",
       "description":"",
       "serviceLevel": 2,
+      "threatLevel": 1,
       "enemies": [
         {
           "type": "technician_basic",
@@ -145,6 +153,7 @@
       "name": "Far space 2",
       "description":"",
       "serviceLevel": 1,
+      "threatLevel": 1,
       "enemies": [
         {
           "type": "technician_basic",
@@ -160,6 +169,7 @@
       "name": "Far space 3",
       "description":"",
       "serviceLevel": 1,
+      "threatLevel": 1,
       "enemies": [
         {
           "type": "technician_basic",
@@ -175,6 +185,7 @@
       "name": "Gargantua",
       "description":"",
       "serviceLevel": 1,
+      "threatLevel": 5,
       "enemies": [
         {
           "type": "human_elite",
@@ -202,7 +213,7 @@
       "name": "Glacius",
       "description":"",
       "serviceLevel": 1,
-      "maxEnemies": 0,
+      "threatLevel": 0,
       "enemies":[],
       "x": -406.94,
       "y": 657.72
@@ -211,6 +222,7 @@
       "name": "Greenfield",
       "description":"",
       "serviceLevel": 3,
+      "threatLevel": 1,
       "enemies":[{
           "type": "human_basic",
           "faction": "pirate",
@@ -224,6 +236,7 @@
       "name": "Ludum",
       "description":"",
       "serviceLevel": 1,
+      "threatLevel": 4,
       "enemies":[{
           "type": "human_capital",
           "faction": "pirate",
@@ -237,6 +250,7 @@
       "name": "Lx 1",
       "description":"",
       "serviceLevel": 2,
+      "threatLevel": 2,
       "enemies":[{
         "type": "jared_basic",
         "faction": "pirate",
@@ -250,6 +264,7 @@
       "name": "Lx 2",
       "description":"",
       "serviceLevel": 1,
+      "threatLevel": 2,
       "enemies":[{
         "type": "jared_basic",
         "faction": "pirate",

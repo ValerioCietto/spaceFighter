@@ -36,45 +36,56 @@
 // * capital hivemind
 const ENEMY_TYPES = [{
     name: "jared_basic",
+    threatLevel: 1,
     spaceships: ["jared_zuque", "jared_three_eyes", "jared_three_eyes_spike_hybrid"]
   },
   {
     name: "jared_raider",
+    threatLevel: 2,
     spaceships: ["jared_zuque", "jared_three_eyes", "jared_three_eyes_spike_hybrid"]
   },
   {
     name: "jared_elite",
+    threatLevel: 3,
     spaceships: ["jared_zuque", "jared_three_eyes", "jared_three_eyes_spike_hybrid", "jared_baihu", "jared_qilin"]
   },
   {
     name: "jared_capital",
+    threatLevel: 4,
     spaceships: ["jared_sun_tzu_queen"]
   },
   {
     name: "human_basic",
+    threatLevel: 1,
     spaceships: ["human_perseus", "human_icarus", "human_hermes"]
   },{
     name: "human_raider",
+    threatLevel: 2,
     spaceships: ["human_mercury", "human_icarus", "human_hermes", "human_gunship"]
   },
   {
     name: "human_elite",
+    threatLevel: 3,
     spaceships: ["human_icarus", "human_hermes", "human_gunship", "human_artemis", "human_ares"]
   },
   {
     name: "human_capital",
+    threatLevel: 4,
     spaceships: ["human_zeus"]
   },
   {
     name: "technician_basic",
+    threatLevel: 1,
     spaceships: ["technician_hard_shell_v1", "technician_hard_shell_double_closed", "technician_spike_razor"]
   },
   {
     name: "technician_elite",
+    threatLevel: 3,
     spaceships: ["technician_hard_shell_double_closed", "technician_spike_razor", "technician_spike_razor_upgraded"]
   },
   {
     name: "technician_capital",
+    threatLevel: 4,
     spaceships: ["technician_hivemind"]
   }
 ];
