@@ -174,7 +174,11 @@ async function renderSellWeaponShop({ rootEl, state, onSell, onToast }) {
 
       currentInventory.splice(weaponIndex, 1);
       state.player.ownedWeapons = currentInventory;
-      state.player.money = Number(state?.player?.money ?? 0) + soldFor;
+      if (typeof addMoneyWithCreditGainBonus === "function") {
+        addMoneyWithCreditGainBonus(state, soldFor);
+      } else {
+        state.player.money = Number(state?.player?.money ?? 0) + soldFor;
+      }
 
       if (typeof saveState === "function") {
         saveState(state);

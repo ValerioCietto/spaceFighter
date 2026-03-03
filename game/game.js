@@ -1479,7 +1479,11 @@
       targetObj.hp -= damage;
 
       if (targetObj.hp <= 0) {
-        state.player.money += MONEY_PER_TARGET;
+        if (typeof addMoneyWithCreditGainBonus === "function") {
+          addMoneyWithCreditGainBonus(state, MONEY_PER_TARGET);
+        } else {
+          state.player.money += MONEY_PER_TARGET;
+        }
         moneyValueEl.textContent = `${state.player.money.toFixed(0)}§`;
         progressDestroyTargetMissions();
         spawnTarget();
@@ -1572,7 +1576,11 @@
         const enemy = state.enemies[idx];
         const cost = Number(enemy?.shipStats?.cost) || 0;
 
-        state.player.money += (cost / 1000);
+        if (typeof addMoneyWithCreditGainBonus === "function") {
+          addMoneyWithCreditGainBonus(state, cost / 1000);
+        } else {
+          state.player.money += (cost / 1000);
+        }
         moneyValueEl.textContent = `${state.player.money.toFixed(0)}§`;
 
         state.enemies.splice(idx, 1);
