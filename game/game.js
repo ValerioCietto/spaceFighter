@@ -434,6 +434,11 @@
       state.enemies = [];
       function updateEnemySpawning(dt) {
         // enemies are now defined in systemInfo.enemies as an array of { type: "enemyTypeName", spawn_weight: number } objects, where enemyTypeName corresponds to an object in ENEMY_TYPES which defines the spaceships that can spawn for that enemy type
+        if (!Array.isArray(SystemInfo.enemies)) {
+          console.warn("enemies is not an array, issue on loading enemies array from systemInfo.");
+          SystemInfo.enemies = [];
+        }
+
         for(const enemyGroup of SystemInfo.enemies){
           // each group has its own spawn rate and max number
           const enemyGroupType = ENEMY_TYPES.find(type => type.name === enemyGroup.type);
