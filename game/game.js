@@ -1177,6 +1177,65 @@
       }
 
       let playerEnergyRegenAcc = 0;
+      let moneyPerMinuteAcc = 0;
+      let outfitCreditPerMinuteById = {};
+
+      async function loadOutfitCreditPerMinuteIndex() {
+        try {
+          const response = await fetch("outfits.json", { cache: "no-store" });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+          const payload = await response.json();
+          const outfits = Array.isArray(payload?.outfits) ? payload.outfits : [];
+          outfitCreditPerMinuteById = outfits.reduce((acc, outfit) => {
+            const id = String(outfit?.id || "").trim();
+            if (!id) return acc;
+            acc[id] = Number(outfit?.creditPerMinute) || 0;
+            return acc;
+          }, {});
+        } catch (err) {
+          console.warn("Failed to load outfits credit bonus index:", err);
+          outfitCreditPerMinuteById = {};
+        }
+      }
+
+      function getActiveShip() {
+        const owned = Array.isArray(state?.player?.ownedSpaceships)
+          ? state.player.ownedSpaceships
+          : [];
+        const activeId = Number(state?.player?.currentSpaceshipId ?? state?.player?.activeShipId ?? 0);
+        return owned.find((ship) => Number(ship?.id) === activeId) || owned[0] || null;
+      }
+
+      function getCurrentShipCreditPerMinuteBonus() {
+        const ship = getActiveShip();
+        if (!ship || !Array.isArray(ship.outfits) || ship.outfits.length === 0) return 0;
+
+        return ship.outfits.reduce((sum, outfitRef) => {
+          const outfitId = String(outfitRef?.id ?? outfitRef ?? "").trim();
+          if (!outfitId) return sum;
+
+          const bonusFromCatalog = Number(outfitCreditPerMinuteById[outfitId]) || 0;
+          const bonusFromOutfit = Number(outfitRef?.creditPerMinute) || 0;
+          return sum + (bonusFromCatalog || bonusFromOutfit);
+        }, 0);
+      }
+
+      function updateMoneyPerMinute(dt) {
+        if (!Number.isFinite(dt) || dt <= 0) return;
+
+        moneyPerMinuteAcc += dt;
+
+        while (moneyPerMinuteAcc >= 60) {
+          moneyPerMinuteAcc -= 60;
+
+          const creditBonus = getCurrentShipCreditPerMinuteBonus();
+          if (creditBonus > 0) {
+            state.player.money = (Number(state?.player?.money) || 0) + creditBonus;
+          }
+        }
+      }
+
       function regenPlayerEnergy(dt) {
         const stats = state?.player?.shipStats;
         if (!stats) return;
@@ -1209,6 +1268,7 @@
       updateEnemyProjectiles(dt);
       updateBeamEffects(dt);
       regenPlayerEnergy(dt);
+      updateMoneyPerMinute(dt);
       
       const newSpeed = Math.hypot(state.player.vx, state.player.vy);
       speedValueEl.textContent = newSpeed.toFixed(1);
@@ -2323,6 +2383,7 @@
         spawnTarget();
         updateLockButtonVisual();
         await initWeapons();
+        await loadOutfitCreditPerMinuteIndex();
         applyActiveShip(state);
 
         // Station manager: gli passo info di sistema e un getter dello state giocatore
