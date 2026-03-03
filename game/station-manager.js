@@ -419,7 +419,11 @@
       const p = state.player;
 
       if (Number.isFinite(rewards.money)) {
-        p.money += rewards.money;
+        if (typeof global.addMoneyWithCreditGainBonus === "function") {
+          global.addMoneyWithCreditGainBonus(state, rewards.money);
+        } else {
+          p.money += rewards.money;
+        }
       }
 
       if (rewards.weapon) {
