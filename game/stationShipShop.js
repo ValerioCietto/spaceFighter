@@ -182,7 +182,11 @@ function renderSellShipShop({ rootEl, state, onSell, onToast }) {
       const shipStats = getStats(ship?.templateName || ship?.name || "");
       const soldFor = Math.floor(Number(shipStats.cost || 0) * 0.75);
 
-      state.player.money = Number(state?.player?.money ?? 0) + soldFor;
+      if (typeof addMoneyWithCreditGainBonus === "function") {
+        addMoneyWithCreditGainBonus(state, soldFor);
+      } else {
+        state.player.money = Number(state?.player?.money ?? 0) + soldFor;
+      }
       list.splice(idx, 1);
 
       if (typeof saveState === "function") {
