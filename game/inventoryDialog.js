@@ -86,6 +86,7 @@ function renderInventory(state) {
   bindOwnedShipsActionsOnce(state);
   bindCurrentShipRenameActionsOnce(state);
   bindCurrentShipOutfitActionsOnce(state);
+  bindCurrentShipWeaponEquipActionsOnce(state);
   bindMissionRewardActionsOnce(state);
 
   // ensure a panel is visible + has content on open
@@ -180,6 +181,57 @@ function bindCurrentShipRenameActionsOnce(state) {
     if (!trimmedName || trimmedName === currentName) return;
 
     activeShip.name = trimmedName;
+    if (typeof saveState === "function") saveState(state);
+    renderInventory(state);
+  });
+}
+
+function bindCurrentShipWeaponEquipActionsOnce(state) {
+  const bodyEl = document.querySelector(".inventory-body");
+  if (!bodyEl || bodyEl.__invCurrentWeaponEquipBound) return;
+  bodyEl.__invCurrentWeaponEquipBound = true;
+
+  bodyEl.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-equip-weapon-port-index]");
+    if (!btn) return;
+
+    const portIndex = Number(btn.getAttribute("data-equip-weapon-port-index"));
+    if (!Number.isInteger(portIndex) || portIndex < 0) return;
+
+    const p = state?.player;
+    const ownedShips = Array.isArray(p?.ownedSpaceships) ? p.ownedSpaceships : [];
+    const activeId = p?.currentSpaceshipId ?? p?.activeShipId ?? 0;
+    const activeShip = ownedShips.find((s) => s.id === activeId);
+    if (!activeShip) return;
+
+    const inventory = Array.isArray(p?.ownedWeapons) ? p.ownedWeapons : [];
+    const nextWeapon = inventory.find((weapon) => !weapon?.equippedOnShipId);
+    if (!nextWeapon) {
+      alert("No unequipped weapon available in inventory.");
+      return;
+    }
+
+    const equippedWeapons = Array.isArray(activeShip.equippedWeapons) ? activeShip.equippedWeapons : [];
+    const prevEquippedInInventory = inventory.find(
+      (weapon) => Number(weapon?.equippedOnShipId) === Number(activeShip.id) && Number(weapon?.equippedPortIndex) === portIndex
+    );
+    if (prevEquippedInInventory) {
+      prevEquippedInInventory.equippedOnShipId = null;
+      prevEquippedInInventory.equippedPortIndex = null;
+    }
+
+    nextWeapon.equippedOnShipId = activeShip.id;
+    nextWeapon.equippedPortIndex = portIndex;
+
+    const withoutPort = equippedWeapons.filter((slot) => Number(slot?.portIndex) !== portIndex);
+    withoutPort.push({
+      id: String(nextWeapon?.id ?? ""),
+      name: String(nextWeapon?.name ?? "Unknown weapon"),
+      portIndex,
+      portType: String((activeShip.shipStats?.weaponGunCoords || [])[portIndex]?.type || "gun"),
+    });
+    activeShip.equippedWeapons = withoutPort;
+
     if (typeof saveState === "function") saveState(state);
     renderInventory(state);
   });
@@ -289,6 +341,14 @@ function renderInventoryTabContent(state, tab, panelEl) {
       (typeof getStats === "function" ? getStats(activeShip.templateName) : {}) ||
       {};
     const outfits = Array.isArray(activeShip.outfits) ? activeShip.outfits : [];
+    const shieldDiameter = Number(activeShipStats.shieldDiameterPx || 96);
+    const portCoords = Array.isArray(activeShipStats.weaponGunCoords) ? activeShipStats.weaponGunCoords : [];
+    const equippedByPort = new Map(
+      (Array.isArray(activeShip.equippedWeapons) ? activeShip.equippedWeapons : []).map((entry) => [
+        Number(entry?.portIndex),
+        entry,
+      ])
+    );
 
     panelEl.innerHTML = `
       <h3 style="display:flex;align-items:center;gap:8px;">
@@ -296,6 +356,55 @@ function renderInventoryTabContent(state, tab, panelEl) {
         <button type="button" data-rename-active-ship>Rename</button>
       </h3>
       <div>Template: ${activeShip.templateName}</div>
+      <hr>
+
+      <h4 style="margin:8px 0;">Weapon equip</h4>
+      <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+        <div
+          style="
+            width:${shieldDiameter}px;
+            height:${shieldDiameter}px;
+            border:1px solid rgba(255,255,255,.35);
+            border-radius:8px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:rgba(0,0,0,.25);
+            overflow:hidden;
+            flex:0 0 auto;
+          "
+        >
+          <img
+            src="${baseUrl}${activeShipStats.image || ""}"
+            alt="${escapeHtml(activeShipStats.image || activeShip.name)}"
+            style="max-width:100%;max-height:100%;object-fit:contain;"
+          >
+        </div>
+
+        <div style="flex:1 1 280px;">
+          ${
+            portCoords.length
+              ? `<ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;">${portCoords
+                  .map((coord, idx) => {
+                    const equipped = equippedByPort.get(idx);
+                    return `
+                    <li style="display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:6px 8px;">
+                      <span>
+                        Port ${idx + 1} (${escapeHtml(coord?.type || "gun")})
+                        · x:${formatStatValue(Number(coord?.x ?? 0))}
+                        y:${formatStatValue(Number(coord?.y ?? 0))}
+                        ${equipped ? `· <strong>${escapeHtml(equipped.name || equipped.id || "Weapon")}</strong>` : ""}
+                      </span>
+                      <button type="button" data-equip-weapon-port-index="${idx}">equip</button>
+                    </li>
+                  `;
+                  })
+                  .join("")}</ul>`
+              : `<div style="opacity:.7">No weapon ports for this ship.</div>`
+          }
+        </div>
+      </div>
+
       <hr>
 
       <h4 style="margin:8px 0;">Ship stats</h4>
