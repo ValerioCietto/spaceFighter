@@ -1,0 +1,263 @@
+<!-- Terminal: python3 -m http.server 8080  (poi apri http://localhost:8080) -->
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>3D Galaxy (300 elements)</title>
+  <style>
+    :root { color-scheme: dark; }
+    html, body { height: 100%; margin: 0; background: #05060a; overflow: hidden; font-family: system-ui, sans-serif; }
+    #wrap { position: relative; width: 100%; height: 100%; }
+    canvas { width: 100%; height: 100%; display: block; }
+    .hud {
+      position: absolute; left: 12px; top: 12px;
+      background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.12);
+      padding: 10px 12px; border-radius: 12px; backdrop-filter: blur(6px);
+      font-size: 12px; line-height: 1.35; user-select: none;
+    }
+    .hud b { font-weight: 650; }
+    .hud .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .hud input[type="range"] { width: 160px; }
+    .hud .btn {
+      cursor: pointer; padding: 6px 10px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.15);
+      background: rgba(255,255,255,.06); color: #eaeaea;
+    }
+    .hud .btn:active { transform: translateY(1px); }
+    .hint { opacity: .85; margin-top: 6px; }
+  </style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c"></canvas>
+
+  <div class="hud">
+    <div class="row">
+      <b>Galaxy 3D</b>
+      <span id="stats"></span>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <label>Spiralità <input id="spiral" type="range" min="0" max="6" step="0.05" value="3.2"></label>
+    </div>
+    <div class="row">
+      <label>Spessore Z <input id="thick" type="range" min="0" max="220" step="1" value="90"></label>
+    </div>
+    <div class="row">
+      <button class="btn" id="regen">Rigenera</button>
+    </div>
+    <div class="hint">Drag: ruota · Wheel: zoom · Shift+Drag: pan</div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d', { alpha: false });
+
+  const $spiral = document.getElementById('spiral');
+  const $thick  = document.getElementById('thick');
+  const $regen  = document.getElementById('regen');
+  const $stats  = document.getElementById('stats');
+
+  // --- Resize (DPR aware)
+  function resize() {
+    const dpr = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
+    const w = Math.floor(canvas.clientWidth * dpr);
+    const h = Math.floor(canvas.clientHeight * dpr);
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w; canvas.height = h;
+    }
+    return dpr;
+  }
+
+  // --- RNG helpers
+  const rand = (a=1, b=0) => Math.random() * (a - b) + b;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+  // --- Galaxy model
+  const N = 300;
+  let stars = [];
+
+  function generateGalaxy() {
+    stars = [];
+    const maxR = 520;                 // range radiale (random)
+    const arms = 3;                   // numero bracci
+    const armSpread = 0.55;           // dispersione angolare attorno al braccio
+    const zThickness = +$thick.value; // spessore Z (random)
+    const spiralTight = +$spiral.value; // "relative angle" factor
+
+    for (let i = 0; i < N; i++) {
+      // r: distribuzione più densa al centro
+      const t = Math.random();
+      const r = Math.pow(t, 0.55) * maxR;
+
+      // braccio + angolo relativo: spirale
+      const arm = i % arms;
+      const baseAngle = (arm / arms) * Math.PI * 2;
+
+      // angle grows with radius => spiral
+      const relAngle = (r / maxR) * (Math.PI * 2) * spiralTight;
+
+      // jitter angolare (più grande verso l'esterno)
+      const jitter = (Math.random() - 0.5) * armSpread * (0.25 + (r / maxR));
+
+      const angle = baseAngle + relAngle + jitter;
+
+      // dispersione nel piano (ellisse leggera)
+      const x = Math.cos(angle) * r * (1.00 + rand(0.08, -0.08));
+      const y = Math.sin(angle) * r * (0.72 + rand(0.10, -0.10));
+
+      // z random: disco con code più rare
+      const z = (Math.random() - 0.5) * zThickness * (0.35 + Math.random());
+
+      // luminosità/size
+      const mag = Math.pow(Math.random(), 0.45); // più stelle deboli che forti
+      const size = 0.9 + mag * 2.4;
+
+      stars.push({ x, y, z, mag, size });
+    }
+  }
+
+  // --- Camera / controls
+  const cam = {
+    yaw: 0.55, pitch: -0.35,
+    dist: 980,
+    panX: 0, panY: 0
+  };
+
+  let dragging = false;
+  let lastX = 0, lastY = 0;
+  let shiftDown = false;
+
+  window.addEventListener('keydown', (e) => { if (e.key === 'Shift') shiftDown = true; });
+  window.addEventListener('keyup',   (e) => { if (e.key === 'Shift') shiftDown = false; });
+
+  canvas.addEventListener('pointerdown', (e) => {
+    dragging = true;
+    canvas.setPointerCapture(e.pointerId);
+    lastX = e.clientX; lastY = e.clientY;
+  });
+  canvas.addEventListener('pointerup', () => { dragging = false; });
+  canvas.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+    lastX = e.clientX; lastY = e.clientY;
+
+    if (shiftDown) {
+      cam.panX += dx * 1.2;
+      cam.panY += dy * 1.2;
+    } else {
+      cam.yaw   += dx * 0.006;
+      cam.pitch += dy * 0.006;
+      cam.pitch = clamp(cam.pitch, -1.35, 1.35);
+    }
+  });
+
+  canvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const delta = Math.sign(e.deltaY);
+    cam.dist *= (delta > 0 ? 1.08 : 0.93);
+    cam.dist = clamp(cam.dist, 420, 2400);
+  }, { passive: false });
+
+  // --- 3D math (rotate + perspective)
+  function project(p, w, h) {
+    // rotate around Y (yaw), then X (pitch)
+    const cy = Math.cos(cam.yaw),  sy = Math.sin(cam.yaw);
+    const cx = Math.cos(cam.pitch), sx = Math.sin(cam.pitch);
+
+    let x = p.x, y = p.y, z = p.z;
+
+    // yaw: Y axis
+    let x1 = x * cy + z * sy;
+    let z1 = -x * sy + z * cy;
+
+    // pitch: X axis
+    let y2 = y * cx - z1 * sx;
+    let z2 = y * sx + z1 * cx;
+
+    // camera translate
+    z2 += cam.dist;
+
+    // perspective
+    const f = 900;
+    const s = f / z2;
+
+    return {
+      sx: (x1 * s) + (w * 0.5) + cam.panX,
+      sy: (y2 * s) + (h * 0.5) + cam.panY,
+      s,
+      z: z2
+    };
+  }
+
+  // --- Render loop
+  let lastT = performance.now();
+  let fps = 0;
+
+  function draw(t) {
+    const dt = Math.max(0.0001, (t - lastT) / 1000);
+    lastT = t;
+    fps = fps * 0.92 + (1/dt) * 0.08;
+
+    const dpr = resize();
+    const W = canvas.width, H = canvas.height;
+
+    // background
+    ctx.fillStyle = '#05060a';
+    ctx.fillRect(0, 0, W, H);
+
+    // subtle vignette
+    const g = ctx.createRadialGradient(W*0.5, H*0.5, 0, W*0.5, H*0.5, Math.max(W,H)*0.7);
+    g.addColorStop(0, 'rgba(0,0,0,0)');
+    g.addColorStop(1, 'rgba(0,0,0,0.55)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,W,H);
+
+    // project + sort back-to-front
+    const pts = stars.map(s => {
+      const p = project(s, W, H);
+      return { ...s, ...p };
+    }).filter(p => p.z > 1);
+
+    pts.sort((a,b) => b.z - a.z);
+
+    // draw stars
+    for (const p of pts) {
+      const alpha = clamp(0.08 + p.mag * 0.85, 0.08, 0.95);
+      const r = (p.size * p.s) * dpr * 1.15;
+
+      // core
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+      ctx.arc(p.sx, p.sy, r, 0, Math.PI * 2);
+      ctx.fill();
+
+      // glow (cheap)
+      if (p.mag > 0.55) {
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(180,210,255,${alpha * 0.22})`;
+        ctx.arc(p.sx, p.sy, r * 3.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    $stats.textContent = `${N} stars · ${fps.toFixed(0)} FPS · zoom ${cam.dist.toFixed(0)}`;
+
+    requestAnimationFrame(draw);
+  }
+
+  // UI
+  $regen.addEventListener('click', generateGalaxy);
+  $spiral.addEventListener('input', generateGalaxy);
+  $thick.addEventListener('input', generateGalaxy);
+
+  // init
+  generateGalaxy();
+  requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>
