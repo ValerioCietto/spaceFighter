@@ -19,6 +19,23 @@
       fadeAlpha: 0,
     };
 
+    function getActiveShip() {
+      const owned = Array.isArray(state?.player?.ownedSpaceships)
+        ? state.player.ownedSpaceships
+        : [];
+      const activeId = Number(state?.player?.currentSpaceshipId ?? state?.player?.activeShipId ?? 0);
+      return owned.find((ship) => Number(ship?.id) === activeId) || owned[0] || null;
+    }
+
+    function playerCanUseHyperspace() {
+      const activeShip = getActiveShip();
+      const templateName = String(activeShip?.templateName ?? activeShip?.name ?? "").toLowerCase();
+      if (templateName.startsWith("human_")) return true;
+
+      const equippedOutfits = Array.isArray(activeShip?.outfits) ? activeShip.outfits : [];
+      return equippedOutfits.some((outfit) => outfit?.grantWarpTravel === true);
+    }
+
     function getNearestHyperspaceGate() {
       const gates = Array.isArray(systemInfo?.hyperspace_gates)
         ? systemInfo.hyperspace_gates
@@ -27,8 +44,10 @@
       let nearestGate = null;
       let nearestDist = Infinity;
 
+      if (!playerCanUseHyperspace()) return null;
+
       for (const gate of gates) {
-        if (!gate || gate.type !== "warp") continue;
+        if (!gate) continue;
 
         const dx = state.player.x - Number(gate.position_x ?? gate.x ?? 0);
         const dy = state.player.y - Number(gate.position_y ?? gate.y ?? 0);
@@ -165,7 +184,7 @@
       const ctx = getCanvasContext();
 
       for (const gate of gates) {
-        if (!gate || gate.type !== "warp") continue;
+        if (!gate) continue;
 
         const gateX = width / 2 + (Number(gate.position_x ?? gate.x ?? 0) - state.player.x);
         const gateY = height / 2 + (Number(gate.position_y ?? gate.y ?? 0) - state.player.y);
