@@ -9,7 +9,7 @@
     :root { color-scheme: dark; }
     html, body { height: 100%; margin: 0; background: #05060a; overflow: hidden; font-family: system-ui, sans-serif; }
     #wrap { position: relative; width: 100%; height: 100%; }
-    canvas { width: 100%; height: 100%; display: block; }
+    canvas { width: 100%; height: 100%; display: block; touch-action: none; } /* important for pinch */
     .hud {
       position: absolute; left: 12px; top: 12px;
       background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.12);
@@ -46,7 +46,7 @@
     <div class="row">
       <button class="btn" id="regen">Rigenera</button>
     </div>
-    <div class="hint">Drag: ruota · Wheel: zoom · Shift+Drag: pan</div>
+    <div class="hint">Drag: ruota · Wheel/Pinch: zoom · Shift+Drag: pan</div>
   </div>
 </div>
 
@@ -60,6 +60,10 @@
   const $regen  = document.getElementById('regen');
   const $stats  = document.getElementById('stats');
 
+  // Shared constants
+  const N = 300;
+  const MAX_R = 520;
+
   // --- Resize (DPR aware)
   function resize() {
     const dpr = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
@@ -71,48 +75,35 @@
     return dpr;
   }
 
-  // --- RNG helpers
-  const rand = (a=1, b=0) => Math.random() * (a - b) + b;
+  // --- helpers
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const rand = (a=1, b=0) => Math.random() * (a - b) + b;
 
   // --- Galaxy model
-  const N = 300;
   let stars = [];
-
   function generateGalaxy() {
     stars = [];
-    const maxR = 520;                 // range radiale (random)
-    const arms = 3;                   // numero bracci
-    const armSpread = 0.55;           // dispersione angolare attorno al braccio
-    const zThickness = +$thick.value; // spessore Z (random)
-    const spiralTight = +$spiral.value; // "relative angle" factor
+    const arms = 3;
+    const armSpread = 0.55;
+    const zThickness = +$thick.value;
+    const spiralTight = +$spiral.value;
 
     for (let i = 0; i < N; i++) {
-      // r: distribuzione più densa al centro
       const t = Math.random();
-      const r = Math.pow(t, 0.55) * maxR;
+      const r = Math.pow(t, 0.55) * MAX_R;
 
-      // braccio + angolo relativo: spirale
       const arm = i % arms;
       const baseAngle = (arm / arms) * Math.PI * 2;
+      const relAngle = (r / MAX_R) * (Math.PI * 2) * spiralTight;
 
-      // angle grows with radius => spiral
-      const relAngle = (r / maxR) * (Math.PI * 2) * spiralTight;
-
-      // jitter angolare (più grande verso l'esterno)
-      const jitter = (Math.random() - 0.5) * armSpread * (0.25 + (r / maxR));
-
+      const jitter = (Math.random() - 0.5) * armSpread * (0.25 + (r / MAX_R));
       const angle = baseAngle + relAngle + jitter;
 
-      // dispersione nel piano (ellisse leggera)
       const x = Math.cos(angle) * r * (1.00 + rand(0.08, -0.08));
       const y = Math.sin(angle) * r * (0.72 + rand(0.10, -0.10));
-
-      // z random: disco con code più rare
       const z = (Math.random() - 0.5) * zThickness * (0.35 + Math.random());
 
-      // luminosità/size
-      const mag = Math.pow(Math.random(), 0.45); // più stelle deboli che forti
+      const mag = Math.pow(Math.random(), 0.45);
       const size = 0.9 + mag * 2.4;
 
       stars.push({ x, y, z, mag, size });
@@ -120,41 +111,104 @@
   }
 
   // --- Camera / controls
-  const cam = {
-    yaw: 0.55, pitch: -0.35,
-    dist: 980,
-    panX: 0, panY: 0
-  };
+  const cam = { yaw: 0.55, pitch: -0.35, dist: 980, panX: 0, panY: 0 };
 
-  let dragging = false;
-  let lastX = 0, lastY = 0;
+  // Pointer tracking (supports multi-touch pinch)
+  const pointers = new Map(); // id -> {x,y}
+  let isPanning = false;      // shift+mouse pan OR 2-finger pan
   let shiftDown = false;
+
+  function pointerXY(e) { return { x: e.clientX, y: e.clientY }; }
+  function dist2(a, b) { const dx=a.x-b.x, dy=a.y-b.y; return Math.hypot(dx, dy); }
+  function centroid(a, b) { return { x:(a.x+b.x)/2, y:(a.y+b.y)/2 }; }
+
+  // gesture state
+  let lastSingle = null;        // {x,y} for 1-pointer rotate/pan
+  let pinchStartDist = 0;       // px
+  let pinchStartCamDist = 0;    // cam.dist at pinch start
+  let lastCentroid = null;      // for 2-finger pan
 
   window.addEventListener('keydown', (e) => { if (e.key === 'Shift') shiftDown = true; });
   window.addEventListener('keyup',   (e) => { if (e.key === 'Shift') shiftDown = false; });
 
   canvas.addEventListener('pointerdown', (e) => {
-    dragging = true;
     canvas.setPointerCapture(e.pointerId);
-    lastX = e.clientX; lastY = e.clientY;
-  });
-  canvas.addEventListener('pointerup', () => { dragging = false; });
-  canvas.addEventListener('pointermove', (e) => {
-    if (!dragging) return;
-    const dx = e.clientX - lastX;
-    const dy = e.clientY - lastY;
-    lastX = e.clientX; lastY = e.clientY;
+    pointers.set(e.pointerId, pointerXY(e));
 
-    if (shiftDown) {
-      cam.panX += dx * 1.2;
-      cam.panY += dy * 1.2;
-    } else {
-      cam.yaw   += dx * 0.006;
-      cam.pitch += dy * 0.006;
-      cam.pitch = clamp(cam.pitch, -1.35, 1.35);
+    if (pointers.size === 1) {
+      lastSingle = pointerXY(e);
+      isPanning = shiftDown;
+    } else if (pointers.size === 2) {
+      // init pinch
+      const arr = [...pointers.values()];
+      pinchStartDist = dist2(arr[0], arr[1]);
+      pinchStartCamDist = cam.dist;
+      lastCentroid = centroid(arr[0], arr[1]);
+      isPanning = true; // 2-finger gesture: pan + pinch
+      lastSingle = null;
     }
   });
 
+  canvas.addEventListener('pointerup', (e) => {
+    pointers.delete(e.pointerId);
+    if (pointers.size === 0) {
+      lastSingle = null;
+      lastCentroid = null;
+    } else if (pointers.size === 1) {
+      // fallback to single-pointer mode
+      const only = [...pointers.values()][0];
+      lastSingle = { ...only };
+      isPanning = shiftDown;
+      lastCentroid = null;
+    }
+  });
+
+  canvas.addEventListener('pointercancel', (e) => {
+    pointers.delete(e.pointerId);
+    lastSingle = null;
+    lastCentroid = null;
+  });
+
+  canvas.addEventListener('pointermove', (e) => {
+    if (!pointers.has(e.pointerId)) return;
+    pointers.set(e.pointerId, pointerXY(e));
+
+    if (pointers.size === 1 && lastSingle) {
+      const cur = [...pointers.values()][0];
+      const dx = cur.x - lastSingle.x;
+      const dy = cur.y - lastSingle.y;
+      lastSingle = { ...cur };
+
+      if (shiftDown || isPanning) {
+        cam.panX += dx * 1.2;
+        cam.panY += dy * 1.2;
+      } else {
+        cam.yaw   += dx * 0.006;
+        cam.pitch += dy * 0.006;
+        cam.pitch = clamp(cam.pitch, -1.35, 1.35);
+      }
+    }
+
+    if (pointers.size === 2) {
+      const arr = [...pointers.values()];
+      const d = dist2(arr[0], arr[1]);
+      const c = centroid(arr[0], arr[1]);
+
+      // Pinch zoom: distance ratio => zoom factor
+      // If fingers move apart (d bigger) => zoom in (cam.dist smaller)
+      const ratio = d / Math.max(1, pinchStartDist);
+      cam.dist = clamp(pinchStartCamDist / ratio, 420, 2400);
+
+      // 2-finger pan (centroid movement)
+      if (lastCentroid) {
+        cam.panX += (c.x - lastCentroid.x) * 1.2;
+        cam.panY += (c.y - lastCentroid.y) * 1.2;
+      }
+      lastCentroid = c;
+    }
+  });
+
+  // Mouse wheel zoom (desktop)
   canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
     const delta = Math.sign(e.deltaY);
@@ -164,24 +218,17 @@
 
   // --- 3D math (rotate + perspective)
   function project(p, w, h) {
-    // rotate around Y (yaw), then X (pitch)
-    const cy = Math.cos(cam.yaw),  sy = Math.sin(cam.yaw);
+    const cy = Math.cos(cam.yaw),   sy = Math.sin(cam.yaw);
     const cx = Math.cos(cam.pitch), sx = Math.sin(cam.pitch);
 
-    let x = p.x, y = p.y, z = p.z;
+    const x1 = p.x * cy + p.z * sy;
+    const z1 = -p.x * sy + p.z * cy;
 
-    // yaw: Y axis
-    let x1 = x * cy + z * sy;
-    let z1 = -x * sy + z * cy;
+    const y2 = p.y * cx - z1 * sx;
+    let z2 = p.y * sx + z1 * cx;
 
-    // pitch: X axis
-    let y2 = y * cx - z1 * sx;
-    let z2 = y * sx + z1 * cx;
-
-    // camera translate
     z2 += cam.dist;
 
-    // perspective
     const f = 900;
     const s = f / z2;
 
@@ -200,61 +247,56 @@
   function draw(t) {
     const dt = Math.max(0.0001, (t - lastT) / 1000);
     lastT = t;
-    fps = fps * 0.92 + (1/dt) * 0.08;
+    fps = fps * 0.92 + (1 / dt) * 0.08;
 
     const dpr = resize();
     const W = canvas.width, H = canvas.height;
 
-    // background
     ctx.fillStyle = '#05060a';
     ctx.fillRect(0, 0, W, H);
 
-    // subtle vignette
     const g = ctx.createRadialGradient(W*0.5, H*0.5, 0, W*0.5, H*0.5, Math.max(W,H)*0.7);
     g.addColorStop(0, 'rgba(0,0,0,0)');
     g.addColorStop(1, 'rgba(0,0,0,0.55)');
     ctx.fillStyle = g;
-    ctx.fillRect(0,0,W,H);
+    ctx.fillRect(0, 0, W, H);
 
-    // project + sort back-to-front
     const pts = stars.map(s => {
       const p = project(s, W, H);
       return { ...s, ...p };
     }).filter(p => p.z > 1);
 
-    pts.sort((a,b) => b.z - a.z);
+    pts.sort((a, b) => b.z - a.z);
 
-    // draw stars
     for (const p of pts) {
-      const alpha = clamp(0.08 + p.mag * 0.85, 0.08, 0.95);
-      const r = (p.size * p.s) * dpr * 1.15;
+      const rn = Math.min(1, Math.hypot(p.x, p.y) / MAX_R);
+      const hue = (1 - rn) * 190; // cyan(center) -> red(border)
 
-      // core
+      const alpha = clamp(0.08 + p.mag * 0.85, 0.08, 0.95);
+      const rr = (p.size * p.s) * dpr * 1.15;
+
       ctx.beginPath();
-      ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-      ctx.arc(p.sx, p.sy, r, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${hue}, 95%, 70%, ${alpha})`;
+      ctx.arc(p.sx, p.sy, rr, 0, Math.PI * 2);
       ctx.fill();
 
-      // glow (cheap)
       if (p.mag > 0.55) {
         ctx.beginPath();
-        ctx.fillStyle = `rgba(180,210,255,${alpha * 0.22})`;
-        ctx.arc(p.sx, p.sy, r * 3.2, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${hue}, 95%, 70%, ${alpha * 0.22})`;
+        ctx.arc(p.sx, p.sy, rr * 3.2, 0, Math.PI * 2);
         ctx.fill();
       }
     }
 
     $stats.textContent = `${N} stars · ${fps.toFixed(0)} FPS · zoom ${cam.dist.toFixed(0)}`;
-
     requestAnimationFrame(draw);
   }
 
-  // UI
+  // UI bindings
   $regen.addEventListener('click', generateGalaxy);
   $spiral.addEventListener('input', generateGalaxy);
   $thick.addEventListener('input', generateGalaxy);
 
-  // init
   generateGalaxy();
   requestAnimationFrame(draw);
 })();
