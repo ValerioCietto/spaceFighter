@@ -72,6 +72,56 @@
       width: 18px;
       height: 2px;
     }
+
+    #controls {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: grid;
+      grid-template-columns: repeat(3, 64px);
+      grid-template-rows: repeat(2, 52px);
+      gap: 8px;
+      z-index: 3;
+      user-select: none;
+    }
+
+    .ctrl-btn {
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: rgba(15, 24, 46, 0.6);
+      color: #fff;
+      border-radius: 10px;
+      font-size: 22px;
+      font-weight: 700;
+      touch-action: none;
+    }
+
+    .ctrl-btn:active,
+    .ctrl-btn.active {
+      background: rgba(100, 155, 255, 0.65);
+    }
+
+    #winMessage {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(48px, 14vw, 140px);
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: #fff77f;
+      text-transform: uppercase;
+      text-shadow: 0 0 18px rgba(255, 247, 127, 0.9);
+      pointer-events: none;
+      z-index: 4;
+      opacity: 0;
+      transition: opacity 180ms ease;
+    }
+
+    #winMessage.show {
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -80,10 +130,19 @@
     <div><kbd>A</kbd> steer left • <kbd>D</kbd> steer right</div>
     <div><kbd>W</kbd> forward • <kbd>S</kbd> decelerate to stop</div>
     <div><kbd>Space</kbd> fire bullets</div>
-    <div>Mobile: swipe ↔ turn • swipe ↑/↓ speed • tap fire</div>
-    <div id="stats">Speed: 0 | Plane Height: 250 | Score: 0 | Player HP: 100 | Enemy HP: 3</div>
+    <div>Touch: use direction buttons below</div>
+    <div id="stats">Speed: 0 | Plane Height: 250 | Score: 0 | Player HP: 100 | Enemy HP: 3 | Enemy Defeats: 0/9</div>
   </div>
   <div id="crosshair"></div>
+  <div id="controls">
+    <div></div>
+    <button class="ctrl-btn" data-key="w" aria-label="Up">▲</button>
+    <div></div>
+    <button class="ctrl-btn" data-key="a" aria-label="Left">◀</button>
+    <button class="ctrl-btn" data-key="s" aria-label="Down">▼</button>
+    <button class="ctrl-btn" data-key="d" aria-label="Right">▶</button>
+  </div>
+  <div id="winMessage">You Win</div>
 
   <script type="module">
     import * as THREE from "https://unpkg.com/three@0.161.0/build/three.module.js";
@@ -222,14 +281,46 @@
     const fireInterval = 0.12;
     let score = 0;
     let playerHp = 100;
-    let enemyHp = 3;
+    const ENEMY_MAX_HP = 3;
+    const MAX_ENEMY_DEFEATS = 9;
+    let enemyHp = ENEMY_MAX_HP;
+    let enemyDefeats = 0;
     let enemyFireCooldown = 1;
-    const mobileInput = {
-      turning: 0,
-      throttle: 0,
-    };
+    const enemyChaseSpeed = 260;
+    let isGameWon = false;
 
     const statsEl = document.getElementById("stats");
+    const winMessageEl = document.getElementById("winMessage");
+
+    const controlButtons = Array.from(document.querySelectorAll(".ctrl-btn"));
+
+    function setButtonActive(key, state) {
+      const btn = controlButtons.find((button) => button.dataset.key === key);
+      if (btn) {
+        btn.classList.toggle("active", state);
+      }
+    }
+
+    function setDirectionalState(key, state) {
+      if (!(key in keys)) {
+        return;
+      }
+      keys[key] = state;
+      setButtonActive(key, state);
+    }
+
+    for (const btn of controlButtons) {
+      const key = btn.dataset.key;
+      btn.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        btn.setPointerCapture(event.pointerId);
+        setDirectionalState(key, true);
+      });
+      const clear = () => setDirectionalState(key, false);
+      btn.addEventListener("pointerup", clear);
+      btn.addEventListener("pointercancel", clear);
+      btn.addEventListener("pointerleave", clear);
+    }
 
     function clampShipToArena() {
       ship.position.x = THREE.MathUtils.clamp(ship.position.x, arenaBox.min.x, arenaBox.max.x);
@@ -266,9 +357,7 @@
 
     function setKeyState(event, state) {
       const key = event.key.toLowerCase();
-      if (key in keys) {
-        keys[key] = state;
-      }
+      setDirectionalState(key, state);
 
       if (key === " " && state) {
         event.preventDefault();
@@ -287,44 +376,6 @@
 
     window.addEventListener("keyup", (event) => setKeyState(event, false));
 
-    let touchStartX = 0;
-    let touchStartY = 0;
-
-    renderer.domElement.addEventListener("touchstart", (event) => {
-      if (!event.changedTouches.length) {
-        return;
-      }
-      const touch = event.changedTouches[0];
-      touchStartX = touch.clientX;
-      touchStartY = touch.clientY;
-    }, { passive: true });
-
-    renderer.domElement.addEventListener("touchend", (event) => {
-      if (!event.changedTouches.length) {
-        return;
-      }
-      const touch = event.changedTouches[0];
-      const dx = touch.clientX - touchStartX;
-      const dy = touch.clientY - touchStartY;
-      const absX = Math.abs(dx);
-      const absY = Math.abs(dy);
-      const minSwipe = 30;
-
-      if (absX < minSwipe && absY < minSwipe) {
-        if (fireCooldown <= 0) {
-          firePlayerBullet();
-          fireCooldown = fireInterval;
-        }
-        return;
-      }
-
-      if (absX > absY) {
-        mobileInput.turning = dx > 0 ? -1 : 1;
-      } else {
-        mobileInput.throttle = dy < 0 ? 1 : -1;
-      }
-    }, { passive: true });
-
     window.addEventListener("resize", () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
@@ -340,19 +391,10 @@
       if (keys.d) {
         ship.rotation.y -= yawSpeed * delta;
       }
-      if (mobileInput.turning !== 0) {
-        ship.rotation.y += mobileInput.turning * yawSpeed * delta;
-      }
       if (keys.w) {
         speed = Math.min(maxSpeed, speed + acceleration * delta);
       }
       if (keys.s) {
-        speed = Math.max(0, speed - deceleration * delta);
-      }
-      if (mobileInput.throttle > 0) {
-        speed = Math.min(maxSpeed, speed + acceleration * delta);
-      }
-      if (mobileInput.throttle < 0) {
         speed = Math.max(0, speed - deceleration * delta);
       }
 
@@ -417,6 +459,15 @@
             if (enemyHp <= 0) {
               scene.remove(enemy);
               score += 100;
+              enemyDefeats += 1;
+
+              if (enemyDefeats < MAX_ENEMY_DEFEATS) {
+                enemy.position.copy(randomTargetPosition());
+                enemy.rotation.set(0, 0, 0);
+                enemyHp = ENEMY_MAX_HP;
+                enemyFireCooldown = 0.75;
+                scene.add(enemy);
+              }
             }
           }
         }
@@ -431,6 +482,10 @@
       if (toPlayer.lengthSq() > 0.001) {
         const targetYaw = Math.atan2(toPlayer.x, toPlayer.z);
         enemy.rotation.y = -targetYaw;
+        enemy.position.addScaledVector(toPlayer.normalize(), enemyChaseSpeed * delta);
+        enemy.position.x = THREE.MathUtils.clamp(enemy.position.x, arenaBox.min.x, arenaBox.max.x);
+        enemy.position.y = FLIGHT_PLANE_HEIGHT;
+        enemy.position.z = THREE.MathUtils.clamp(enemy.position.z, arenaBox.min.z, arenaBox.max.z);
       }
 
       enemyFireCooldown -= delta;
@@ -452,7 +507,15 @@
     }
 
     function updateHud() {
-      statsEl.textContent = `Speed: ${speed.toFixed(0)} | Plane Height: ${FLIGHT_PLANE_HEIGHT} | Score: ${score} | Player HP: ${playerHp} | Enemy HP: ${Math.max(0, enemyHp)}`;
+      const enemyHpDisplay = enemyHp > 0 ? enemyHp : 0;
+      statsEl.textContent = `Speed: ${speed.toFixed(0)} | Plane Height: ${FLIGHT_PLANE_HEIGHT} | Score: ${score} | Player HP: ${playerHp} | Enemy HP: ${enemyHpDisplay} | Enemy Defeats: ${enemyDefeats}/${MAX_ENEMY_DEFEATS}`;
+    }
+
+    function checkWinCondition() {
+      if (!isGameWon && targets.length === 0 && enemyDefeats >= MAX_ENEMY_DEFEATS && enemyHp <= 0) {
+        isGameWon = true;
+        winMessageEl.classList.add("show");
+      }
     }
 
     function animate() {
@@ -468,6 +531,7 @@
       updateDamage();
       updateCamera();
       updateHud();
+      checkWinCondition();
 
       renderer.render(scene, camera);
       requestAnimationFrame(animate);
