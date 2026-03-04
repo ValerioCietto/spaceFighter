@@ -297,6 +297,21 @@ body {
   gap: 8px;
 }
 
+#inventory-close-btn,
+#galaxy-close-btn {
+  padding: 8px 12px;
+  background: #0e2f4a;
+  color: #dff5ff;
+  border: 1px solid #2f88bf;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#inventory-close-btn:hover,
+#galaxy-close-btn:hover {
+  background: #14456a;
+}
+
 .death-dialog {
   background: #120000;
   color: #f55;
