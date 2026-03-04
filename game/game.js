@@ -79,6 +79,7 @@
           // weapons the player has bought and can equip
           ownedWeapons: [],
           ownedOutfits: [],
+          ownedSoftware: [],
           missions: [],
         },
       
