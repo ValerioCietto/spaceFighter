@@ -80,7 +80,8 @@
     <div><kbd>A</kbd> steer left • <kbd>D</kbd> steer right</div>
     <div><kbd>W</kbd> forward • <kbd>S</kbd> decelerate to stop</div>
     <div><kbd>Space</kbd> fire bullets</div>
-    <div id="stats">Speed: 0 | Plane Height: 250 | Hits: 0</div>
+    <div>Mobile: swipe ↔ turn • swipe ↑/↓ speed • tap fire</div>
+    <div id="stats">Speed: 0 | Plane Height: 250 | Score: 0 | Player HP: 100 | Enemy HP: 3</div>
   </div>
   <div id="crosshair"></div>
 
@@ -160,12 +161,31 @@
     scene.add(ship);
 
     const bulletGeometry = new THREE.SphereGeometry(5, 10, 10);
-    const bulletMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    const bullets = [];
+    const playerBulletMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const enemyBulletMaterial = new THREE.MeshBasicMaterial({ color: 0xc07bff });
+    const playerBullets = [];
+    const enemyBullets = [];
 
     const targetGeometry = new THREE.SphereGeometry(50, 24, 24);
     const targetMaterial = new THREE.MeshStandardMaterial({ color: 0xff5a5a, emissive: 0x240000, roughness: 0.45 });
     const targets = [];
+
+    function createShipMesh(mainColor = 0x67b7ff, wingColor = 0x2e6ea8) {
+      const model = new THREE.Group();
+      const body = new THREE.Mesh(
+        shipGeom,
+        new THREE.MeshStandardMaterial({ color: mainColor, flatShading: true, metalness: 0.2, roughness: 0.45 })
+      );
+      const modelWing = new THREE.Mesh(wingGeom, new THREE.MeshStandardMaterial({ color: wingColor }));
+      modelWing.position.set(0, -8, -4);
+      model.add(body);
+      model.add(modelWing);
+      return model;
+    }
+
+    const enemy = createShipMesh(0xb048ff, 0x7e2bc2);
+    enemy.position.set(0, FLIGHT_PLANE_HEIGHT, -1300);
+    scene.add(enemy);
 
     function randomTargetPosition() {
       return new THREE.Vector3(
@@ -200,7 +220,14 @@
     const yawSpeed = 1.55;
     let fireCooldown = 0;
     const fireInterval = 0.12;
-    let hits = 0;
+    let score = 0;
+    let playerHp = 100;
+    let enemyHp = 3;
+    let enemyFireCooldown = 1;
+    const mobileInput = {
+      turning: 0,
+      throttle: 0,
+    };
 
     const statsEl = document.getElementById("stats");
 
@@ -210,16 +237,31 @@
       ship.position.z = THREE.MathUtils.clamp(ship.position.z, arenaBox.min.z, arenaBox.max.z);
     }
 
-    function fireBullet() {
-      const bullet = new THREE.Mesh(bulletGeometry, bulletMaterial);
-      const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(ship.quaternion).normalize();
-      const start = ship.position.clone().add(direction.clone().multiplyScalar(40));
+    function createBullet(source, direction, material, speedValue, lifeTime, list) {
+      const bullet = new THREE.Mesh(bulletGeometry, material);
+      const start = source.position.clone().add(direction.clone().multiplyScalar(40));
 
       bullet.position.copy(start);
-      bullet.userData.velocity = direction.multiplyScalar(1700);
-      bullet.userData.life = 2.7;
+      bullet.userData.velocity = direction.multiplyScalar(speedValue);
+      bullet.userData.life = lifeTime;
       scene.add(bullet);
-      bullets.push(bullet);
+      list.push(bullet);
+    }
+
+    function firePlayerBullet() {
+      const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(ship.quaternion).normalize();
+      createBullet(ship, direction, playerBulletMaterial, 1700, 2.7, playerBullets);
+    }
+
+    function fireEnemyBullet() {
+      if (enemyHp <= 0) {
+        return;
+      }
+      const direction = ship.position.clone().sub(enemy.position).setY(0).normalize();
+      if (direction.lengthSq() === 0) {
+        return;
+      }
+      createBullet(enemy, direction, enemyBulletMaterial, 900, 4, enemyBullets);
     }
 
     function setKeyState(event, state) {
@@ -237,13 +279,51 @@
       setKeyState(event, true);
       if (event.key === " ") {
         if (fireCooldown <= 0) {
-          fireBullet();
+          firePlayerBullet();
           fireCooldown = fireInterval;
         }
       }
     });
 
     window.addEventListener("keyup", (event) => setKeyState(event, false));
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    renderer.domElement.addEventListener("touchstart", (event) => {
+      if (!event.changedTouches.length) {
+        return;
+      }
+      const touch = event.changedTouches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+    }, { passive: true });
+
+    renderer.domElement.addEventListener("touchend", (event) => {
+      if (!event.changedTouches.length) {
+        return;
+      }
+      const touch = event.changedTouches[0];
+      const dx = touch.clientX - touchStartX;
+      const dy = touch.clientY - touchStartY;
+      const absX = Math.abs(dx);
+      const absY = Math.abs(dy);
+      const minSwipe = 30;
+
+      if (absX < minSwipe && absY < minSwipe) {
+        if (fireCooldown <= 0) {
+          firePlayerBullet();
+          fireCooldown = fireInterval;
+        }
+        return;
+      }
+
+      if (absX > absY) {
+        mobileInput.turning = dx > 0 ? -1 : 1;
+      } else {
+        mobileInput.throttle = dy < 0 ? 1 : -1;
+      }
+    }, { passive: true });
 
     window.addEventListener("resize", () => {
       camera.aspect = window.innerWidth / window.innerHeight;
@@ -260,10 +340,19 @@
       if (keys.d) {
         ship.rotation.y -= yawSpeed * delta;
       }
+      if (mobileInput.turning !== 0) {
+        ship.rotation.y += mobileInput.turning * yawSpeed * delta;
+      }
       if (keys.w) {
         speed = Math.min(maxSpeed, speed + acceleration * delta);
       }
       if (keys.s) {
+        speed = Math.max(0, speed - deceleration * delta);
+      }
+      if (mobileInput.throttle > 0) {
+        speed = Math.min(maxSpeed, speed + acceleration * delta);
+      }
+      if (mobileInput.throttle < 0) {
         speed = Math.max(0, speed - deceleration * delta);
       }
 
@@ -280,16 +369,16 @@
       camera.lookAt(ship.position.clone().add(new THREE.Vector3(0, 18, 0)));
     }
 
-    function updateBullets(delta) {
-      for (let i = bullets.length - 1; i >= 0; i -= 1) {
-        const bullet = bullets[i];
+    function updateBullets(delta, list) {
+      for (let i = list.length - 1; i >= 0; i -= 1) {
+        const bullet = list[i];
         bullet.position.addScaledVector(bullet.userData.velocity, delta);
         bullet.userData.life -= delta;
 
         const outOfBounds = !arenaBox.containsPoint(bullet.position);
         if (bullet.userData.life <= 0 || outOfBounds) {
           scene.remove(bullet);
-          bullets.splice(i, 1);
+          list.splice(i, 1);
         }
       }
     }
@@ -299,35 +388,71 @@
         target.rotation.y += delta * 0.5;
       }
 
-      for (let b = bullets.length - 1; b >= 0; b -= 1) {
-        const bullet = bullets[b];
+      for (let b = playerBullets.length - 1; b >= 0; b -= 1) {
+        const bullet = playerBullets[b];
 
         for (let t = targets.length - 1; t >= 0; t -= 1) {
           const target = targets[t];
           if (bullet.position.distanceTo(target.position) <= 55) {
             scene.remove(bullet);
-            bullets.splice(b, 1);
-
-            const hitPos = target.position.clone();
+            playerBullets.splice(b, 1);
             scene.remove(target);
             targets.splice(t, 1);
 
-            hits += 1;
-            spawnTarget();
-            spawnTarget(hitPos.add(new THREE.Vector3(
-              THREE.MathUtils.randFloat(-300, 300),
-              0,
-              THREE.MathUtils.randFloat(-300, 300)
-            )).clamp(arenaBox.min.clone().addScalar(60), arenaBox.max.clone().subScalar(60)));
+            score += 10;
 
             break;
           }
         }
       }
+
+      if (enemyHp > 0) {
+        for (let b = playerBullets.length - 1; b >= 0; b -= 1) {
+          const bullet = playerBullets[b];
+          if (bullet.position.distanceTo(enemy.position) <= 40) {
+            scene.remove(bullet);
+            playerBullets.splice(b, 1);
+            enemyHp -= 1;
+
+            if (enemyHp <= 0) {
+              scene.remove(enemy);
+              score += 100;
+            }
+          }
+        }
+      }
+    }
+
+    function updateEnemy(delta) {
+      if (enemyHp <= 0) {
+        return;
+      }
+      const toPlayer = ship.position.clone().sub(enemy.position).setY(0);
+      if (toPlayer.lengthSq() > 0.001) {
+        const targetYaw = Math.atan2(toPlayer.x, toPlayer.z);
+        enemy.rotation.y = -targetYaw;
+      }
+
+      enemyFireCooldown -= delta;
+      if (enemyFireCooldown <= 0) {
+        fireEnemyBullet();
+        enemyFireCooldown = 1;
+      }
+    }
+
+    function updateDamage() {
+      for (let i = enemyBullets.length - 1; i >= 0; i -= 1) {
+        const bullet = enemyBullets[i];
+        if (bullet.position.distanceTo(ship.position) <= 35) {
+          scene.remove(bullet);
+          enemyBullets.splice(i, 1);
+          playerHp = Math.max(0, playerHp - 10);
+        }
+      }
     }
 
     function updateHud() {
-      statsEl.textContent = `Speed: ${speed.toFixed(0)} | Plane Height: ${FLIGHT_PLANE_HEIGHT} | Hits: ${hits}`;
+      statsEl.textContent = `Speed: ${speed.toFixed(0)} | Plane Height: ${FLIGHT_PLANE_HEIGHT} | Score: ${score} | Player HP: ${playerHp} | Enemy HP: ${Math.max(0, enemyHp)}`;
     }
 
     function animate() {
@@ -336,8 +461,11 @@
       fireCooldown -= delta;
 
       updateShip(delta);
-      updateBullets(delta);
+      updateEnemy(delta);
+      updateBullets(delta, playerBullets);
+      updateBullets(delta, enemyBullets);
       updateTargets(delta);
+      updateDamage();
       updateCamera();
       updateHud();
 
