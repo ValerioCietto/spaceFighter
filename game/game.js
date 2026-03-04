@@ -104,7 +104,7 @@
       const STATION_RADIUS = 80;
       const STATION_ROT_SPEED = Math.PI / 32; // rad/sec
 
-      const STATION_ASSET = window.BASE_PATH + "/assets/human_space_station_basic.png";
+      const STATION_ASSET = window.BASE_PATH + "/assets/human_space_station_basic1.png";
       const stationImg = new Image();
       stationImg.src = STATION_ASSET;
 
@@ -2231,8 +2231,8 @@
         hidden: new Image(),
       };
 
-      gateImageByType.warp.src = `${baseAssetPath}/gate_human.png`;
-      gateImageByType.chaos.src = `${baseAssetPath}/gate_jared.png`;
+      gateImageByType.warp.src = `${baseAssetPath}/gate_human1.png`;
+      gateImageByType.chaos.src = `${baseAssetPath}/gate_jared1.png`;
       gateImageByType.hidden.src = `${baseAssetPath}/gate_technician.png`;
 
       let gatePulseT = 0;

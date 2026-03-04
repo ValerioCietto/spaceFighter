@@ -20,9 +20,7 @@ const SystemInfo = {
         }
     ],
     hyperspace_gates: [   
-    ],
-    max_enemy_number:0,
-    spawn_rate:1, // threat level
+    ]
 };
 // on window load, fetch galaxy-map.json and populate SystemInfo.hyperspace_gates with the data, then export SystemInfo
 window.addEventListener("load", () => {

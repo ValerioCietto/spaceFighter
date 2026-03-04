@@ -90,8 +90,8 @@
       position: fixed;
       right: 20px;
       bottom: 28px;
-      width: 88px;
-      height: 88px;
+      width: 66px;
+      height: 66px;
       border-radius: 50%;
       border: 2px solid rgba(255, 255, 255, 0.4);
       background: rgba(140, 32, 32, 0.65);
@@ -185,7 +185,7 @@
     scene.background = new THREE.Color(0x01020a);
     scene.fog = new THREE.Fog(0x01020a, 1500, 7000);
 
-    const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 12000);
+    const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 22000);
 
     const ambient = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambient);
@@ -226,8 +226,10 @@
 
     const ship = new THREE.Group();
 
-    const shipGeom = new THREE.ConeGeometry(20, 60, 3);
-    shipGeom.rotateX(Math.PI / 2);
+    const shipGeom = new THREE.ConeGeometry(20, 80, 3);
+    shipGeom.rotateX(-Math.PI / 2);
+    //shipGeom.rotateZ(Math.PI / 2);
+    // shipGeom.rotateY(Math.PI / 2);
     const shipMat = new THREE.MeshStandardMaterial({ color: 0x67b7ff, flatShading: true, metalness: 0.2, roughness: 0.45 });
     const shipMesh = new THREE.Mesh(shipGeom, shipMat);
     ship.add(shipMesh);
@@ -295,7 +297,7 @@
     };
 
     let speed = 0;
-    const maxSpeed = 700;
+    const maxSpeed = 1700;
     const acceleration = 360;
     const deceleration = 430;
     const yawSpeed = 1.55;
