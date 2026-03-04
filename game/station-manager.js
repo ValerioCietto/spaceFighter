@@ -269,6 +269,8 @@
         case "Market":
           html = subtabId === "Sell Weapons"
             ? `<div id="weapon-shop-list"></div>`
+            : subtabId === "Software Shop"
+              ? `<div id="software-shop-list"></div>`
             : `<p>${subtabId} is coming soon.</p>`;
           break;
 
@@ -298,6 +300,9 @@
       }
       if (tabId === "Market" && subtabId === "Sell Weapons") {
         this.renderSellWeaponShop();
+      }
+      if (tabId === "Market" && subtabId === "Software Shop") {
+        this.renderSoftwareShop();
       }
       if (tabId === "Plaza" && subtabId === "Missions") {
         this.renderMissions();
@@ -571,6 +576,31 @@
             return;
           }
           console.log("[weapon-shop]", msg);
+        },
+      });
+    },
+
+    renderSoftwareShop() {
+      const rootEl = document.getElementById("software-shop-list");
+      if (!rootEl || typeof global.renderStationSoftwareShop !== "function") return;
+
+      const state = this._options.getPlayerState ? this._options.getPlayerState() : null;
+      rootEl.innerHTML = "";
+
+      global.renderStationSoftwareShop({
+        rootEl,
+        state,
+        onBuy: (software) => {
+          if (typeof this._options.onSoftwareBought === "function") {
+            this._options.onSoftwareBought(software, state);
+          }
+        },
+        onToast: (msg) => {
+          if (typeof this._options.onToast === "function") {
+            this._options.onToast(msg);
+            return;
+          }
+          console.log("[software-shop]", msg);
         },
       });
     },
