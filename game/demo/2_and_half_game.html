@@ -86,6 +86,27 @@
       user-select: none;
     }
 
+    #fireButton {
+      position: fixed;
+      right: 20px;
+      bottom: 28px;
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      background: rgba(140, 32, 32, 0.65);
+      color: #fff;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      z-index: 3;
+      touch-action: none;
+    }
+
+    #fireButton:active,
+    #fireButton.active {
+      background: rgba(255, 96, 96, 0.9);
+    }
+
     .ctrl-btn {
       border: 1px solid rgba(255, 255, 255, 0.35);
       background: rgba(15, 24, 46, 0.6);
@@ -130,7 +151,7 @@
     <div><kbd>A</kbd> steer left • <kbd>D</kbd> steer right</div>
     <div><kbd>W</kbd> forward • <kbd>S</kbd> decelerate to stop</div>
     <div><kbd>Space</kbd> fire bullets</div>
-    <div>Touch: use direction buttons below</div>
+    <div>Click/tap screen or FIRE button to shoot</div>
     <div id="stats">Speed: 0 | Plane Height: 250 | Score: 0 | Player HP: 100 | Enemy HP: 3 | Enemy Defeats: 0/9</div>
   </div>
   <div id="crosshair"></div>
@@ -142,6 +163,7 @@
     <button class="ctrl-btn" data-key="s" aria-label="Down">▼</button>
     <button class="ctrl-btn" data-key="d" aria-label="Right">▶</button>
   </div>
+  <button id="fireButton" aria-label="Fire">FIRE</button>
   <div id="winMessage">You Win</div>
 
   <script type="module">
@@ -293,6 +315,7 @@
     const winMessageEl = document.getElementById("winMessage");
 
     const controlButtons = Array.from(document.querySelectorAll(".ctrl-btn"));
+    const fireButton = document.getElementById("fireButton");
 
     function setButtonActive(key, state) {
       const btn = controlButtons.find((button) => button.dataset.key === key);
@@ -344,6 +367,13 @@
       createBullet(ship, direction, playerBulletMaterial, 1700, 2.7, playerBullets);
     }
 
+    function tryFirePlayerBullet() {
+      if (fireCooldown <= 0) {
+        firePlayerBullet();
+        fireCooldown = fireInterval;
+      }
+    }
+
     function fireEnemyBullet() {
       if (enemyHp <= 0) {
         return;
@@ -367,14 +397,24 @@
     window.addEventListener("keydown", (event) => {
       setKeyState(event, true);
       if (event.key === " ") {
-        if (fireCooldown <= 0) {
-          firePlayerBullet();
-          fireCooldown = fireInterval;
-        }
+        tryFirePlayerBullet();
       }
     });
 
     window.addEventListener("keyup", (event) => setKeyState(event, false));
+
+    renderer.domElement.addEventListener("pointerdown", () => {
+      tryFirePlayerBullet();
+    });
+
+    fireButton.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      fireButton.classList.add("active");
+      tryFirePlayerBullet();
+    });
+    fireButton.addEventListener("pointerup", () => fireButton.classList.remove("active"));
+    fireButton.addEventListener("pointercancel", () => fireButton.classList.remove("active"));
+    fireButton.addEventListener("pointerleave", () => fireButton.classList.remove("active"));
 
     window.addEventListener("resize", () => {
       camera.aspect = window.innerWidth / window.innerHeight;
