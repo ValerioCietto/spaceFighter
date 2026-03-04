@@ -3,7 +3,7 @@
     {
       "name": "PEA Shooter",
       "image": "pea_shooter.png",
-      "cost": 1000,
+      "cost": 100,
       "damage": 1,
       "base_speed": 250,
       "life_span": 3.0,
@@ -17,7 +17,7 @@
     },
     {
       "name": "Thorino lightning",
-      "cost": 1000,
+      "cost": 100,
       "damage": 0.1,
       "damageEnergy": 0.2,
       "base_speed": 2000,
@@ -35,7 +35,7 @@
     },
     {
       "name": "BABY beam",
-      "cost": 1000,
+      "cost": 100,
       "damage": 0.1,
       "base_speed": 2000,
       "life_span": 0.02,
@@ -52,7 +52,7 @@
     },
     {
       "name": "TEENAGE beam",
-      "cost": 10000,
+      "cost": 1000,
       "damage": 0.5,
       "base_speed": 2000,
       "life_span": 0.02,
@@ -69,7 +69,7 @@
     },
     {
       "name": "ADULT beam",
-      "cost": 40000,
+      "cost": 4000,
       "damage": 2,
       "base_speed": 2000,
       "life_span": 0.02,
@@ -86,7 +86,7 @@
     },
     {
       "name": "ELDEST beam",
-      "cost": 120000,
+      "cost": 12000,
       "damage": 2,
       "base_speed": 2000,
       "life_span": 0.02,
@@ -103,7 +103,7 @@
     },
     {
       "name": "Drakefire Turret",
-      "cost": 90000,
+      "cost": 9000,
       "damage": 5,
       "base_speed": 320,
       "acceleration": -100,
@@ -121,7 +121,7 @@
     },
     {
       "name": "PseudoTurret",
-      "cost": 2500,
+      "cost": 250,
       "damage": 1,
       "base_speed": 500,
       "acceleration": -100,
@@ -139,7 +139,7 @@
     },
     {
       "name": "PseudoTurret mk2",
-      "cost": 15000,
+      "cost": 1500,
       "damage": 2,
       "base_speed": 1000,
       "acceleration": -100,
@@ -157,7 +157,7 @@
     },
     {
       "name": "PseudoTurret mk3",
-      "cost": 90000,
+      "cost": 9000,
       "damage": 3,
       "base_speed": 1500,
       "acceleration": -100,
@@ -175,7 +175,7 @@
     },
     {
       "name": "AutoSniper",
-      "cost": 1000,
+      "cost": 100,
       "damage": 5,
       "base_speed": 1000,
       "acceleration": -100,
@@ -193,7 +193,7 @@
     },
     {
       "name": "Wyrmfire",
-      "cost": 3000,
+      "cost": 300,
       "damage": 5,
       "base_speed": 220,
       "acceleration": -100,
@@ -210,7 +210,7 @@
     },
     {
       "name": "Drakefire",
-      "cost": 30000,
+      "cost": 3000,
       "damage": 5,
       "base_speed": 320,
       "acceleration": -100,
@@ -227,7 +227,7 @@
     },
     {
       "name": "Dragonfire",
-      "cost": 300000,
+      "cost": 30000,
       "damage": 5,
       "base_speed": 420,
       "acceleration": -100,
@@ -244,7 +244,7 @@
     },
     {
       "name": "Ring",
-      "cost": 90000,
+      "cost": 9000,
       "damage": 1,
       "base_speed": 100,
       "acceleration": -100,
@@ -260,7 +260,7 @@
     },
     {
       "name": "Barrage",
-      "cost": 220000,
+      "cost": 22000,
       "damage": 30,
       "base_speed": 1400,
       "acceleration": -100,
@@ -276,7 +276,7 @@
     },
     {
       "name": "Loitering missile barrage",
-      "cost": 120000,
+      "cost": 12000,
       "damage": 5,
       "base_speed": 1000,
       "acceleration": -100,
@@ -294,7 +294,7 @@
     },
     {
       "name": "Shotgun missile barrage",
-      "cost": 15000,
+      "cost": 1500,
       "damage": 10,
       "base_speed": 1000,
       "acceleration": -200,
@@ -312,7 +312,7 @@
     },
     {
       "name": "Slowing run Missile",
-      "cost": 200000,
+      "cost": 20000,
       "damage": 5,
       "base_speed": 1000,
       "acceleration": -200,
@@ -332,7 +332,7 @@
     },
     {
       "name": "Magnetic mine cluster",
-      "cost": 45000,
+      "cost": 4500,
       "damage": 10,
       "base_speed": 10,
       "acceleration": 10,
@@ -352,7 +352,7 @@
     },
     {
       "name": "Mine cluster",
-      "cost": 30000,
+      "cost": 3000,
       "damage": 20,
       "base_speed": 0,
       "acceleration": 0,
@@ -371,7 +371,7 @@
     },
     {
       "name": "Sniper",
-      "cost": 2000,
+      "cost": 200,
       "damage": 5,
       "base_speed": 1000,
       "life_span": 5.0,
@@ -386,7 +386,7 @@
     },
     {
       "name": "Shotgun",
-      "cost": 1500,
+      "cost": 150,
       "damage": 2,
       "base_speed": 300,
       "acceleration": -75,
@@ -401,7 +401,7 @@
     },
     {
       "name": "Homing missiles",
-      "cost": 2500,
+      "cost": 250,
       "damage": 1,
       "base_speed": 100,
       "acceleration": 10,
@@ -419,7 +419,7 @@
     },
     {
       "name": "Cruise missiles",
-      "cost": 1200,
+      "cost": 120,
       "damage": 10,
       "base_speed": 10,
       "acceleration": 300,
@@ -437,7 +437,7 @@
     },
     {
       "name": "Shockwave",
-      "cost": 5500,
+      "cost": 550,
       "damage": 2,
       "base_speed": 300,
       "acceleration": -75,
@@ -452,7 +452,7 @@
     },
     {
       "name": "Smoke ring",
-      "cost": 3000,
+      "cost": 300,
       "damage": 1,
       "base_speed": 10,
       "acceleration": 10,
@@ -468,7 +468,7 @@
     },
     {
       "name": "Death Pulse",
-      "cost": 1000000,
+      "cost": 100000,
       "damage": 5,
       "base_speed": 1,
       "acceleration": 100,
