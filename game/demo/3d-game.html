@@ -201,12 +201,32 @@
     let playerHp = 100;
     let enemyHp = 3;
     let enemyFireCooldown = 0;
-    const enemyFireInterval = 0.8;
+    let enemyFireInterval = 0.8;
     const enemyTurnSpeed = 0.7;
-    const enemyForwardSpeed = 100;
-    const enemyAltitudeSpeed = 1;
+    let enemyForwardSpeed = 100;
+    let enemyAltitudeSpeed = 1;
+    const maxEnemyShotsPerSecond = 10;
+    const minEnemyFireInterval = 1 / maxEnemyShotsPerSecond;
 
     const statsEl = document.getElementById("stats");
+
+    function getRandomEnemyPosition() {
+      return new THREE.Vector3(
+        THREE.MathUtils.randFloat(arenaBox.min.x, arenaBox.max.x),
+        THREE.MathUtils.randFloat(arenaBox.min.y + 10, arenaBox.max.y),
+        THREE.MathUtils.randFloat(arenaBox.min.z, arenaBox.max.z)
+      );
+    }
+
+    function respawnEnemy() {
+      enemyHp = 3;
+      enemy.position.copy(getRandomEnemyPosition());
+      enemyForwardSpeed += 1;
+      enemyAltitudeSpeed += 1;
+      enemyFireInterval = Math.max(minEnemyFireInterval, enemyFireInterval * 0.9);
+      enemyFireCooldown = enemyFireInterval;
+      enemy.visible = true;
+    }
 
     function clampShipToArena() {
       ship.position.x = THREE.MathUtils.clamp(ship.position.x, arenaBox.min.x, arenaBox.max.x);
@@ -372,7 +392,7 @@
             bullets.splice(b, 1);
             enemyHp = Math.max(0, enemyHp - 1);
             if (enemyHp <= 0) {
-              enemy.visible = false;
+              respawnEnemy();
               break;
             }
           }
@@ -392,7 +412,7 @@
         playerHp = Math.max(0, playerHp - 1);
         enemyHp = Math.max(0, enemyHp - 1);
         if (enemyHp <= 0) {
-          enemy.visible = false;
+          respawnEnemy();
         }
       }
     }
