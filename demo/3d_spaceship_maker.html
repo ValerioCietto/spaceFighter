@@ -122,8 +122,28 @@
       clip-path: polygon(20% 8%, 80% 8%, 98% 92%, 2% 92%);
       border: 0;
     }
+    .build-item .glyph-cannon {
+      width: 26px;
+      height: 10px;
+      border-radius: 8px;
+    }
+    .build-item .glyph-thruster {
+      width: 26px;
+      height: 14px;
+      clip-path: polygon(8% 22%, 8% 78%, 92% 94%, 92% 6%);
+      border: 0;
+    }
+    .build-item .glyph-leftWing,
+    .build-item .glyph-rightWing {
+      width: 26px;
+      height: 20px;
+      clip-path: polygon(8% 100%, 92% 50%, 8% 0%);
+      border: 0;
+    }
+    .build-item .glyph-rightWing { transform: scaleX(-1); }
     .build-item.selected { outline: 2px solid #aaddff; }
     .legend { font-size: 12px; color: var(--muted); }
+    .check-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
     .actions { display: flex; gap: 8px; }
     .actions button[hidden] { display: none; }
     .axis { font-size: 12px; color: #cde2ff; }
@@ -150,6 +170,7 @@
     <section class="panel">
       <h2>Modules</h2>
       <div class="module-grid" id="moduleGrid"></div>
+      <label class="check-row"><input type="checkbox" id="mirroredMode"> Mirrored mode</label>
       <p class="legend">Click a module to add it to BuildArea.</p>
     </section>
 
@@ -185,6 +206,23 @@
   <script type="module">
     import * as THREE from "https://unpkg.com/three@0.161.0/build/three.module.js";
 
+    const rotateZGeometry = (geometry) => {
+      geometry.rotateZ(Math.PI / 2);
+      return geometry;
+    };
+
+    const createWingGeometry = (mirror = false) => {
+      const shape = new THREE.Shape();
+      shape.moveTo(-8, -10);
+      shape.lineTo(12, 0);
+      shape.lineTo(-8, 10);
+      shape.closePath();
+      const geometry = new THREE.ExtrudeGeometry(shape, { depth: 2, bevelEnabled: false });
+      geometry.center();
+      if (mirror) geometry.scale(-1, 1, 1);
+      return geometry;
+    };
+
     const modules = [
       { key: 'cone3', name: '3 faces cone', short: 'C3', color: '#ffb970', geo: () => new THREE.ConeGeometry(6, 16, 3) },
       { key: 'cone4', name: '4 faces cone', short: 'C4', color: '#ffd86d', geo: () => new THREE.ConeGeometry(6, 16, 4) },
@@ -192,7 +230,11 @@
       { key: 'smallCube', name: 'small cube solid', short: 'SC', color: '#5fd0ff', geo: () => new THREE.BoxGeometry(6, 6, 6) },
       { key: 'sphere', name: 'sphere', short: 'SP', color: '#9fffc4', geo: () => new THREE.SphereGeometry(7, 16, 12) },
       { key: 'parallelepipede', name: 'parallelepipede', short: 'PP', color: '#d6adff', geo: () => new THREE.BoxGeometry(18, 10, 8) },
-      { key: 'truncatedCone', name: 'truncated cone', short: 'TC', color: '#ff9cac', geo: () => new THREE.CylinderGeometry(4, 7, 14, 18) }
+      { key: 'truncatedCone', name: 'truncated cone', short: 'TC', color: '#ff9cac', geo: () => new THREE.CylinderGeometry(4, 7, 14, 18) },
+      { key: 'cannon', name: 'cannon', short: 'CN', color: '#ff9f8f', geo: () => rotateZGeometry(new THREE.CylinderGeometry(3, 3, 16, 18)) },
+      { key: 'thruster', name: 'thuster', short: 'TH', color: '#ffcb88', geo: () => rotateZGeometry(new THREE.CylinderGeometry(2, 5, 14, 18)) },
+      { key: 'leftWing', name: 'left wing', short: 'LW', color: '#91b6ff', geo: () => createWingGeometry(false) },
+      { key: 'rightWing', name: 'right wing', short: 'RW', color: '#b8ccff', geo: () => createWingGeometry(true) }
     ];
 
     const state = {
@@ -211,6 +253,7 @@
     const exportModelBtn = document.getElementById('exportModelBtn');
     const copyExportBtn = document.getElementById('copyExportBtn');
     const exportCode = document.getElementById('exportCode');
+    const mirroredMode = document.getElementById('mirroredMode');
 
     modules.forEach((mod) => {
       const b = document.createElement('button');
@@ -220,11 +263,25 @@
     });
 
     function addPart(module) {
-      const p = { id: state.nextId++, module: module.key, x: 0, y: 0, z: 0 };
+      const p = { id: state.nextId++, module: module.key, x: 0, y: 0, z: 0, twinId: null };
       state.parts.push(p);
-      state.selectedIds = new Set([p.id]);
+
+      if (mirroredMode.checked) {
+        const twin = { id: state.nextId++, module: module.key, x: 0, y: 0, z: 0, twinId: p.id };
+        p.twinId = twin.id;
+        state.parts.push(twin);
+        state.selectedIds = new Set([p.id, twin.id]);
+      } else {
+        state.selectedIds = new Set([p.id]);
+      }
+
       renderBuildArea();
       syncPreview();
+    }
+
+    function applyMirrorInCurrentView(part, twinPart) {
+      const { sx, sy } = viewToScreen(part);
+      applyScreenToPart(twinPart, -sx, sy);
     }
 
     function updateMergeButton() {
@@ -373,6 +430,14 @@
           const nextSY = snap(start.sy - dy);
           applyScreenToPart(selectedPart, nextSX, nextSY);
         });
+
+        selectedParts.forEach((selectedPart) => {
+          if (!selectedPart.twinId) return;
+          const twinPart = state.parts.find((p) => p.id === selectedPart.twinId);
+          if (!twinPart) return;
+          applyMirrorInCurrentView(selectedPart, twinPart);
+        });
+
         renderBuildArea();
         syncPreview();
       };
@@ -465,9 +530,14 @@
         cone3: 'new THREE.ConeGeometry(6, 16, 3)',
         cone4: 'new THREE.ConeGeometry(6, 16, 4)',
         cube: 'new THREE.BoxGeometry(12, 12, 12)',
+        smallCube: 'new THREE.BoxGeometry(6, 6, 6)',
         sphere: 'new THREE.SphereGeometry(7, 16, 12)',
         parallelepipede: 'new THREE.BoxGeometry(18, 10, 8)',
-        truncatedCone: 'new THREE.CylinderGeometry(4, 7, 14, 18)'
+        truncatedCone: 'new THREE.CylinderGeometry(4, 7, 14, 18)',
+        cannon: '(() => { const g = new THREE.CylinderGeometry(3, 3, 16, 18); g.rotateZ(Math.PI / 2); return g; })()',
+        thruster: '(() => { const g = new THREE.CylinderGeometry(2, 5, 14, 18); g.rotateZ(Math.PI / 2); return g; })()',
+        leftWing: '(() => { const s = new THREE.Shape(); s.moveTo(-8, -10); s.lineTo(12, 0); s.lineTo(-8, 10); s.closePath(); const g = new THREE.ExtrudeGeometry(s, { depth: 2, bevelEnabled: false }); g.center(); return g; })()',
+        rightWing: '(() => { const s = new THREE.Shape(); s.moveTo(-8, -10); s.lineTo(12, 0); s.lineTo(-8, 10); s.closePath(); const g = new THREE.ExtrudeGeometry(s, { depth: 2, bevelEnabled: false }); g.center(); g.scale(-1, 1, 1); return g; })()'
       };
 
       const lines = [
