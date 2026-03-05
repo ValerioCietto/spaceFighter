@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>3D Spaceship Maker</title>
+  <style>
+    :root {
+      --bg: #0a1020;
+      --panel: #111a31;
+      --line: #2f3f6a;
+      --text: #e7efff;
+      --muted: #9fb3db;
+      --accent: #6eb9ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(circle at top, #1a2d55, var(--bg) 55%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 14px;
+    }
+    h1 { margin: 0 0 10px; font-size: 24px; }
+    .layout {
+      display: grid;
+      grid-template-columns: 280px 1fr 1fr;
+      gap: 12px;
+      height: calc(100vh - 70px);
+      min-height: 560px;
+    }
+    .panel {
+      background: color-mix(in srgb, var(--panel), black 15%);
+      border: 1px solid #2e406f;
+      border-radius: 10px;
+      padding: 12px;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .panel h2 { font-size: 15px; margin: 0; color: var(--muted); letter-spacing: .03em; }
+    .module-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    button {
+      border: 1px solid #3a5088;
+      background: #1a2a4e;
+      color: var(--text);
+      border-radius: 7px;
+      padding: 8px 9px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:hover { border-color: var(--accent); }
+    .views { display: flex; gap: 8px; }
+    .views button.active { background: #25427d; border-color: #89ccff; }
+
+    .build-shell {
+      flex: 1;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+      background: #0c1326;
+      min-height: 320px;
+    }
+    .build-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(173, 204, 255, .1) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(173, 204, 255, .1) 1px, transparent 1px),
+        linear-gradient(to right, rgba(173, 204, 255, .22) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(173, 204, 255, .22) 1px, transparent 1px);
+      background-size: 5px 5px, 5px 5px, 25px 25px, 25px 25px;
+      background-position: center center;
+    }
+    .build-item {
+      position: absolute;
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,.35);
+      box-shadow: inset 0 0 0 2px rgba(0,0,0,.18);
+      cursor: grab;
+      user-select: none;
+      display: grid;
+      place-items: center;
+      font-size: 10px;
+      text-align: center;
+      padding: 2px;
+      color: #04152e;
+      font-weight: 700;
+    }
+    .build-item.selected { outline: 2px solid #aaddff; }
+    .legend { font-size: 12px; color: var(--muted); }
+    .axis { font-size: 12px; color: #cde2ff; }
+    #previewCanvas { flex: 1; min-height: 320px; border: 1px solid var(--line); border-radius: 8px; display:block; width:100%; }
+  </style>
+</head>
+<body>
+  <h1>3D Spaceship Maker</h1>
+  <div class="layout">
+    <section class="panel">
+      <h2>Modules</h2>
+      <div class="module-grid" id="moduleGrid"></div>
+      <p class="legend">Click a module to add it to BuildArea.</p>
+    </section>
+
+    <section class="panel">
+      <h2>BuildArea</h2>
+      <div class="views" id="viewButtons">
+        <button data-view="front" class="active">Front</button>
+        <button data-view="side">Side</button>
+        <button data-view="back">Back</button>
+      </div>
+      <div class="axis" id="axisLabel">Editing axes: X / Y</div>
+      <div class="build-shell" id="buildShell">
+        <div class="build-grid" id="buildGrid"></div>
+      </div>
+      <p class="legend">Drag modules on grid. Snap: 5px.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Preview</h2>
+      <canvas id="previewCanvas"></canvas>
+      <p class="legend">Click + drag to rotate preview.</p>
+    </section>
+  </div>
+
+  <script src="../lib/three.js"></script>
+  <script>
+    const modules = [
+      { key: 'cone3', name: '3 faces cone', short: 'C3', color: '#ffb970', geo: () => new THREE.ConeGeometry(6, 16, 3) },
+      { key: 'cone4', name: '4 faces cone', short: 'C4', color: '#ffd86d', geo: () => new THREE.ConeGeometry(6, 16, 4) },
+      { key: 'cube', name: 'cube', short: 'CB', color: '#8ee2ff', geo: () => new THREE.BoxGeometry(12, 12, 12) },
+      { key: 'sphere', name: 'sphere', short: 'SP', color: '#9fffc4', geo: () => new THREE.SphereGeometry(7, 16, 12) },
+      { key: 'parallelepipede', name: 'parallelepipede', short: 'PP', color: '#d6adff', geo: () => new THREE.BoxGeometry(18, 10, 8) },
+      { key: 'truncatedCone', name: 'truncated cone', short: 'TC', color: '#ff9cac', geo: () => new THREE.CylinderGeometry(4, 7, 14, 18) }
+    ];
+
+    const state = {
+      view: 'front',
+      selectedId: null,
+      nextId: 1,
+      parts: []
+    };
+
+    const moduleGrid = document.getElementById('moduleGrid');
+    const buildShell = document.getElementById('buildShell');
+    const buildGrid = document.getElementById('buildGrid');
+    const axisLabel = document.getElementById('axisLabel');
+
+    modules.forEach((mod) => {
+      const b = document.createElement('button');
+      b.textContent = mod.name;
+      b.addEventListener('click', () => addPart(mod));
+      moduleGrid.appendChild(b);
+    });
+
+    function addPart(module) {
+      const p = { id: state.nextId++, module: module.key, x: 0, y: 0, z: 0 };
+      state.parts.push(p);
+      state.selectedId = p.id;
+      renderBuildArea();
+      syncPreview();
+    }
+
+    function viewToScreen(part) {
+      if (state.view === 'front') return { sx: part.x, sy: part.y };
+      if (state.view === 'side') return { sx: part.z, sy: part.y };
+      return { sx: -part.x, sy: part.y };
+    }
+
+    function applyScreenToPart(part, sx, sy) {
+      if (state.view === 'front') { part.x = sx; part.y = sy; }
+      else if (state.view === 'side') { part.z = sx; part.y = sy; }
+      else { part.x = -sx; part.y = sy; }
+    }
+
+    function renderBuildArea() {
+      const rect = buildShell.getBoundingClientRect();
+      const cx = rect.width / 2;
+      const cy = rect.height / 2;
+      buildGrid.innerHTML = '';
+
+      state.parts.forEach((part) => {
+        const mod = modules.find((m) => m.key === part.module);
+        const { sx, sy } = viewToScreen(part);
+        const el = document.createElement('div');
+        el.className = 'build-item' + (part.id === state.selectedId ? ' selected' : '');
+        el.style.left = `${cx + sx - 18}px`;
+        el.style.top = `${cy - sy - 18}px`;
+        el.style.background = mod.color;
+        el.textContent = mod.short;
+        el.dataset.id = part.id;
+        el.addEventListener('pointerdown', startDrag);
+        el.addEventListener('click', () => {
+          state.selectedId = part.id;
+          renderBuildArea();
+        });
+        buildGrid.appendChild(el);
+      });
+    }
+
+    function snap(v) { return Math.round(v / 5) * 5; }
+
+    function startDrag(e) {
+      const id = Number(e.currentTarget.dataset.id);
+      const part = state.parts.find((p) => p.id === id);
+      if (!part) return;
+      state.selectedId = id;
+      const start = viewToScreen(part);
+      const origin = { x: e.clientX, y: e.clientY };
+      e.currentTarget.setPointerCapture(e.pointerId);
+
+      const move = (ev) => {
+        const dx = ev.clientX - origin.x;
+        const dy = ev.clientY - origin.y;
+        const nextSX = snap(start.sx + dx);
+        const nextSY = snap(start.sy - dy);
+        applyScreenToPart(part, nextSX, nextSY);
+        renderBuildArea();
+        syncPreview();
+      };
+      const up = () => {
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', up);
+      };
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+    }
+
+    document.getElementById('viewButtons').addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-view]');
+      if (!btn) return;
+      state.view = btn.dataset.view;
+      document.querySelectorAll('#viewButtons button').forEach((b) => b.classList.toggle('active', b === btn));
+      axisLabel.textContent = state.view === 'side' ? 'Editing axes: Z / Y' : 'Editing axes: X / Y';
+      buildGrid.style.filter = state.view === 'back' ? 'hue-rotate(160deg)' : (state.view === 'side' ? 'hue-rotate(70deg)' : 'none');
+      renderBuildArea();
+    });
+
+    const canvas = document.getElementById('previewCanvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0b1328);
+    const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
+    camera.position.set(64, 44, 88);
+
+    scene.add(new THREE.HemisphereLight(0xbfd8ff, 0x121733, 1));
+    const dir = new THREE.DirectionalLight(0xffffff, 0.85);
+    dir.position.set(35, 40, 25);
+    scene.add(dir);
+
+    const shipGroup = new THREE.Group();
+    scene.add(shipGroup);
+
+    const grid = new THREE.GridHelper(180, 36, 0x4466aa, 0x223355);
+    grid.position.y = -40;
+    scene.add(grid);
+
+    function resizeRenderer() {
+      const rect = canvas.getBoundingClientRect();
+      renderer.setSize(rect.width, rect.height, false);
+      camera.aspect = rect.width / rect.height;
+      camera.updateProjectionMatrix();
+    }
+    window.addEventListener('resize', () => { resizeRenderer(); render(); });
+
+    function syncPreview() {
+      while (shipGroup.children.length) {
+        const child = shipGroup.children.pop();
+        child.geometry.dispose();
+        child.material.dispose();
+      }
+      state.parts.forEach((p) => {
+        const mod = modules.find((m) => m.key === p.module);
+        const mesh = new THREE.Mesh(
+          mod.geo(),
+          new THREE.MeshStandardMaterial({ color: mod.color, roughness: 0.45, metalness: 0.2 })
+        );
+        mesh.position.set(p.x * 0.35, p.y * 0.35, p.z * 0.35);
+        shipGroup.add(mesh);
+      });
+      render();
+    }
+
+    let yaw = 0.85;
+    let pitch = 0.35;
+    let dist = 130;
+    let rotating = false;
+    let startDragPos = { x: 0, y: 0 };
+
+    canvas.addEventListener('pointerdown', (e) => {
+      rotating = true;
+      startDragPos = { x: e.clientX, y: e.clientY };
+      canvas.setPointerCapture(e.pointerId);
+    });
+    canvas.addEventListener('pointermove', (e) => {
+      if (!rotating) return;
+      const dx = e.clientX - startDragPos.x;
+      const dy = e.clientY - startDragPos.y;
+      startDragPos = { x: e.clientX, y: e.clientY };
+      yaw -= dx * 0.01;
+      pitch = Math.max(-1.2, Math.min(1.2, pitch - dy * 0.01));
+      render();
+    });
+    canvas.addEventListener('pointerup', () => { rotating = false; });
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      dist = Math.max(50, Math.min(240, dist + e.deltaY * 0.05));
+      render();
+    }, { passive: false });
+
+    function render() {
+      camera.position.set(
+        Math.cos(yaw) * Math.cos(pitch) * dist,
+        Math.sin(pitch) * dist,
+        Math.sin(yaw) * Math.cos(pitch) * dist
+      );
+      camera.lookAt(0, 0, 0);
+      renderer.render(scene, camera);
+    }
+
+    resizeRenderer();
+    renderBuildArea();
+    syncPreview();
+  </script>
+</body>
+</html>
