@@ -95,6 +95,98 @@
       background: rgba(85, 145, 255, 0.35);
       border-color: rgba(163, 196, 255, 0.85);
     }
+
+    #cockpitFrame {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .cockpit-corner {
+      position: absolute;
+      width: 88px;
+      height: 88px;
+      border: 3px solid rgba(134, 198, 255, 0.8);
+      box-shadow: 0 0 16px rgba(88, 164, 255, 0.55);
+    }
+
+    .cockpit-corner.top-left {
+      top: 14px;
+      left: 14px;
+      border-right: none;
+      border-bottom: none;
+    }
+
+    .cockpit-corner.top-right {
+      top: 14px;
+      right: 14px;
+      border-left: none;
+      border-bottom: none;
+    }
+
+    .cockpit-corner.bottom-left {
+      bottom: 14px;
+      left: 14px;
+      border-right: none;
+      border-top: none;
+    }
+
+    .cockpit-corner.bottom-right {
+      right: 14px;
+      bottom: 14px;
+      border-left: none;
+      border-top: none;
+    }
+
+    #controls {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: grid;
+      grid-template-columns: repeat(3, 64px);
+      grid-template-rows: repeat(2, 52px);
+      gap: 8px;
+      z-index: 3;
+      user-select: none;
+    }
+
+    .ctrl-btn {
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: rgba(15, 24, 46, 0.6);
+      color: #fff;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      touch-action: none;
+    }
+
+    .ctrl-btn:active,
+    .ctrl-btn.active {
+      background: rgba(100, 155, 255, 0.65);
+    }
+
+    #fireButton {
+      position: fixed;
+      right: 20px;
+      bottom: 28px;
+      width: 66px;
+      height: 66px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      background: rgba(140, 32, 32, 0.65);
+      color: #fff;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      z-index: 3;
+      touch-action: none;
+    }
+
+    #fireButton:active,
+    #fireButton.active {
+      background: rgba(255, 96, 96, 0.9);
+    }
   </style>
 </head>
 <body>
@@ -107,7 +199,22 @@
     <div id="stats">Speed: 0 | Altitude: 0 | Targets Destroyed: 0/30</div>
   </div>
   <div id="crosshair"></div>
-  <button id="viewToggleBtn" type="button" aria-label="Toggle first person view" aria-pressed="false">🕶️</button>
+  <div id="cockpitFrame" aria-hidden="true">
+    <div class="cockpit-corner top-left"></div>
+    <div class="cockpit-corner top-right"></div>
+    <div class="cockpit-corner bottom-left"></div>
+    <div class="cockpit-corner bottom-right"></div>
+  </div>
+  <div id="controls">
+    <div></div>
+    <button class="ctrl-btn" data-key="w" aria-label="Forward">Forward</button>
+    <div></div>
+    <button class="ctrl-btn" data-key="a" aria-label="Turn left">Left</button>
+    <button class="ctrl-btn" data-key="s" aria-label="Decelerate">Brake</button>
+    <button class="ctrl-btn" data-key="d" aria-label="Turn right">Right</button>
+  </div>
+  <button id="fireButton" type="button" aria-label="Fire">FIRE</button>
+  <button id="viewToggleBtn" type="button" aria-label="Switch to third person view" aria-pressed="true">🕶️</button>
 
   <script type="module">
     import * as THREE from "https://unpkg.com/three@0.161.0/build/three.module.js";
@@ -212,7 +319,37 @@
 
     const statsEl = document.getElementById("stats");
     const viewToggleBtn = document.getElementById("viewToggleBtn");
-    let isFirstPersonView = false;
+    const controlButtons = Array.from(document.querySelectorAll(".ctrl-btn"));
+    const fireButton = document.getElementById("fireButton");
+    let isFirstPersonView = true;
+
+    function setButtonActive(key, state) {
+      const btn = controlButtons.find((button) => button.dataset.key === key);
+      if (btn) {
+        btn.classList.toggle("active", state);
+      }
+    }
+
+    function setDirectionalState(key, state) {
+      if (!(key in keys)) {
+        return;
+      }
+      keys[key] = state;
+      setButtonActive(key, state);
+    }
+
+    for (const btn of controlButtons) {
+      const key = btn.dataset.key;
+      btn.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        btn.setPointerCapture(event.pointerId);
+        setDirectionalState(key, true);
+      });
+      const clear = () => setDirectionalState(key, false);
+      btn.addEventListener("pointerup", clear);
+      btn.addEventListener("pointercancel", clear);
+      btn.addEventListener("pointerleave", clear);
+    }
 
     function getRandomTargetPosition() {
       return new THREE.Vector3(
@@ -262,9 +399,7 @@
 
     function setKeyState(event, state) {
       const key = event.key.toLowerCase();
-      if (key in keys) {
-        keys[key] = state;
-      }
+      setDirectionalState(key, state);
 
       if (key === " " && state) {
         event.preventDefault();
@@ -283,6 +418,18 @@
 
     window.addEventListener("keyup", (event) => setKeyState(event, false));
 
+    fireButton.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      fireButton.classList.add("active");
+      if (fireCooldown <= 0) {
+        fireBullet();
+        fireCooldown = fireInterval;
+      }
+    });
+    fireButton.addEventListener("pointerup", () => fireButton.classList.remove("active"));
+    fireButton.addEventListener("pointercancel", () => fireButton.classList.remove("active"));
+    fireButton.addEventListener("pointerleave", () => fireButton.classList.remove("active"));
+
     window.addEventListener("resize", () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
@@ -299,6 +446,9 @@
       shipMesh.visible = !isFirstPersonView;
       wing.visible = !isFirstPersonView;
     });
+
+    shipMesh.visible = !isFirstPersonView;
+    wing.visible = !isFirstPersonView;
 
     const clock = new THREE.Clock();
 
