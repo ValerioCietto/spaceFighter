@@ -124,6 +124,8 @@
     }
     .build-item.selected { outline: 2px solid #aaddff; }
     .legend { font-size: 12px; color: var(--muted); }
+    .actions { display: flex; gap: 8px; }
+    .actions button[hidden] { display: none; }
     .axis { font-size: 12px; color: #cde2ff; }
     #previewCanvas { flex: 1; min-height: 320px; border: 1px solid var(--line); border-radius: 8px; display:block; width:100%; }
     .export-actions { display:flex; gap:8px; flex-wrap: wrap; }
@@ -162,6 +164,9 @@
       <div class="build-shell" id="buildShell">
         <div class="build-grid" id="buildGrid"></div>
       </div>
+      <div class="actions">
+        <button id="mergeButton" hidden>Merge</button>
+      </div>
       <p class="legend">Drag modules on grid. Snap: 5px.</p>
     </section>
 
@@ -192,8 +197,9 @@
 
     const state = {
       view: 'top',
-      selectedId: null,
+      selectedIds: new Set(),
       nextId: 1,
+      nextMergedId: 1,
       parts: []
     };
 
@@ -201,6 +207,7 @@
     const buildShell = document.getElementById('buildShell');
     const buildGrid = document.getElementById('buildGrid');
     const axisLabel = document.getElementById('axisLabel');
+    const mergeButton = document.getElementById('mergeButton');
     const exportModelBtn = document.getElementById('exportModelBtn');
     const copyExportBtn = document.getElementById('copyExportBtn');
     const exportCode = document.getElementById('exportCode');
@@ -215,10 +222,89 @@
     function addPart(module) {
       const p = { id: state.nextId++, module: module.key, x: 0, y: 0, z: 0 };
       state.parts.push(p);
-      state.selectedId = p.id;
+      state.selectedIds = new Set([p.id]);
       renderBuildArea();
       syncPreview();
     }
+
+    function updateMergeButton() {
+      const selectedParts = state.parts.filter((p) => state.selectedIds.has(p.id));
+      const canMerge = selectedParts.length > 1 && selectedParts.every((p) => p.module === 'cube');
+      mergeButton.hidden = !canMerge;
+      mergeButton.disabled = !canMerge;
+    }
+
+    function buildMergedHullGeometry(parts, origin) {
+      const cubeSize = 12;
+      const half = cubeSize / 2;
+      const positions = [];
+      const normals = [];
+      const indices = [];
+      const occupied = new Set(parts.map((p) => `${p.x},${p.y},${p.z}`));
+      const dirs = [
+        { check: [5, 0, 0], normal: [1, 0, 0], corners: [[half, -half, -half], [half, half, -half], [half, half, half], [half, -half, half]] },
+        { check: [-5, 0, 0], normal: [-1, 0, 0], corners: [[-half, -half, half], [-half, half, half], [-half, half, -half], [-half, -half, -half]] },
+        { check: [0, 5, 0], normal: [0, 1, 0], corners: [[-half, half, -half], [-half, half, half], [half, half, half], [half, half, -half]] },
+        { check: [0, -5, 0], normal: [0, -1, 0], corners: [[-half, -half, half], [-half, -half, -half], [half, -half, -half], [half, -half, half]] },
+        { check: [0, 0, 5], normal: [0, 0, 1], corners: [[-half, -half, half], [half, -half, half], [half, half, half], [-half, half, half]] },
+        { check: [0, 0, -5], normal: [0, 0, -1], corners: [[half, -half, -half], [-half, -half, -half], [-half, half, -half], [half, half, -half]] }
+      ];
+
+      const addFace = (base, dir) => {
+        const start = positions.length / 3;
+        dir.corners.forEach(([x, y, z]) => {
+          positions.push(((base.x - origin.x) * 0.35) + (x * 0.35), ((base.y - origin.y) * 0.35) + (y * 0.35), ((base.z - origin.z) * 0.35) + (z * 0.35));
+          normals.push(...dir.normal);
+        });
+        indices.push(start, start + 1, start + 2, start, start + 2, start + 3);
+      };
+
+      parts.forEach((p) => {
+        dirs.forEach((dir) => {
+          const key = `${p.x + dir.check[0]},${p.y + dir.check[1]},${p.z + dir.check[2]}`;
+          if (!occupied.has(key)) addFace(p, dir);
+        });
+      });
+
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+      geometry.setIndex(indices);
+      return geometry;
+    }
+
+    function mergeSelectedCubes() {
+      const selectedParts = state.parts.filter((p) => state.selectedIds.has(p.id));
+      if (selectedParts.length < 2 || selectedParts.some((p) => p.module !== 'cube')) return;
+
+      const mergedModuleKey = `mergedHull${state.nextMergedId++}`;
+      const center = selectedParts.reduce((acc, p) => {
+        acc.x += p.x;
+        acc.y += p.y;
+        acc.z += p.z;
+        return acc;
+      }, { x: 0, y: 0, z: 0 });
+      center.x = snap(center.x / selectedParts.length);
+      center.y = snap(center.y / selectedParts.length);
+      center.z = snap(center.z / selectedParts.length);
+
+      modules.push({
+        key: mergedModuleKey,
+        name: 'merged hull',
+        short: 'MH',
+        color: '#7fffe0',
+        geo: () => buildMergedHullGeometry(selectedParts, center)
+      });
+
+      state.parts = state.parts.filter((p) => !state.selectedIds.has(p.id));
+      const mergedPart = { id: state.nextId++, module: mergedModuleKey, x: center.x, y: center.y, z: center.z };
+      state.parts.push(mergedPart);
+      state.selectedIds = new Set([mergedPart.id]);
+      renderBuildArea();
+      syncPreview();
+    }
+
+    mergeButton.addEventListener('click', mergeSelectedCubes);
 
     function viewToScreen(part) {
       if (state.view === 'top') return { sx: part.x, sy: part.y };
@@ -242,7 +328,7 @@
         const mod = modules.find((m) => m.key === part.module);
         const { sx, sy } = viewToScreen(part);
         const el = document.createElement('div');
-        el.className = 'build-item' + (part.id === state.selectedId ? ' selected' : '');
+        el.className = 'build-item' + (state.selectedIds.has(part.id) ? ' selected' : '');
         el.style.left = `${cx + sx - 18}px`;
         el.style.top = `${cy - sy - 18}px`;
         el.style.color = mod.color;
@@ -252,12 +338,18 @@
         el.appendChild(glyph);
         el.dataset.id = part.id;
         el.addEventListener('pointerdown', startDrag);
-        el.addEventListener('click', () => {
-          state.selectedId = part.id;
+        el.addEventListener('click', (event) => {
+          if (event.shiftKey) {
+            if (state.selectedIds.has(part.id)) state.selectedIds.delete(part.id);
+            else state.selectedIds.add(part.id);
+          } else {
+            state.selectedIds = new Set([part.id]);
+          }
           renderBuildArea();
         });
         buildGrid.appendChild(el);
       });
+      updateMergeButton();
     }
 
     function snap(v) { return Math.round(v / 5) * 5; }
@@ -266,17 +358,21 @@
       const id = Number(e.currentTarget.dataset.id);
       const part = state.parts.find((p) => p.id === id);
       if (!part) return;
-      state.selectedId = id;
-      const start = viewToScreen(part);
+      if (!state.selectedIds.has(id)) state.selectedIds = new Set([id]);
+      const selectedParts = state.parts.filter((p) => state.selectedIds.has(p.id));
+      const starts = new Map(selectedParts.map((p) => [p.id, viewToScreen(p)]));
       const origin = { x: e.clientX, y: e.clientY };
       e.currentTarget.setPointerCapture(e.pointerId);
 
       const move = (ev) => {
         const dx = ev.clientX - origin.x;
         const dy = ev.clientY - origin.y;
-        const nextSX = snap(start.sx + dx);
-        const nextSY = snap(start.sy - dy);
-        applyScreenToPart(part, nextSX, nextSY);
+        selectedParts.forEach((selectedPart) => {
+          const start = starts.get(selectedPart.id);
+          const nextSX = snap(start.sx + dx);
+          const nextSY = snap(start.sy - dy);
+          applyScreenToPart(selectedPart, nextSX, nextSY);
+        });
         renderBuildArea();
         syncPreview();
       };
