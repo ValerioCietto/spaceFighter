@@ -153,8 +153,9 @@
     </section>
   </div>
 
-  <script src="../lib/three.js"></script>
-  <script>
+  <script type="module">
+    import * as THREE from "https://unpkg.com/three@0.161.0/build/three.module.js";
+
     const modules = [
       { key: 'cone3', name: '3 faces cone', short: 'C3', color: '#ffb970', geo: () => new THREE.ConeGeometry(6, 16, 3) },
       { key: 'cone4', name: '4 faces cone', short: 'C4', color: '#ffd86d', geo: () => new THREE.ConeGeometry(6, 16, 4) },
