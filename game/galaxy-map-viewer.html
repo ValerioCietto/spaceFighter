@@ -331,12 +331,20 @@
     draw();
   }
 
-  function pickSystemAt(screenPt){
+  const NODE_HIT_SLOP = {
+    mouse: 18,
+    touch: 28,
+    pen: 22,
+    default: 20,
+  };
+
+  function pickSystemAt(screenPt, pointerType = "default"){
+    const hitSlop = NODE_HIT_SLOP[pointerType] ?? NODE_HIT_SLOP.default;
     let hitSystem = null;
     let minDistance = Infinity;
     for (const system of systems){
       const p = worldToScreen(system);
-      const r = nodeRadius(system.serviceLevel) + 12;
+      const r = Math.max(24, nodeRadius(system.serviceLevel) + hitSlop);
       const distance = Math.hypot(screenPt.x - p.x, screenPt.y - p.y);
       if (distance <= r && distance < minDistance){
         minDistance = distance;
@@ -378,7 +386,7 @@
 
     const rect = canvas.getBoundingClientRect();
     const pt = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-    const hitSystem = pickSystemAt(pt);
+    const hitSystem = pickSystemAt(pt, e.pointerType);
     if (hitSystem){
       selectedSystemName = hitSystem.name.toLowerCase();
       showSystemInfo(hitSystem);
