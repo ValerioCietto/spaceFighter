@@ -84,17 +84,38 @@
       width: 36px;
       height: 36px;
       border-radius: 6px;
-      border: 1px solid rgba(255,255,255,.35);
-      box-shadow: inset 0 0 0 2px rgba(0,0,0,.18);
+      border: 1px dashed rgba(255,255,255,.25);
+      background: rgba(255,255,255,0.04);
       cursor: grab;
       user-select: none;
       display: grid;
       place-items: center;
-      font-size: 10px;
-      text-align: center;
-      padding: 2px;
-      color: #04152e;
-      font-weight: 700;
+    }
+    .build-item .glyph {
+      width: 24px;
+      height: 24px;
+      border: 1px solid rgba(255,255,255,.35);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.2);
+      background: currentColor;
+    }
+    .build-item .glyph-cube { border-radius: 5px; }
+    .build-item .glyph-sphere { border-radius: 50%; }
+    .build-item .glyph-cone3 {
+      clip-path: polygon(50% 4%, 94% 92%, 6% 92%);
+      border: 0;
+    }
+    .build-item .glyph-cone4 {
+      clip-path: polygon(50% 2%, 98% 50%, 50% 98%, 2% 50%);
+      border: 0;
+    }
+    .build-item .glyph-parallelepipede {
+      width: 28px;
+      height: 18px;
+      border-radius: 4px;
+    }
+    .build-item .glyph-truncatedCone {
+      clip-path: polygon(20% 8%, 80% 8%, 98% 92%, 2% 92%);
+      border: 0;
     }
     .build-item.selected { outline: 2px solid #aaddff; }
     .legend { font-size: 12px; color: var(--muted); }
@@ -114,9 +135,9 @@
     <section class="panel">
       <h2>BuildArea</h2>
       <div class="views" id="viewButtons">
-        <button data-view="front" class="active">Front</button>
-        <button data-view="side">Side</button>
-        <button data-view="back">Back</button>
+        <button data-view="top" class="active">Top (X/Y)</button>
+        <button data-view="side">Side (Y/Z)</button>
+        <button data-view="front">Front (X/Z)</button>
       </div>
       <div class="axis" id="axisLabel">Editing axes: X / Y</div>
       <div class="build-shell" id="buildShell">
@@ -144,7 +165,7 @@
     ];
 
     const state = {
-      view: 'front',
+      view: 'top',
       selectedId: null,
       nextId: 1,
       parts: []
@@ -171,15 +192,15 @@
     }
 
     function viewToScreen(part) {
-      if (state.view === 'front') return { sx: part.x, sy: part.y };
-      if (state.view === 'side') return { sx: part.z, sy: part.y };
-      return { sx: -part.x, sy: part.y };
+      if (state.view === 'top') return { sx: part.x, sy: part.y };
+      if (state.view === 'side') return { sx: part.y, sy: part.z };
+      return { sx: part.x, sy: part.z };
     }
 
     function applyScreenToPart(part, sx, sy) {
-      if (state.view === 'front') { part.x = sx; part.y = sy; }
-      else if (state.view === 'side') { part.z = sx; part.y = sy; }
-      else { part.x = -sx; part.y = sy; }
+      if (state.view === 'top') { part.x = sx; part.y = sy; }
+      else if (state.view === 'side') { part.y = sx; part.z = sy; }
+      else { part.x = sx; part.z = sy; }
     }
 
     function renderBuildArea() {
@@ -195,8 +216,11 @@
         el.className = 'build-item' + (part.id === state.selectedId ? ' selected' : '');
         el.style.left = `${cx + sx - 18}px`;
         el.style.top = `${cy - sy - 18}px`;
-        el.style.background = mod.color;
-        el.textContent = mod.short;
+        el.style.color = mod.color;
+        const glyph = document.createElement('div');
+        glyph.className = `glyph glyph-${mod.key}`;
+        glyph.title = mod.name;
+        el.appendChild(glyph);
         el.dataset.id = part.id;
         el.addEventListener('pointerdown', startDrag);
         el.addEventListener('click', () => {
@@ -240,8 +264,10 @@
       if (!btn) return;
       state.view = btn.dataset.view;
       document.querySelectorAll('#viewButtons button').forEach((b) => b.classList.toggle('active', b === btn));
-      axisLabel.textContent = state.view === 'side' ? 'Editing axes: Z / Y' : 'Editing axes: X / Y';
-      buildGrid.style.filter = state.view === 'back' ? 'hue-rotate(160deg)' : (state.view === 'side' ? 'hue-rotate(70deg)' : 'none');
+      axisLabel.textContent = state.view === 'top'
+        ? 'Editing axes: X / Y'
+        : (state.view === 'side' ? 'Editing axes: Y / Z' : 'Editing axes: X / Z');
+      buildGrid.style.filter = state.view === 'side' ? 'hue-rotate(70deg)' : (state.view === 'front' ? 'hue-rotate(145deg)' : 'none');
       renderBuildArea();
     });
 
@@ -272,12 +298,17 @@
     }
     window.addEventListener('resize', () => { resizeRenderer(); render(); });
 
-    function syncPreview() {
+    function clearShipGroup() {
       while (shipGroup.children.length) {
-        const child = shipGroup.children.pop();
+        const child = shipGroup.children[0];
+        shipGroup.remove(child);
         child.geometry.dispose();
         child.material.dispose();
       }
+    }
+
+    function syncPreview() {
+      clearShipGroup();
       state.parts.forEach((p) => {
         const mod = modules.find((m) => m.key === p.module);
         const mesh = new THREE.Mesh(
@@ -327,9 +358,11 @@
       renderer.render(scene, camera);
     }
 
-    resizeRenderer();
-    renderBuildArea();
-    syncPreview();
+    requestAnimationFrame(() => {
+      resizeRenderer();
+      renderBuildArea();
+      syncPreview();
+    });
   </script>
 </body>
 </html>
