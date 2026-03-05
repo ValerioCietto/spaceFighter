@@ -271,6 +271,8 @@
       renderBuildArea();
     });
 
+    let shipGroup = null;
+
     const canvas = document.getElementById('previewCanvas');
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     const scene = new THREE.Scene();
@@ -283,7 +285,7 @@
     dir.position.set(35, 40, 25);
     scene.add(dir);
 
-    const shipGroup = new THREE.Group();
+    shipGroup = new THREE.Group();
     scene.add(shipGroup);
 
     const grid = new THREE.GridHelper(180, 36, 0x4466aa, 0x223355);
@@ -299,6 +301,7 @@
     window.addEventListener('resize', () => { resizeRenderer(); render(); });
 
     function clearShipGroup() {
+      if (!shipGroup) return;
       while (shipGroup.children.length) {
         const child = shipGroup.children[0];
         shipGroup.remove(child);
