@@ -72,6 +72,29 @@
       width: 18px;
       height: 2px;
     }
+
+    #viewToggleBtn {
+      position: fixed;
+      top: 50%;
+      left: 12px;
+      transform: translateY(-50%);
+      width: 48px;
+      height: 48px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.55);
+      color: #ffffff;
+      font-size: 22px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      z-index: 3;
+    }
+
+    #viewToggleBtn[aria-pressed="true"] {
+      background: rgba(85, 145, 255, 0.35);
+      border-color: rgba(163, 196, 255, 0.85);
+    }
   </style>
 </head>
 <body>
@@ -84,6 +107,7 @@
     <div id="stats">Speed: 0 | Altitude: 0 | Targets Destroyed: 0/30</div>
   </div>
   <div id="crosshair"></div>
+  <button id="viewToggleBtn" type="button" aria-label="Toggle first person view" aria-pressed="false">🕶️</button>
 
   <script type="module">
     import * as THREE from "https://unpkg.com/three@0.161.0/build/three.module.js";
@@ -187,6 +211,8 @@
     let targetsDestroyed = 0;
 
     const statsEl = document.getElementById("stats");
+    const viewToggleBtn = document.getElementById("viewToggleBtn");
+    let isFirstPersonView = false;
 
     function getRandomTargetPosition() {
       return new THREE.Vector3(
@@ -263,6 +289,17 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
+    viewToggleBtn.addEventListener("click", () => {
+      isFirstPersonView = !isFirstPersonView;
+      viewToggleBtn.setAttribute("aria-pressed", String(isFirstPersonView));
+      viewToggleBtn.setAttribute(
+        "aria-label",
+        isFirstPersonView ? "Switch to third person view" : "Switch to first person view"
+      );
+      shipMesh.visible = !isFirstPersonView;
+      wing.visible = !isFirstPersonView;
+    });
+
     const clock = new THREE.Clock();
 
     function updateShip(delta) {
@@ -293,6 +330,16 @@
     }
 
     function updateCamera() {
+      if (isFirstPersonView) {
+        const cockpitOffset = new THREE.Vector3(0, 8, 6).applyQuaternion(ship.quaternion);
+        const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(ship.quaternion).normalize();
+        const desiredPos = ship.position.clone().add(cockpitOffset);
+        const lookTarget = desiredPos.clone().add(forward.clone().multiplyScalar(500));
+        camera.position.lerp(desiredPos, 0.2);
+        camera.lookAt(lookTarget);
+        return;
+      }
+
       const chaseOffset = new THREE.Vector3(0, 80, 210).applyQuaternion(ship.quaternion);
       const desiredPos = ship.position.clone().add(chaseOffset);
       camera.position.lerp(desiredPos, 0.1);
