@@ -99,6 +99,11 @@
       background: currentColor;
     }
     .build-item .glyph-cube { border-radius: 5px; }
+    .build-item .glyph-smallCube {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+    }
     .build-item .glyph-sphere { border-radius: 50%; }
     .build-item .glyph-cone3 {
       clip-path: polygon(50% 4%, 94% 92%, 6% 92%);
@@ -160,6 +165,7 @@
       { key: 'cone3', name: '3 faces cone', short: 'C3', color: '#ffb970', geo: () => new THREE.ConeGeometry(6, 16, 3) },
       { key: 'cone4', name: '4 faces cone', short: 'C4', color: '#ffd86d', geo: () => new THREE.ConeGeometry(6, 16, 4) },
       { key: 'cube', name: 'cube', short: 'CB', color: '#8ee2ff', geo: () => new THREE.BoxGeometry(12, 12, 12) },
+      { key: 'smallCube', name: 'small cube solid', short: 'SC', color: '#5fd0ff', geo: () => new THREE.BoxGeometry(6, 6, 6) },
       { key: 'sphere', name: 'sphere', short: 'SP', color: '#9fffc4', geo: () => new THREE.SphereGeometry(7, 16, 12) },
       { key: 'parallelepipede', name: 'parallelepipede', short: 'PP', color: '#d6adff', geo: () => new THREE.BoxGeometry(18, 10, 8) },
       { key: 'truncatedCone', name: 'truncated cone', short: 'TC', color: '#ff9cac', geo: () => new THREE.CylinderGeometry(4, 7, 14, 18) }
