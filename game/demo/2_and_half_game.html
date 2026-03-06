@@ -224,21 +224,52 @@
     boundary.position.set(0, ARENA.height / 2, 0);
     scene.add(boundary);
 
-    const ship = new THREE.Group();
+    function createSpaceshipModel() {
+      const shipGroup = new THREE.Group();
 
-    const shipGeom = new THREE.ConeGeometry(20, 80, 3);
-    shipGeom.rotateX(-Math.PI / 2);
-    //shipGeom.rotateZ(Math.PI / 2);
-    // shipGeom.rotateY(Math.PI / 2);
-    const shipMat = new THREE.MeshStandardMaterial({ color: 0x67b7ff, flatShading: true, metalness: 0.2, roughness: 0.45 });
-    const shipMesh = new THREE.Mesh(shipGeom, shipMat);
-    ship.add(shipMesh);
+      const thrusterMaterial = new THREE.MeshStandardMaterial({ color: "#ffcb88", roughness: 0.45, metalness: 0.2 });
+      const hullMaterial = new THREE.MeshStandardMaterial({ color: "#8ee2ff", roughness: 0.45, metalness: 0.2 });
 
-    const wingGeom = new THREE.BoxGeometry(55, 4, 14);
-    const wingMat = new THREE.MeshStandardMaterial({ color: 0x2e6ea8 });
-    const wing = new THREE.Mesh(wingGeom, wingMat);
-    wing.position.set(0, -8, -4);
-    ship.add(wing);
+      const thrusterPositions = [
+        [26.25, 0, -10.5],
+        [26.25, 0, 0],
+        [26.25, 0, 10.5],
+      ];
+
+      for (const [x, y, z] of thrusterPositions) {
+        const thrusterGeometry = new THREE.CylinderGeometry(2, 5, 14, 18);
+        thrusterGeometry.rotateZ(Math.PI / 2);
+        const thruster = new THREE.Mesh(thrusterGeometry, thrusterMaterial);
+        thruster.position.set(x, y, z);
+        shipGroup.add(thruster);
+      }
+
+      const hullBlockPositions = [
+        [17.5, 0, 0],
+        [17.5, 0, 8.75],
+        [17.5, 0, -8.75],
+        [7, 0, 0],
+        [-3.5, 0, 0],
+        [-12.25, 0, 0],
+        [7, 0, 8.75],
+        [7, 0, -8.75],
+        [17.5, 5.25, 0],
+        [10.5, 3.5, 0],
+        [3.5, 1.75, 0],
+      ];
+
+      for (const [x, y, z] of hullBlockPositions) {
+        const hullGeometry = new THREE.BoxGeometry(12, 12, 12);
+        const hullBlock = new THREE.Mesh(hullGeometry, hullMaterial);
+        hullBlock.position.set(x, y, z);
+        shipGroup.add(hullBlock);
+      }
+
+      shipGroup.rotation.y = -Math.PI / 2;
+      return shipGroup;
+    }
+
+    const ship = createSpaceshipModel();
 
     ship.position.set(0, FLIGHT_PLANE_HEIGHT, 0);
     scene.add(ship);
@@ -252,6 +283,10 @@
     const targetGeometry = new THREE.SphereGeometry(50, 24, 24);
     const targetMaterial = new THREE.MeshStandardMaterial({ color: 0xff5a5a, emissive: 0x240000, roughness: 0.45 });
     const targets = [];
+
+    const shipGeom = new THREE.ConeGeometry(20, 80, 3);
+    shipGeom.rotateX(-Math.PI / 2);
+    const wingGeom = new THREE.BoxGeometry(55, 4, 14);
 
     function createShipMesh(mainColor = 0x67b7ff, wingColor = 0x2e6ea8) {
       const model = new THREE.Group();
