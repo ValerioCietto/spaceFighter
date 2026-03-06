@@ -177,15 +177,16 @@
     <section class="panel">
       <h2>BuildArea</h2>
       <div class="views" id="viewButtons">
-        <button data-view="top" class="active">Top (X/Y)</button>
+        <button data-view="top">Top (X/Y)</button>
         <button data-view="side">Side (Y/Z)</button>
-        <button data-view="front">Front (X/Z)</button>
+        <button data-view="front" class="active">Front (X/Z)</button>
       </div>
-      <div class="axis" id="axisLabel">Editing axes: X / Y</div>
+      <div class="axis" id="axisLabel">Editing axes: X / Z</div>
       <div class="build-shell" id="buildShell">
         <div class="build-grid" id="buildGrid"></div>
       </div>
       <div class="actions">
+        <button id="deleteButton">Delete selected</button>
         <button id="mergeButton" hidden>Merge</button>
       </div>
       <p class="legend">Drag modules on grid. Snap: 5px.</p>
@@ -220,6 +221,7 @@
       const geometry = new THREE.ExtrudeGeometry(shape, { depth: 2, bevelEnabled: false });
       geometry.center();
       if (mirror) geometry.scale(-1, 1, 1);
+      geometry.rotateY(-Math.PI / 2);
       return geometry;
     };
 
@@ -232,13 +234,13 @@
       { key: 'parallelepipede', name: 'parallelepipede', short: 'PP', color: '#d6adff', geo: () => new THREE.BoxGeometry(18, 10, 8) },
       { key: 'truncatedCone', name: 'truncated cone', short: 'TC', color: '#ff9cac', geo: () => new THREE.CylinderGeometry(4, 7, 14, 18) },
       { key: 'cannon', name: 'cannon', short: 'CN', color: '#ff9f8f', geo: () => rotateZGeometry(new THREE.CylinderGeometry(3, 3, 16, 18)) },
-      { key: 'thruster', name: 'thuster', short: 'TH', color: '#ffcb88', geo: () => rotateZGeometry(new THREE.CylinderGeometry(2, 5, 14, 18)) },
+      { key: 'thruster', name: 'thuster', short: 'TH', color: '#ffcb88', geo: () => (new THREE.CylinderGeometry(2, 5, 14, 18)).rotateZ(-Math.PI / 2) },
       { key: 'leftWing', name: 'left wing', short: 'LW', color: '#91b6ff', geo: () => createWingGeometry(false) },
       { key: 'rightWing', name: 'right wing', short: 'RW', color: '#b8ccff', geo: () => createWingGeometry(true) }
     ];
 
     const state = {
-      view: 'top',
+      view: 'front',
       selectedIds: new Set(),
       nextId: 1,
       nextMergedId: 1,
@@ -250,6 +252,7 @@
     const buildGrid = document.getElementById('buildGrid');
     const axisLabel = document.getElementById('axisLabel');
     const mergeButton = document.getElementById('mergeButton');
+    const deleteButton = document.getElementById('deleteButton');
     const exportModelBtn = document.getElementById('exportModelBtn');
     const copyExportBtn = document.getElementById('copyExportBtn');
     const exportCode = document.getElementById('exportCode');
@@ -362,6 +365,21 @@
     }
 
     mergeButton.addEventListener('click', mergeSelectedCubes);
+
+    function deleteSelectedParts() {
+      if (!state.selectedIds.size) return;
+      state.parts = state.parts.filter((part) => !state.selectedIds.has(part.id));
+      state.parts.forEach((part) => {
+        if (part.twinId && !state.parts.some((candidate) => candidate.id === part.twinId)) {
+          part.twinId = null;
+        }
+      });
+      state.selectedIds.clear();
+      renderBuildArea();
+      syncPreview();
+    }
+
+    deleteButton.addEventListener('click', deleteSelectedParts);
 
     function viewToScreen(part) {
       if (state.view === 'top') return { sx: part.x, sy: part.y };
@@ -535,9 +553,9 @@
         parallelepipede: 'new THREE.BoxGeometry(18, 10, 8)',
         truncatedCone: 'new THREE.CylinderGeometry(4, 7, 14, 18)',
         cannon: '(() => { const g = new THREE.CylinderGeometry(3, 3, 16, 18); g.rotateZ(Math.PI / 2); return g; })()',
-        thruster: '(() => { const g = new THREE.CylinderGeometry(2, 5, 14, 18); g.rotateZ(Math.PI / 2); return g; })()',
-        leftWing: '(() => { const s = new THREE.Shape(); s.moveTo(-8, -10); s.lineTo(12, 0); s.lineTo(-8, 10); s.closePath(); const g = new THREE.ExtrudeGeometry(s, { depth: 2, bevelEnabled: false }); g.center(); return g; })()',
-        rightWing: '(() => { const s = new THREE.Shape(); s.moveTo(-8, -10); s.lineTo(12, 0); s.lineTo(-8, 10); s.closePath(); const g = new THREE.ExtrudeGeometry(s, { depth: 2, bevelEnabled: false }); g.center(); g.scale(-1, 1, 1); return g; })()'
+        thruster: '(() => { const g = new THREE.CylinderGeometry(2, 5, 14, 18); g.rotateZ(-Math.PI / 2); return g; })()',
+        leftWing: '(() => { const s = new THREE.Shape(); s.moveTo(-8, -10); s.lineTo(12, 0); s.lineTo(-8, 10); s.closePath(); const g = new THREE.ExtrudeGeometry(s, { depth: 2, bevelEnabled: false }); g.center(); g.rotateY(-Math.PI / 2); return g; })()',
+        rightWing: '(() => { const s = new THREE.Shape(); s.moveTo(-8, -10); s.lineTo(12, 0); s.lineTo(-8, 10); s.closePath(); const g = new THREE.ExtrudeGeometry(s, { depth: 2, bevelEnabled: false }); g.center(); g.scale(-1, 1, 1); g.rotateY(-Math.PI / 2); return g; })()'
       };
 
       const lines = [
@@ -626,6 +644,7 @@
 
     requestAnimationFrame(() => {
       resizeRenderer();
+      buildGrid.style.filter = 'hue-rotate(145deg)';
       renderBuildArea();
       syncPreview();
       exportCode.value = generateExportCode();
