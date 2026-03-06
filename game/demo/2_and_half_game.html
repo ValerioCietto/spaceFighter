@@ -227,45 +227,94 @@
     function createSpaceshipModel() {
       const shipGroup = new THREE.Group();
 
-      const thrusterMaterial = new THREE.MeshStandardMaterial({ color: "#ffcb88", roughness: 0.45, metalness: 0.2 });
-      const hullMaterial = new THREE.MeshStandardMaterial({ color: "#8ee2ff", roughness: 0.45, metalness: 0.2 });
+      // Part 1: cube
+      const geo0 = new THREE.BoxGeometry(12, 12, 12);
+      const mat0 = new THREE.MeshStandardMaterial({ color: "#8ee2ff", roughness: 0.45, metalness: 0.2 });
+      const mesh0 = new THREE.Mesh(geo0, mat0);
+      mesh0.position.set(0.0, 0.0, 0.0);
+      shipGroup.add(mesh0);
 
-      const thrusterPositions = [
-        [26.25, 0, -10.5],
-        [26.25, 0, 0],
-        [26.25, 0, 10.5],
-      ];
+      // Part 2: cube
+      const geo1 = new THREE.BoxGeometry(12, 12, 12);
+      const mat1 = new THREE.MeshStandardMaterial({ color: "#8ee2ff", roughness: 0.45, metalness: 0.2 });
+      const mesh1 = new THREE.Mesh(geo1, mat1);
+      mesh1.position.set(0.0, 0.0, -7.0);
+      shipGroup.add(mesh1);
 
-      for (const [x, y, z] of thrusterPositions) {
-        const thrusterGeometry = new THREE.CylinderGeometry(2, 5, 14, 18);
-        thrusterGeometry.rotateZ(Math.PI / 2);
-        const thruster = new THREE.Mesh(thrusterGeometry, thrusterMaterial);
-        thruster.position.set(x, y, z);
-        shipGroup.add(thruster);
-      }
+      // Part 3: cube
+      const geo2 = new THREE.BoxGeometry(12, 12, 12);
+      const mat2 = new THREE.MeshStandardMaterial({ color: "#8ee2ff", roughness: 0.45, metalness: 0.2 });
+      const mesh2 = new THREE.Mesh(geo2, mat2);
+      mesh2.position.set(0.0, 0.0, 0.0);
+      shipGroup.add(mesh2);
 
-      const hullBlockPositions = [
-        [17.5, 0, 0],
-        [17.5, 0, 8.75],
-        [17.5, 0, -8.75],
-        [7, 0, 0],
-        [-3.5, 0, 0],
-        [-12.25, 0, 0],
-        [7, 0, 8.75],
-        [7, 0, -8.75],
-        [17.5, 5.25, 0],
-        [10.5, 3.5, 0],
-        [3.5, 1.75, 0],
-      ];
+      // Part 4: cube
+      const geo3 = new THREE.BoxGeometry(12, 12, 12);
+      const mat3 = new THREE.MeshStandardMaterial({ color: "#8ee2ff", roughness: 0.45, metalness: 0.2 });
+      const mesh3 = new THREE.Mesh(geo3, mat3);
+      mesh3.position.set(0.0, 0.0, 0.0);
+      shipGroup.add(mesh3);
 
-      for (const [x, y, z] of hullBlockPositions) {
-        const hullGeometry = new THREE.BoxGeometry(12, 12, 12);
-        const hullBlock = new THREE.Mesh(hullGeometry, hullMaterial);
-        hullBlock.position.set(x, y, z);
-        shipGroup.add(hullBlock);
-      }
+      // Part 5: cube
+      const geo4 = new THREE.BoxGeometry(12, 12, 12);
+      const mat4 = new THREE.MeshStandardMaterial({ color: "#8ee2ff", roughness: 0.45, metalness: 0.2 });
+      const mesh4 = new THREE.Mesh(geo4, mat4);
+      mesh4.position.set(0.0, 0.0, 7.0);
+      shipGroup.add(mesh4);
 
-      shipGroup.rotation.y = -Math.PI / 2;
+      // Part 6: cube
+      const geo5 = new THREE.BoxGeometry(12, 12, 12);
+      const mat5 = new THREE.MeshStandardMaterial({ color: "#8ee2ff", roughness: 0.45, metalness: 0.2 });
+      const mesh5 = new THREE.Mesh(geo5, mat5);
+      mesh5.position.set(7.0, 0.0, -3.5);
+      shipGroup.add(mesh5);
+
+      // Part 7: cube
+      const geo6 = new THREE.BoxGeometry(12, 12, 12);
+      const mat6 = new THREE.MeshStandardMaterial({ color: "#8ee2ff", roughness: 0.45, metalness: 0.2 });
+      const mesh6 = new THREE.Mesh(geo6, mat6);
+      mesh6.position.set(-7.0, 0.0, -3.5);
+      shipGroup.add(mesh6);
+
+      // Part 8: thuster
+      const geo7 = (() => {
+        const g = new THREE.CylinderGeometry(2, 5, 14, 18);
+        g.rotateZ(-Math.PI / 2);
+        return g;
+      })();
+      const mat7 = new THREE.MeshStandardMaterial({ color: "#ffcb88", roughness: 0.45, metalness: 0.2 });
+      const mesh7 = new THREE.Mesh(geo7, mat7);
+      mesh7.position.set(0.0, 0.0, -14.0);
+      shipGroup.add(mesh7);
+
+      // Part 9: cannon
+      const geo8 = (() => {
+        const g = new THREE.CylinderGeometry(3, 3, 16, 18);
+        g.rotateZ(Math.PI / 2);
+        return g;
+      })();
+      const mat8 = new THREE.MeshStandardMaterial({ color: "#ff9f8f", roughness: 0.45, metalness: 0.2 });
+      const mesh8 = new THREE.Mesh(geo8, mat8);
+      mesh8.position.set(0.0, 0.0, 12.25);
+      shipGroup.add(mesh8);
+
+      // Part 10: left wing
+      const geo9 = (() => {
+        const s = new THREE.Shape();
+        s.moveTo(-8, -10);
+        s.lineTo(12, 0);
+        s.lineTo(-8, 10);
+        s.closePath();
+        const g = new THREE.ExtrudeGeometry(s, { depth: 2, bevelEnabled: false });
+        g.center();
+        g.rotateY(-Math.PI / 2);
+        return g;
+      })();
+      const mat9 = new THREE.MeshStandardMaterial({ color: "#91b6ff", roughness: 0.45, metalness: 0.2 });
+      const mesh9 = new THREE.Mesh(geo9, mat9);
+      mesh9.position.set(14.0, 0.0, 3.5);
+      shipGroup.add(mesh9);
+
       return shipGroup;
     }
 
