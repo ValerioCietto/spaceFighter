@@ -1,6 +1,7 @@
 {
   "weapons": [
     {
+      "code": "pea_shooter",
       "name": "PEA Shooter",
       "image": "pea_shooter.png",
       "cost": 100,
@@ -16,6 +17,7 @@
       "description": "Projectile Explosive Artillery gun, commonly nicknamed pea shooter."
     },
     {
+      "code": "thorino_lightning",
       "name": "Thorino lightning",
       "cost": 100,
       "damage": 0.1,
@@ -34,6 +36,7 @@
       "description": "Basic Lightning weapon, "
     },
     {
+      "code": "baby_beam",
       "name": "BABY beam",
       "cost": 100,
       "damage": 0.1,
@@ -51,6 +54,7 @@
       "description": "Basic Auto-didactic Beam Yeeter. Weapon intended for tutorial purpose, do not deploy to battlefield scenarios."
     },
     {
+      "code": "teenage_beam",
       "name": "TEENAGE beam",
       "cost": 1000,
       "damage": 0.5,
@@ -68,6 +72,7 @@
       "description": "Tachyion Enhanced Emitter, Non-Active Gyroscopic Entropy. Weapon useable in battle."
     },
     {
+      "code": "adult_beam",
       "name": "ADULT beam",
       "cost": 4000,
       "damage": 2,
@@ -85,6 +90,7 @@
       "description": "Advanced Decoded Unified Laser Terminal. Weapon used in best battleships."
     },
     {
+      "code": "eldest_beam",
       "name": "ELDEST beam",
       "cost": 12000,
       "damage": 2,
@@ -102,6 +108,7 @@
       "description": "Emitter Laser Deinoblaster Enhanced Saturized Tantatam. Weapon used in capital defense and planet destroyers."
     },
     {
+      "code": "drakefire_turret",
       "name": "Drakefire Turret",
       "cost": 9000,
       "damage": 5,
@@ -120,6 +127,7 @@
       "description": "An advanced double autofire weapon minigun turreted version."
     },
     {
+      "code": "pseudo_turret",
       "name": "PseudoTurret",
       "cost": 250,
       "damage": 1,
@@ -138,6 +146,7 @@
       "description": "A starter autofire auto aim turret gun."
     },
     {
+      "code": "pseudo_turret_mk2",
       "name": "PseudoTurret mk2",
       "cost": 1500,
       "damage": 2,
@@ -156,6 +165,7 @@
       "description": "A starter autofire auto aim turret gun."
     },
     {
+      "code": "pseudo_turret_mk3",
       "name": "PseudoTurret mk3",
       "cost": 9000,
       "damage": 3,
@@ -174,6 +184,7 @@
       "description": "A starter autofire auto aim turret gun."
     },
     {
+      "code": "auto_sniper",
       "name": "AutoSniper",
       "cost": 100,
       "damage": 5,
@@ -192,6 +203,7 @@
       "description": "A starter autofire auto aim sniper gun."
     },
     {
+      "code": "wyrmfire",
       "name": "Wyrmfire",
       "cost": 300,
       "damage": 5,
@@ -209,6 +221,7 @@
       "description": "A starter autofire weapon minigun. You will probably like this."
     },
     {
+      "code": "drakefire",
       "name": "Drakefire",
       "cost": 3000,
       "damage": 5,
@@ -226,6 +239,7 @@
       "description": "An advanced double autofire weapon minigun. If you liked Wyrmfire, you will love Drakefire."
     },
     {
+      "code": "dragonfire",
       "name": "Dragonfire",
       "cost": 30000,
       "damage": 5,
@@ -243,6 +257,7 @@
       "description": "A 5 shot hurricane speed hellish minigun. If you loved Wyrmfire, you will want nothing else rather than Dragonfire."
     },
     {
+      "code": "ring",
       "name": "Ring",
       "cost": 9000,
       "damage": 1,
@@ -259,6 +274,7 @@
       "description": "High end deceptively powerful weapon. Used for area denial and bombing."
     },
     {
+      "code": "barrage",
       "name": "Barrage",
       "cost": 22000,
       "damage": 30,
@@ -275,6 +291,7 @@
       "description": "High end sniper shotgun. The fast traveling projectiles can destroy targets even at 5000-8000 range."
     },
     {
+      "code": "loitering_missile_barrage",
       "name": "Loitering missile barrage",
       "cost": 12000,
       "damage": 5,
@@ -293,6 +310,7 @@
       "description": "Hit pursuing enemies in the back while fleeing."
     },
     {
+      "code": "shotgun_missile_barrage",
       "name": "Shotgun missile barrage",
       "cost": 1500,
       "damage": 10,
@@ -311,6 +329,7 @@
       "description": "A very good weapon for speedsters, allowing to deal very good short range damage"
     },
     {
+      "code": "slowing_run_missile",
       "name": "Slowing run Missile",
       "cost": 20000,
       "damage": 5,
@@ -331,6 +350,7 @@
       "description": "High range expensive low damage, but very high hit chance."
     },
     {
+      "code": "magnetic_mine_cluster",
       "name": "Magnetic mine cluster",
       "cost": 4500,
       "damage": 10,
@@ -351,6 +371,7 @@
       "description": "A mine cluster that chases enemies at a snail's pace."
     },
     {
+      "code": "mine_cluster",
       "name": "Mine cluster",
       "cost": 3000,
       "damage": 20,
@@ -370,6 +391,7 @@
       "description": "A static mine cluster, ideal for speedster bombing on static installations."
     },
     {
+      "code": "sniper",
       "name": "Sniper",
       "cost": 200,
       "damage": 5,
@@ -385,6 +407,7 @@
       "description": "High range, auto-aim assisted weapon for long range sniping. 5000px effective range"
     },
     {
+      "code": "shotgun",
       "name": "Shotgun",
       "cost": 150,
       "damage": 2,
@@ -400,6 +423,7 @@
       "description": "High spread 5 shot damage gun. 600px effective max range"
     },
     {
+      "code": "homing_missiles",
       "name": "Homing missiles",
       "cost": 250,
       "damage": 1,
@@ -418,6 +442,7 @@
       "description": "Slow yet smart missiles. Budget entry level self driven missile. Made for didactic purpose."
     },
     {
+      "code": "cruise_missiles",
       "name": "Cruise missiles",
       "cost": 120,
       "damage": 10,
@@ -436,6 +461,7 @@
       "description": "Start slow, high acceleration, slow turn missiles. Made for targeting slow moving far targets like cargo ships."
     },
     {
+      "code": "shockwave",
       "name": "Shockwave",
       "cost": 550,
       "damage": 2,
@@ -451,6 +477,7 @@
       "description": "Can destroy a small ship with a single shot. For closing short distance battles fast."
     },
     {
+      "code": "smoke_ring",
       "name": "Smoke ring",
       "cost": 300,
       "damage": 1,
@@ -467,6 +494,7 @@
       "description": "Starter Area denial weapon or starter bomber weapon. Projectiles follow momentum, so you can stack multiple rings charging a tougher spaceship or stay still and add ring stacks to deal huge damage to ships dumb enough to approach"
     },
     {
+      "code": "death_pulse",
       "name": "Death Pulse",
       "cost": 100000,
       "damage": 5,
@@ -489,5 +517,25 @@
     "Space Bullet",
     "Shockwave",
     "Shotgun"
+  ],
+  "enemyAdvancedWeaponPool": [
+    "Shockwave",
+    "Wyrmfire",
+    "Homing missiles",
+    "Cruise missiles"
+  ],
+  "enemyEliteWeaponPool": [
+    "Shockwave",
+    "Drakefire",
+    "Homing missiles",
+    "Cruise missiles",
+    "Death Pulse"
+  ],
+  "bossWeaponPool": [
+    "Drakefire",
+    "Shotgun",
+    "Homing missiles",
+    "Cruise missiles",
+    "Death Pulse"
   ]
 }

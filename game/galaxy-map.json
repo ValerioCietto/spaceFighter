@@ -16,6 +16,7 @@
       "stations": [
         {
           "name": "Alpha Centauri Station",
+          "image": "human_space_station_advanced.png",
           "position_x": 2300,
           "position_y": 4500,
           "station_radius": 100,

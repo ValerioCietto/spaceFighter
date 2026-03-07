@@ -22,22 +22,22 @@
       
               templateName: "human_perseus",
                 shipStats: {
-                cost: 10000,
-                shield: 100,
-                hull: 50,
-                speed: 150,
-                acceleration: 180,
-                turningSpeedRad: Math.PI * 1.25,
+                cost: 5000,
+                shield: 99,
+                hull: 48, // a little beat down perseus
+                speed: 145,
+                acceleration: 170,
+                turningSpeedRad: Math.PI * 1.2,
                 engineFlareType: "triangular",
                 engineFlareWidth: 10,
                 engineFlareLength: 26,
-                image: "human_perseus.png",
+                image: "human_perseus1.png",
                 shieldDiameterPx: 33,
                 shieldRegen:1,
-                CPU: 10,
+                CPU: 5,
                 shipCenter: { x: 0.5, y: 0.5 },
                 engineCoords: [{ x: 0, y: -5 }],
-                weaponGunCoords: [{type: "gun", x: 18, y: 0 }],
+                weaponGunCoords: [{type: "gun", x: 18, y: 0, equippedWeapon: "pea_shooter" }],
               },
       
               outfits: [
