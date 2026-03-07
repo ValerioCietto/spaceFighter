@@ -29,10 +29,11 @@ function renderInventory(state) {
   // ---- PANELS ----
   const currentPanel = bodyEl.querySelector('[data-panel="current"]');
   const ownedPanel = bodyEl.querySelector('[data-panel="owned"]');
+  const weaponsPanel = bodyEl.querySelector('[data-panel="weapons"]');
   const missionsPanel = bodyEl.querySelector('[data-panel="missions"]');
 
   // If your HTML didn't include panels yet, fallback to old behavior (optional)
-  if (!currentPanel || !ownedPanel || !missionsPanel) {
+  if (!currentPanel || !ownedPanel || !weaponsPanel || !missionsPanel) {
     // minimal fallback: render owned list like before
     const old = bodyEl.querySelector("#owned-ships-section");
     if (old) old.remove();
@@ -79,6 +80,7 @@ function renderInventory(state) {
   // Keep tab contents in sync when active ship changes.
   renderInventoryTabContent(state, "current", currentPanel);
   renderInventoryTabContent(state, "owned", ownedPanel);
+  renderInventoryTabContent(state, "weapons", weaponsPanel);
   renderInventoryTabContent(state, "missions", missionsPanel);
 
   // ---- BIND TAB SWITCH + ACTIONS (event delegation, once) ----
@@ -462,6 +464,41 @@ function renderInventoryTabContent(state, tab, panelEl) {
                   </button>
                 </div>
               </div>
+            `;
+          })
+          .join("")}
+      </div>
+    `;
+  }
+
+
+
+  if (tab === "weapons") {
+    const ownedWeapons = Array.isArray(p.ownedWeapons) ? p.ownedWeapons : [];
+
+    if (!ownedWeapons.length) {
+      panelEl.innerHTML = '<div style="opacity:.7">No weapons owned</div>';
+      return;
+    }
+
+    panelEl.innerHTML = `
+      <div class="inv-missions-list">
+        ${ownedWeapons
+          .map((weapon, index) => {
+            const weaponId = String(weapon?.id ?? "");
+            const weaponName = String(weapon?.name ?? weaponId ?? `Weapon ${index + 1}`);
+            const shipId = Number(weapon?.equippedOnShipId);
+            const equippedShip = owned.find((s) => Number(s?.id) === shipId);
+            const location = equippedShip
+              ? `Equipped on ${escapeHtml(equippedShip.name || equippedShip.templateName || `ship #${shipId}`)}${Number.isInteger(Number(weapon?.equippedPortIndex)) ? ` (port ${Number(weapon.equippedPortIndex) + 1})` : ""}`
+              : "In cargo";
+
+            return `
+              <article class="inv-mission-card">
+                <h4>${escapeHtml(weaponName)}</h4>
+                <p><strong>ID:</strong> ${escapeHtml(weaponId || "n/a")}</p>
+                <p><strong>Status:</strong> ${location}</p>
+              </article>
             `;
           })
           .join("")}
