@@ -39,6 +39,16 @@
           "max_count": 1
         }
       ],
+      "stations": [
+        {
+          "name": "Arachne Station",
+          "image": "jared_space_station_advanced.png",
+          "position_x": 2300,
+          "position_y": 4500,
+          "station_radius": 100,
+          "station_rot_speed": -0.01
+        }
+      ],
       "x": 871.41,
       "y": 249.51
     },
@@ -215,6 +225,16 @@
       "description":"",
       "serviceLevel": 1,
       "threatLevel": 0,
+      "stations": [
+        {
+          "name": "Glacius Station",
+          "image": "human_space_station_basic1.png",
+          "position_x": 2300,
+          "position_y": 4500,
+          "station_radius": 100,
+          "station_rot_speed": 0.01
+        }
+      ],
       "enemies":[],
       "x": -406.94,
       "y": 657.72
