@@ -99,10 +99,8 @@
       const STAR_X = SystemInfo.size/2;
       const STAR_Y = SystemInfo.size/2;
 
-      const STATION_X = STAR_X + 450;
-      const STATION_Y = STAR_Y - 200;
-      const STATION_RADIUS = 80;
-      const STATION_ROT_SPEED = Math.PI / 32; // rad/sec
+      const DEFAULT_STATION_RADIUS = 80;
+      const DEFAULT_STATION_ROT_SPEED = Math.PI / 32; // rad/sec
 
       const STATION_ASSET = window.BASE_PATH + "/assets/human_space_station_basic1.png";
       const stationImg = new Image();
@@ -155,6 +153,18 @@
       });
       hyperspaceBtn.addEventListener("click", hyperSpaceManager.enterHyperspace);
 
+      function getPrimaryStation() {
+        return SystemInfo?.stations?.[0] || null;
+      }
+
+      function getStationInteractionRadius(station) {
+        const stationRadius = Math.max(
+          1,
+          Number(station?.station_radius) || DEFAULT_STATION_RADIUS
+        );
+        return stationRadius + 120;
+      }
+
       function isPlayerNearSpaceStation(){
         // AnyStation software allows the player to open station overlay
         // even if not near a space station.
@@ -162,10 +172,18 @@
         if(state.player?.abilities?.anystation){
           return true;
         }
-        const dx = state.player.x - SystemInfo.stations[0].position_x;
-        const dy = state.player.y - SystemInfo.stations[0].position_y;
+        const station = getPrimaryStation();
+        if (!station) return false;
+
+        const stationX = Number(station.position_x);
+        const stationY = Number(station.position_y);
+        if (!Number.isFinite(stationX) || !Number.isFinite(stationY)) return false;
+
+        const dx = state.player.x - stationX;
+        const dy = state.player.y - stationY;
         const dist = Math.hypot(dx, dy);
-        if(dist < 200){
+        const interactionRadius = getStationInteractionRadius(station);
+        if(dist < interactionRadius){
           return true;
         }
         else{
@@ -178,7 +196,7 @@
       }
 
       function stationOverlayOpen(){
-        const station = SystemInfo?.stations?.[0] || {};
+        const station = getPrimaryStation() || {};
         StationManager.openStation({
           name: station.name || "Orbital Station",
           systemInfo: SystemInfo,
@@ -1259,8 +1277,9 @@
 
 
     function update(dt, dtMillis) {
-      
-      stationAngle += STATION_ROT_SPEED * dt;
+      const station = getPrimaryStation();
+      const stationRotSpeed = Number(station?.station_rot_speed) || DEFAULT_STATION_ROT_SPEED;
+      stationAngle += stationRotSpeed * dt;
       playerMoveUpdate(dt);
       updatePlayerProjectiles(dt, dtMillis);
       updateEnemyProjectiles(dt);
@@ -1674,8 +1693,20 @@
       }
 
       function drawStation() {
-        const screenX = width / 2 + (STATION_X - state.player.x);
-        const screenY = height / 2 + (STATION_Y - state.player.y);
+        const station = getPrimaryStation();
+        if (!station) return;
+
+        const stationX = Number(station.position_x);
+        const stationY = Number(station.position_y);
+        if (!Number.isFinite(stationX) || !Number.isFinite(stationY)) return;
+
+        const stationRadius = Math.max(
+          1,
+          Number(station.station_radius) || DEFAULT_STATION_RADIUS
+        );
+
+        const screenX = width / 2 + (stationX - state.player.x);
+        const screenY = height / 2 + (stationY - state.player.y);
       
         ctx.save();
         ctx.translate(screenX, screenY);
@@ -1683,14 +1714,14 @@
       
         if (stationImg.complete && stationImg.naturalWidth > 0) {
           // Draw centered; size based on your existing station radius
-          const size = STATION_RADIUS * 2;
+          const size = stationRadius * 2;
           ctx.drawImage(stationImg, -size / 2, -size / 2, size, size);
           ctx.restore();
           return;
         }
       
         // fallback (your old vector, keep for loading errors)
-        const r = STATION_RADIUS;
+        const r = stationRadius;
         ctx.beginPath();
         for (let i = 0; i < 8; i++) {
           const a = (Math.PI * 2 * i) / 8;
@@ -2160,12 +2191,19 @@
         minimapCtx.fill();
 
         // Station as small grey dot
-        const stx = (STATION_X - SystemInfo.size / 2) * minimapScale;
-        const sty = (STATION_Y - SystemInfo.size / 2) * minimapScale;
-        minimapCtx.beginPath();
-        minimapCtx.arc(stx, sty, 3, 0, Math.PI * 2);
-        minimapCtx.fillStyle = "#bbbbbb";
-        minimapCtx.fill();
+        const station = getPrimaryStation();
+        if (station) {
+          const stationX = Number(station.position_x);
+          const stationY = Number(station.position_y);
+          if (Number.isFinite(stationX) && Number.isFinite(stationY)) {
+            const stx = (stationX - SystemInfo.size / 2) * minimapScale;
+            const sty = (stationY - SystemInfo.size / 2) * minimapScale;
+            minimapCtx.beginPath();
+            minimapCtx.arc(stx, sty, 3, 0, Math.PI * 2);
+            minimapCtx.fillStyle = "#bbbbbb";
+            minimapCtx.fill();
+          }
+        }
 
         if (target) {
           const tx = (target.x - SystemInfo.size / 2) * minimapScale;
