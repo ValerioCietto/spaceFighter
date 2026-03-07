@@ -1,6 +1,6 @@
 const SystemInfo = {
     name: "Glacius",
-    size: 6000,
+    size: 8000,
     stars: [
         {
             name: "Glacius Prime",
