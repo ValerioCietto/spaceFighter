@@ -27,13 +27,28 @@
       return owned.find((ship) => Number(ship?.id) === activeId) || owned[0] || null;
     }
 
-    function playerCanUseHyperspace() {
+    function playerCanUseHyperspace(gate) {
       const activeShip = getActiveShip();
       const templateName = String(activeShip?.templateName ?? activeShip?.name ?? "").toLowerCase();
-      if (templateName.startsWith("human_")) return true;
+      // human ships can innately use "warp" type hyperspace gates, otherwise the ship needs to have an outfit that grants hyperspace warp capability
+      if (templateName.startsWith("human_") && gate?.type === "warp" ) return true;
+      // jared ships can innately use "chaos" type hyperspace gates, otherwise the ship needs to have an outfit that grants hyperspace chaos capability
+      if (templateName.startsWith("jared_") && gate?.type === "chaos") return true;
+      // technician ships can innately use "hidden" type hyperspace gates, otherwise the ship needs to have an outfit that grants hyperspace hidden capability
+      if (templateName.startsWith("technician_") && gate?.type === "hidden") return true;
 
-      const equippedOutfits = Array.isArray(activeShip?.outfits) ? activeShip.outfits : [];
-      return equippedOutfits.some((outfit) => outfit?.grantWarpTravel === true);
+      // return true if the ship has an outfit that grants the ability to use the gate type
+      const gateTypeAbilityMap = {
+        warp: "grantWarpTravel",
+        chaos: "grantChaosTravel",
+        hidden: "grantHiddenTravel",
+      };
+      const requiredAbility = gateTypeAbilityMap[gate?.type];
+      if (requiredAbility) {
+        const equippedOutfits = Array.isArray(activeShip?.outfits) ? activeShip.outfits : [];
+        return equippedOutfits.some((outfit) => outfit?.[requiredAbility] === true);
+      }
+      return false; 
     }
 
     function getNearestHyperspaceGate() {
@@ -43,8 +58,6 @@
 
       let nearestGate = null;
       let nearestDist = Infinity;
-
-      if (!playerCanUseHyperspace()) return null;
 
       for (const gate of gates) {
         if (!gate) continue;
@@ -58,6 +71,7 @@
           nearestDist = dist;
         }
       }
+      if (!playerCanUseHyperspace(nearestGate)) return null;
 
       return nearestGate ? { gate: nearestGate, distance: nearestDist } : null;
     }

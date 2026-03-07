@@ -447,7 +447,7 @@
 
             const enemyGroupSpaceships = enemyGroupType.spaceships;
             // if the group doesn't have an enemySpawnAcc, create one in the enemyGroup
-            if(enemyGroup.enemySpawnAcc === undefined || enemyGroup.enemySpawnAcc === NaN){
+            if(enemyGroup.enemySpawnAcc === undefined || isNaN(enemyGroup.enemySpawnAcc)){
               SystemInfo.enemies = SystemInfo.enemies.map(g => {
                 if(g === enemyGroup){
                   return { ...g, enemySpawnAcc: 0, enemyCurrentCount: 0 };
@@ -457,16 +457,13 @@
                 }              
               });
             }
-            console.log("adding spawn ", enemyGroup.type, enemyGroup.enemySpawnAcc, enemyGroup.spawn_rate, enemyGroup.max_count, enemyGroup.enemyCurrentCount);
             // so now the enemyGroup has an enemySpawnAcc that we can use to track spawning for that group
             enemyGroup.enemySpawnAcc += dt;
             const spawnRate = enemyGroup.spawn_rate || 1;
             const maxNumber = enemyGroup.max_count || 0;
             // if we already have maxNumber, skip spawning for this group
             const currentNumber = enemyGroup.enemyCurrentCount || 0;
-            console.log("current number for group", enemyGroup.type, "is", currentNumber, "max number is", maxNumber);
             if(currentNumber < maxNumber){
-              console.log("spawning enemy from group", enemyGroup.type, "current number", currentNumber, "max number", maxNumber);
               // if enemySpawnAcc exceeds spawnRate, spawn an enemy from this group and reset the acc
               if(enemyGroup.enemySpawnAcc >= spawnRate){
                 enemyGroup.enemySpawnAcc -= spawnRate;
