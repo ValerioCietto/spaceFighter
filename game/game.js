@@ -1291,9 +1291,11 @@
       speedValueEl.textContent = newSpeed.toFixed(1);
       posValueEl.textContent = `${state.player.x.toFixed(0)}, ${state.player.y.toFixed(0)}`;
       solarSystemEl.textContent = SystemInfo.name;
-      shieldValueEl.textContent = state.player.shipStats.shield.toFixed(1);
-      hullValueEl.textContent = state.player.shipStats.hull.toFixed(1);
-      energyValueEl.textContent = state.player.shipStats.energy.toFixed(1);
+      const playerStats = state.player.shipStats || {};
+      const formatStat = (value) => (Number(value) || 0).toFixed(1);
+      shieldValueEl.textContent = formatStat(playerStats.shield);
+      hullValueEl.textContent = formatStat(playerStats.hull);
+      energyValueEl.textContent = formatStat(playerStats.energy);
     }
 
     /** Moves + rotates player (manual or docking autopilot), clamps speed, integrates position */
