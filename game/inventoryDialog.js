@@ -1,3 +1,46 @@
+const INVENTORY_TABS = ["current", "owned", "weapons", "missions"];
+const INVENTORY_DEFAULT_TAB = "current";
+
+const inventoryDialogState = {
+  activeTab: INVENTORY_DEFAULT_TAB,
+};
+
+function isValidInventoryTab(tabId) {
+  return INVENTORY_TABS.includes(String(tabId || ""));
+}
+
+function getInventoryActiveTab() {
+  return isValidInventoryTab(inventoryDialogState.activeTab)
+    ? inventoryDialogState.activeTab
+    : INVENTORY_DEFAULT_TAB;
+}
+
+function setInventoryActiveTab(tabId) {
+  inventoryDialogState.activeTab = isValidInventoryTab(tabId)
+    ? String(tabId)
+    : INVENTORY_DEFAULT_TAB;
+  return inventoryDialogState.activeTab;
+}
+
+function renderInventoryTabsState(bodyEl, state) {
+  if (!bodyEl) return;
+  const activeTab = getInventoryActiveTab();
+
+  bodyEl.querySelectorAll(".inv-tab").forEach((btn) => {
+    const isActive = btn.getAttribute("data-tab") === activeTab;
+    btn.classList.toggle("is-active", isActive);
+    btn.setAttribute("aria-selected", isActive ? "true" : "false");
+  });
+
+  bodyEl.querySelectorAll(".inv-panel").forEach((panel) => {
+    const isActive = panel.getAttribute("data-panel") === activeTab;
+    panel.classList.toggle("is-active", isActive);
+    if (isActive) {
+      renderInventoryTabContent(state, activeTab, panel);
+    }
+  });
+}
+
 function renderInventory(state) {
   const p = state?.player;
   if (!p) return;
@@ -77,11 +120,8 @@ function renderInventory(state) {
     return;
   }
 
-  // Keep tab contents in sync when active ship changes.
-  renderInventoryTabContent(state, "current", currentPanel);
-  renderInventoryTabContent(state, "owned", ownedPanel);
-  renderInventoryTabContent(state, "weapons", weaponsPanel);
-  renderInventoryTabContent(state, "missions", missionsPanel);
+  const nextTab = getInventoryActiveTab();
+  setInventoryActiveTab(nextTab);
 
   // ---- BIND TAB SWITCH + ACTIONS (event delegation, once) ----
   bindInventoryTabsOnce(state);
@@ -91,7 +131,7 @@ function renderInventory(state) {
   bindCurrentShipWeaponEquipActionsOnce(state);
   bindMissionRewardActionsOnce(state);
 
-  // ensure a panel is visible + has content on open
+  // ensure active tab + panel are state-driven
   ensureInventoryActivePanelHasContent(state);
 }
 
@@ -99,12 +139,7 @@ function ensureInventoryActivePanelHasContent(state) {
   const bodyEl = document.querySelector(".inventory-body");
   if (!bodyEl) return;
 
-  const activeTabBtn = bodyEl.querySelector(".inv-tab.is-active");
-  const tab = activeTabBtn?.getAttribute("data-tab") || "current";
-
-  bodyEl.querySelectorAll(".inv-panel").forEach((p) => {
-    p.classList.toggle("is-active", p.getAttribute("data-panel") === tab);
-  });
+  renderInventoryTabsState(bodyEl, state);
 }
 
 function bindOwnedShipsActionsOnce(state) {
@@ -285,23 +320,8 @@ function bindInventoryTabsOnce(state) {
   const activateInventoryTab = (tabBtn) => {
     if (!tabBtn) return;
     const tab = tabBtn.getAttribute("data-tab");
-
-    // toggle tab buttons
-    bodyEl.querySelectorAll(".inv-tab").forEach((b) => {
-      const active = b === tabBtn;
-      b.classList.toggle("is-active", active);
-      b.setAttribute("aria-selected", active ? "true" : "false");
-    });
-
-    // toggle panels
-    bodyEl.querySelectorAll(".inv-panel").forEach((p) => {
-      const isActive = p.getAttribute("data-panel") === tab;
-      p.classList.toggle("is-active", isActive);
-
-      if (isActive) {
-        renderInventoryTabContent(state, tab, p);
-      }
-    });
+    setInventoryActiveTab(tab);
+    renderInventoryTabsState(bodyEl, state);
   };
 
   bodyEl.addEventListener("click", (e) => {
