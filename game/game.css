@@ -131,8 +131,19 @@ body {
 }
 
 .tab-menu-container, .subtab-menu-container { display:flex; gap:8px; flex-wrap:wrap; }
-.tab-btn, .subtab-btn { padding:8px 10px; border-radius:10px; border:1px solid #333; background:#111; color:#ddd; cursor:pointer; }
-.tab-btn.is-active, .subtab-btn.is-active { border-color:#888; background:#1b1b1b; color:#fff; }
+.tab-btn, .subtab-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #fff;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.tab-btn.is-active, .subtab-btn.is-active {
+  background: rgba(255,255,255,0.18);
+  border-color: rgba(255,255,255,0.35);
+}
 
 
 #galaxy-map-btn {
