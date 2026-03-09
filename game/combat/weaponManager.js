@@ -1,4 +1,10 @@
 (function () {
+  function normalizeEnemyBehavior(behavior) {
+    const normalized = String(behavior || "").trim().toLowerCase();
+    if (normalized === "turret" || normalized === "idle" || normalized === "smart") return normalized;
+    return "aggressive";
+  }
+
   function isBeamWeapon(weapon) {
     const aspect = (weapon?.aspect || "").toLowerCase();
     return aspect === "laser" || aspect === "lightning" || weapon?.beam === true;
@@ -317,6 +323,10 @@
 
       state.enemies.forEach((enemy) => {
         if (!enemy || !enemy.weapon || !enemy.shipStats) return;
+
+        const behavior = normalizeEnemyBehavior(enemy.behavior);
+        if (behavior === "idle" && !enemy.isProvoked) return;
+        if (behavior === "smart" && enemy.isRetreating) return;
 
         const firerateMult = Number(enemy.shipStats.firerateMult) || 1.0;
         const minDelayMs = Math.max(1, Number(enemy.weapon.delay_ms) || 0) * 1 / firerateMult;
