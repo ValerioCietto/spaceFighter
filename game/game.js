@@ -410,7 +410,33 @@
         };
       }
 
-      function spawnEnemy(shipName) {
+      function normalizeEnemyBehavior(behavior) {
+        const normalized = String(behavior || "").trim().toLowerCase();
+        if (normalized === "turret" || normalized === "idle" || normalized === "smart") return normalized;
+        return "aggressive";
+      }
+
+      function getNearestHyperspaceGate(x, y) {
+        const gates = Array.isArray(SystemInfo?.hyperspace_gates) ? SystemInfo.hyperspace_gates : [];
+        let nearest = null;
+        let nearestDist = Infinity;
+
+        gates.forEach((gate) => {
+          const gx = Number(gate?.position_x);
+          const gy = Number(gate?.position_y);
+          if (!Number.isFinite(gx) || !Number.isFinite(gy)) return;
+
+          const dist = Math.hypot(gx - x, gy - y);
+          if (dist < nearestDist) {
+            nearestDist = dist;
+            nearest = gate;
+          }
+        });
+
+        return nearest;
+      }
+
+      function spawnEnemy(shipName, behavior = "aggressive") {
         const centerX = SystemInfo.size / 2;
         const centerY = SystemInfo.size / 2;
         // enemy spawn distance from star
@@ -426,6 +452,9 @@
 
         const enemy = {
           id: enemyIdSeq++,
+          behavior: normalizeEnemyBehavior(behavior),
+          isProvoked: false,
+          isRetreating: false,
           shipName,
           shipStats,
           img: shipStats.image,
@@ -488,7 +517,7 @@
                 // spawn an enemy from this group by picking a random spaceship from enemyGroupSpaceships and using its stats to create the enemy, then add the enemy to state.enemies
                 const shipName = enemyGroupSpaceships[(Math.random() * enemyGroupSpaceships.length) | 0];
                 // call spawnEnemy with the shipName to create the enemy and add it to state.enemies
-                spawnEnemy(shipName);
+                spawnEnemy(shipName, enemyGroup.behavior);
                 enemyGroup.enemyCurrentCount = (enemyGroup.enemyCurrentCount || 0) + 1;
               }
             }
@@ -688,22 +717,51 @@
 
       function moveEnemies(dt){
         if(state.enemies.length > 0){
-          // move every enemy toward the player if they haven't reached the engagement range
-          
           state.enemies.forEach(enemy => {
             const stats = enemy.shipStats || getStats(enemy.shipName);
 
-            const turnSpeed = stats?.turningSpeedRad ?? (Math.PI / 2); // rad/sec fallback
+            const turnSpeed = stats?.turningSpeedRad ?? (Math.PI / 2);
             const maxSpeed = stats?.speed ?? 220;
             const accel = stats?.acceleration ?? 120;
-
             const engageRange = enemy.weapon?.engage_range ?? 500;
 
-            const dx = state.player.x - enemy.x;
-            const dy = state.player.y - enemy.y;
+            const behavior = normalizeEnemyBehavior(enemy.behavior);
+            const canWakeFromIdle = behavior !== "idle" || enemy.isProvoked;
+
+            if (behavior === "idle" && !canWakeFromIdle) {
+              enemy.vx = 0;
+              enemy.vy = 0;
+              return;
+            }
+
+            if (behavior === "smart") {
+              const maxShield = Number(enemy.maxShield) || 0;
+              if (maxShield > 0 && Number(enemy.shield) <= maxShield * 0.5) {
+                enemy.isRetreating = true;
+              }
+            }
+
+            let targetX = state.player.x;
+            let targetY = state.player.y;
+
+            if (behavior === "smart" && enemy.isRetreating) {
+              const gate = getNearestHyperspaceGate(enemy.x, enemy.y);
+              if (gate) {
+                targetX = Number(gate.position_x) || targetX;
+                targetY = Number(gate.position_y) || targetY;
+
+                const gateDist = Math.hypot(targetX - enemy.x, targetY - enemy.y);
+                if (gateDist <= 120) {
+                  destroyEnemyById(enemy.id, { grantReward: false, countMission: false });
+                  return;
+                }
+              }
+            }
+
+            const dx = targetX - enemy.x;
+            const dy = targetY - enemy.y;
             const dist = Math.hypot(dx, dy) || 1;
 
-            // 1) turn toward player (bounded by turning speed)
             const desiredAngle = Math.atan2(dy, dx);
             let diff = normalizeAngleDiff(desiredAngle - enemy.angle);
             const maxTurn = turnSpeed * dt;
@@ -711,10 +769,11 @@
             if (diff < -maxTurn) diff = -maxTurn;
             enemy.angle += diff;
 
-            // 2) compute target speed: full chase outside engage range, slower inside
-            const targetSpeed = dist > engageRange ? maxSpeed : maxSpeed * 0.5;
+            let targetSpeed = dist > engageRange ? maxSpeed : maxSpeed * 0.5;
+            if (behavior === "turret") {
+              targetSpeed = 0;
+            }
 
-            // 3) accelerate/decelerate enemy velocity toward targetSpeed along facing direction
             const dirX = Math.cos(enemy.angle);
             const dirY = Math.sin(enemy.angle);
 
@@ -730,11 +789,9 @@
             enemy.vx = dirX * newSpeed;
             enemy.vy = dirY * newSpeed;
 
-            // 4) apply movement
             enemy.x += enemy.vx * dt;
             enemy.y += enemy.vy * dt;
 
-            // (optional) clamp to world bounds like player
             enemy.x = Math.max(0, Math.min(SystemInfo.size, enemy.x));
             enemy.y = Math.max(0, Math.min(SystemInfo.size, enemy.y));
           });
@@ -1308,6 +1365,9 @@
     }
 
     function applyDamageToEnemy(enemy, projectile) {
+      if (enemy) {
+        enemy.isProvoked = true;
+      }
       const damage = projectile.damage || 1;
       const damageEnergy = Number(projectile.damageEnergy) || 0;
       // formula to expand with enemy shield reduction
@@ -1333,22 +1393,27 @@
       }
     }
 
-      function destroyEnemyById(id) {
+      function destroyEnemyById(id, options = {}) {
         const idx = state.enemies.findIndex(e => e && e.id === id);
         if (idx < 0) return false;
 
+        const { grantReward = true, countMission = true } = options;
         const enemy = state.enemies[idx];
         const cost = Number(enemy?.shipStats?.cost) || 0;
 
-        if (typeof addMoneyWithCreditGainBonus === "function") {
-          addMoneyWithCreditGainBonus(state, cost / 1000);
-        } else {
-          state.player.money += (cost / 1000);
+        if (grantReward) {
+          if (typeof addMoneyWithCreditGainBonus === "function") {
+            addMoneyWithCreditGainBonus(state, cost / 1000);
+          } else {
+            state.player.money += (cost / 1000);
+          }
+          moneyValueEl.textContent = `${state.player.money.toFixed(0)}§`;
         }
-        moneyValueEl.textContent = `${state.player.money.toFixed(0)}§`;
 
         state.enemies.splice(idx, 1);
-        progressDestroyTargetMissions();
+        if (countMission) {
+          progressDestroyTargetMissions();
+        }
         return true;
       }
 
