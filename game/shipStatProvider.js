@@ -37,55 +37,72 @@
 const ENEMY_TYPES = [{
     name: "jared_basic",
     threatLevel: 1,
-    spaceships: ["jared_zuque", "jared_berseker"]
+    spaceships: ["jared_zuque", "jared_berseker"],
+    behavior: "aggressive"
   },
   {
     name: "jared_raider",
     threatLevel: 2,
+    behavior: "smart",
     spaceships: ["jared_zuque", "jared_berseker", "jared_jeweled"]
   },
   {
     name: "jared_elite",
     threatLevel: 3,
+    behavior: "smart",
     spaceships: ["jared_zuque", "jared_berseker", "jared_jeweled"]
   },
   {
     name: "jared_capital",
     threatLevel: 4,
+    behavior: "idle",
     spaceships: ["jared_queen"]
   },
   {
     name: "human_basic",
     threatLevel: 1,
+    behavior: "aggressive",
     spaceships: ["human_perseus", "human_icarus", "human_hermes"]
   },{
     name: "human_raider",
     threatLevel: 2,
+    behavior: "smart",  
     spaceships: ["human_mercury", "human_icarus", "human_hermes", "human_gunship"]
+  },
+  {
+    name: "human_blockade",
+    threatLevel: 2,
+    behavior: "turret",  
+    spaceships: ["human_artemis"]
   },
   {
     name: "human_elite",
     threatLevel: 3,
+    behavior: "smart",  
     spaceships: ["human_icarus", "human_hermes", "human_gunship", "human_artemis", "human_ares"]
   },
   {
     name: "human_capital",
     threatLevel: 4,
+    behavior: "idle",
     spaceships: ["human_zeus"]
   },
   {
     name: "technician_basic",
     threatLevel: 1,
+    behavior: "aggressive",
     spaceships: ["technician_hard_shell_v1", "technician_motherlode", "technician_spike_razor"]
   },
   {
     name: "technician_elite",
     threatLevel: 3,
+    behavior: "smart",
     spaceships: ["technician_motherlode", "technician_spike_razor", "technician_spike_razor_upgraded"]
   },
   {
     name: "technician_capital",
     threatLevel: 4,
+    behavior: "idle",
     spaceships: ["technician_singularity"]
   }
 ];
