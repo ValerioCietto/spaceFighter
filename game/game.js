@@ -31,7 +31,7 @@
                 engineFlareType: "triangular",
                 engineFlareWidth: 10,
                 engineFlareLength: 26,
-                image: "human_perseus1.png",
+                image: "humans/human_perseus1.png",
                 shieldDiameterPx: 33,
                 shieldRegen:1,
                 CPU: 5,
