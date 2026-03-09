@@ -235,7 +235,27 @@
           "station_rot_speed": 0.01
         }
       ],
-      "enemies":[],
+      "enemies":[{
+          "type": "jared_elite",
+          "faction": "pirate",
+          "spawn_rate": 1,
+          "max_count": 3,
+          "behavior": "idle"
+      },
+    {
+          "type": "human_blockade",
+          "faction": "pirate",
+          "spawn_rate": 1,
+          "max_count": 1,
+          "behavior": "turret"
+      },
+        {
+          "type": "technician_elite",
+          "faction": "pirate",
+          "spawn_rate": 1,
+          "max_count": 5,
+          "behavior": "turret"
+      }],
       "x": -406.94,
       "y": 657.72
     },
