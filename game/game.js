@@ -87,6 +87,7 @@
         neutralPassive: [],
         allies: [],
         targets: [],
+        asteroids: [],
       
         ui: {
           mode: "game", // "inventory" | "galaxyMap" | "station" | "tutorialMode" | "game"
@@ -108,7 +109,6 @@
 
       const FRICTION = 70;
       const MONEY_PER_TARGET = 1000;
-
       const canvas = document.getElementById("game-canvas");
       const ctx = canvas.getContext("2d");
 
@@ -118,6 +118,29 @@
       const speedValueEl = document.getElementById("speed-value");
       const posValueEl = document.getElementById("pos-value");
       const moneyValueEl = document.getElementById("money-value");
+
+      const asteroidManager = createAsteroidManager({
+        state,
+        systemInfo: SystemInfo,
+        basePath: window.BASE_PATH,
+        starRadiusWorld: STAR_RADIUS_WORLD,
+        config: {
+          countMin: 8,
+          countMax: 18,
+          minSize: 24,
+          maxSize: 72,
+          spawnRadiusMin: STAR_DIAMETER + 250,
+          spawnRadiusMax: Math.max(STAR_DIAMETER + 251, SystemInfo.size * 0.48),
+        },
+        onReward: (reward) => {
+          if (typeof addMoneyWithCreditGainBonus === "function") {
+            addMoneyWithCreditGainBonus(state, reward);
+          } else {
+            state.player.money += reward;
+          }
+          moneyValueEl.textContent = `${state.player.money.toFixed(0)}§`;
+        },
+      });
 
       const touchButtons = document.querySelectorAll(".touch-btn");
       const lockButton = document.querySelector('.touch-btn[data-action="lock"]');
@@ -145,6 +168,7 @@
         getCanvasSize: () => ({ width, height }),
         getLineToTarget: () => lineToTarget,
         onSystemEntered: (systemName) => {
+          asteroidManager.spawnForSystem();
           if (globalThis.StationManager?.refreshMissionsForSystem) {
             globalThis.StationManager.refreshMissionsForSystem(systemName, { force: true });
           }
@@ -392,7 +416,6 @@
       const enemyProjectiles = [];
       const beamEffects = [];
       let target = null;
-
       function spawnTarget() {
         const centerX = SystemInfo.size / 2;
         const centerY = SystemInfo.size / 2;
@@ -1026,6 +1049,7 @@
       updatePlayerProjectiles(dt, dtMillis);
       updateEnemyProjectiles(dt);
       updateBeamEffects(dt);
+      asteroidManager.update(dt);
       regenPlayerEnergy(dt);
       updateMoneyPerMinute(dt);
       
@@ -1128,6 +1152,7 @@
         let remove = projectileExpired(p);
         if (!remove && armed) remove = projectileHitTarget(p);
         if (!remove && armed) remove = projectileHitAnyEnemy(p);
+        if (!remove && armed) remove = asteroidManager.projectileHitAny(p);
 
         if (remove) projectiles.splice(i, 1);
       }
@@ -1147,6 +1172,7 @@
         let remove = projectileExpired(p);
 
         if (!remove) remove = projectileHitPlayer(p);
+        if (!remove) remove = asteroidManager.projectileHitAny(p);
 
         if (remove) enemyProjectiles.splice(i, 1);
       }
@@ -1521,6 +1547,10 @@
         ctx.stroke();
 
         ctx.restore();
+      }
+
+      function drawAsteroids() {
+        asteroidManager.draw(ctx, width, height, state.player);
       }
 
       function drawTargetLine() {
@@ -2143,6 +2173,7 @@
           drawMainStar();
           drawStation();
           drawTarget();
+          drawAsteroids();
           drawTargetLine();
           drawEnemyLineIndicator();
           hyperSpaceManager.drawGateLineIndicator();
@@ -2169,6 +2200,7 @@
         initStarfield();
         loadState();
         spawnTarget();
+        asteroidManager.spawnForSystem();
         updateLockButtonVisual();
         await initWeapons();
         await loadOutfitCreditPerMinuteIndex();
