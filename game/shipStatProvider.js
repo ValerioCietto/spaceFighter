@@ -107,8 +107,6 @@ const ENEMY_TYPES = [{
   }
 ];
 
-
-
 const SHIPS = {
   // Humans
   human_perseus: {
