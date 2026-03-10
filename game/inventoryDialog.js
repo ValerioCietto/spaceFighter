@@ -260,6 +260,12 @@ function bindCurrentShipWeaponEquipActionsOnce(state) {
     nextWeapon.equippedOnShipId = activeShip.id;
     nextWeapon.equippedPortIndex = portIndex;
 
+    const shipPorts = Array.isArray(activeShip?.shipStats?.weaponGunCoords) ? activeShip.shipStats.weaponGunCoords : [];
+    const targetPort = shipPorts[portIndex];
+    if (targetPort) {
+      targetPort.weaponEquipped = String(nextWeapon?.name || nextWeapon?.id || "").trim();
+    }
+
     const withoutPort = equippedWeapons.filter((slot) => Number(slot?.portIndex) !== portIndex);
     withoutPort.push({
       id: String(nextWeapon?.id ?? ""),
