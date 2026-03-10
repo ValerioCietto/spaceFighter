@@ -213,11 +213,27 @@ function onBoughtSpaceship({ state, shipStats, templateName }) {
       ? Math.max(...state.player.ownedSpaceships.map(s => s.id || 0)) + 1
       : 0;
 
+  const ports = Array.isArray(shipStats?.weaponGunCoords)
+    ? shipStats.weaponGunCoords.map((coord) => ({
+        ...coord,
+        weaponEquipped: "PEA Shooter",
+      }))
+    : [];
+
   const newShip = {
     id: nextId,
     name: templateName,
     templateName,
-    shipStats: shipStats,
+    shipStats: {
+      ...shipStats,
+      weaponGunCoords: ports,
+    },
+    equippedWeapons: ports.map((coord, portIndex) => ({
+      id: "pea_shooter",
+      name: "PEA Shooter",
+      portIndex,
+      portType: String(coord?.type || "gun"),
+    })),
     outfits: [],
     weapons: {
       gunPorts: [],
