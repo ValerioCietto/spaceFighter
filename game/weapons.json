@@ -1,6 +1,23 @@
 {
   "weapons": [
     {
+      "code": "mining_torch",
+      "name": "",
+      "image": "pea_shooter.png",
+      "cost": 50,
+      "damage": 10,
+      "base_speed": 250,
+      "life_span": 0.5,
+      "spread": 0.15,
+      "projectiles": 1,
+      "aspect": "fire",
+      "delay_ms": 50,
+      "energy_cost": 10,
+      "engage_range": 70,
+      "autofire_toggle": true,
+      "description": "Mining torch, made for improving mining experience."
+    },
+    {
       "code": "pea_shooter",
       "name": "PEA Shooter",
       "image": "pea_shooter.png",
