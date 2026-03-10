@@ -15,7 +15,7 @@
       "energy_cost": 10,
       "engage_range": 70,
       "autofire_toggle": true,
-      "description": "Mining torch, made for improving mining experience."
+      "description": "Industrial plasma cutter originally designed for asteroid mining fleets. Early expansion records suggest similar tools were used during the first construction of interstellar infrastructure."
     },
     {
       "code": "pea_shooter",
@@ -31,7 +31,7 @@
       "delay_ms": 500,
       "energy_cost": 10,
       "engage_range": 700,
-      "description": "Projectile Explosive Artillery gun, commonly nicknamed pea shooter."
+      "description": "Projectile Explosive Artillery gun, commonly nicknamed \"pea shooter\". Its ballistic design follows ancient expansion-era weapon standards still used across human colonies."
     },
     {
       "code": "thorino_lightning",
@@ -50,7 +50,7 @@
       "energy_cost": 1,
       "engage_range": 800,
       "autofire_toggle": true,
-      "description": "Basic Lightning weapon, "
+      "description": "Basic lightning weapon using chained ion discharge. The design originates from early power-grid maintenance tools used in orbital construction platforms."
     },
     {
       "code": "baby_beam",
