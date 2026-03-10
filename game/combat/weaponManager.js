@@ -64,8 +64,9 @@
       return { canProceed: true };
     }
 
-    function canPlayerFireWeapon({ weapon, idx, now }) {
-      const last = weaponLastFire[idx] || 0;
+    function canPlayerFireWeapon({ weapon, idx, now, port }) {
+      const portLast = Number(port?.weaponLastFire);
+      const last = Number.isFinite(portLast) ? portLast : (weaponLastFire[idx] || 0);
       const firerateMult = state.player.shipStats.firerateMult || 1.0;
       const minDelay = weapon.delay_ms * (1 / firerateMult);
       const canFire = now - last >= minDelay;
@@ -170,7 +171,7 @@
       }
     }
 
-    function playerFireWeapon({ weapon }) {
+    function playerFireWeapon({ weapon, port }) {
       if (isBeamWeapon(weapon)) {
         playerFireBeam(weapon);
         return;
@@ -186,53 +187,69 @@
       const weaponDamage = weapon.damage * damageMult;
 
       const count = weapon.projectiles || 1;
-      const ports = Array.isArray(state.player.shipStats.weaponGunCoords) && state.player.shipStats.weaponGunCoords.length
+      const firePort = port || { type: "gun", x: 0, y: 18 };
+
+      const p = rotatePoint(firePort.x, firePort.y, state.player.angle);
+      const muzzleX = state.player.x + p.x;
+      const muzzleY = state.player.y + p.y;
+      for (let i = 0; i < count; i++) {
+        const offset = spreadRad > 0 ? (-spreadRad + Math.random() * (2 * spreadRad)) : 0;
+        const angle = baseAngle + offset;
+
+        const dirX = Math.cos(angle);
+        const dirY = Math.sin(angle);
+
+        let vx, vy, speed;
+
+        if (weapon.homing) {
+          speed = weapon.base_speed;
+          vx = dirX * speed;
+          vy = dirY * speed;
+        } else {
+          speed = weapon.base_speed;
+          vx = shipSpeedX + dirX * weapon.base_speed;
+          vy = shipSpeedY + dirY * weapon.base_speed;
+        }
+        projectiles.push({
+          x: muzzleX,
+          y: muzzleY,
+          vx,
+          vy,
+          age: 0,
+          life: weapon.life_span,
+          damage: weaponDamage,
+          aspect: weapon.aspect,
+          angle,
+          homing: !!weapon.homing,
+          speed,
+          accel: weapon.acceleration || 0,
+          maxSpeed: weapon.speed || weapon.base_speed || 0,
+          turnSpeed: weapon.turn_speed_rad || 0,
+          arming_time: weapon.arming_time || 0,
+        });
+      }
+    }
+
+    function getPlayerWeaponPorts() {
+      const ports = Array.isArray(state?.player?.shipStats?.weaponGunCoords) && state.player.shipStats.weaponGunCoords.length
         ? state.player.shipStats.weaponGunCoords
         : [{ type: "gun", x: 0, y: 18 }];
+      return ports;
+    }
 
-      for (const port of ports) {
-        if (!port) continue;
-
-        const p = rotatePoint(port.x, port.y, state.player.angle);
-        const muzzleX = state.player.x + p.x;
-        const muzzleY = state.player.y + p.y;
-        for (let i = 0; i < count; i++) {
-          const offset = spreadRad > 0 ? (-spreadRad + Math.random() * (2 * spreadRad)) : 0;
-          const angle = baseAngle + offset;
-
-          const dirX = Math.cos(angle);
-          const dirY = Math.sin(angle);
-
-          let vx, vy, speed;
-
-          if (weapon.homing) {
-            speed = weapon.base_speed;
-            vx = dirX * speed;
-            vy = dirY * speed;
-          } else {
-            speed = weapon.base_speed;
-            vx = shipSpeedX + dirX * weapon.base_speed;
-            vy = shipSpeedY + dirY * weapon.base_speed;
-          }
-          projectiles.push({
-            x: muzzleX,
-            y: muzzleY,
-            vx,
-            vy,
-            age: 0,
-            life: weapon.life_span,
-            damage: weaponDamage,
-            aspect: weapon.aspect,
-            angle,
-            homing: !!weapon.homing,
-            speed,
-            accel: weapon.acceleration || 0,
-            maxSpeed: weapon.speed || weapon.base_speed || 0,
-            turnSpeed: weapon.turn_speed_rad || 0,
-            arming_time: weapon.arming_time || 0,
-          });
-        }
-      }
+    function resolvePortWeapon(weapons, port) {
+      if (!port) return null;
+      const equippedName = String(port.weaponEquipped || port.equippedWeapon || "").trim();
+      if (!equippedName) return null;
+      const equippedKey = equippedName.toLowerCase();
+      const weapon = weapons.find((candidate) => {
+        const candidateName = String(candidate?.name || "").trim().toLowerCase();
+        const candidateCode = String(candidate?.code || candidate?.id || "").trim().toLowerCase();
+        return candidateName === equippedKey || candidateCode === equippedKey;
+      });
+      if (!weapon) return null;
+      const idx = weapons.indexOf(weapon);
+      return { weapon, idx };
     }
 
     function enemyFireBeam(enemy, weapon) {
@@ -342,20 +359,24 @@
 
     function attemptPlayerFire(manual = false) {
       const weapons = ensureRuntimeState();
-      const idx = currentWeaponIndex;
-      const weapon = weapons[idx];
       const now = performance.now();
+      const ports = getPlayerWeaponPorts();
 
-      if (!weapon) return;
+      for (const port of ports) {
+        const resolved = resolvePortWeapon(weapons, port);
+        if (!resolved) continue;
 
-      const toggleRes = applyAutofireToggleAndGate({ weapon, idx, manual, weapons });
-      if (!toggleRes.canProceed) return;
+        const { weapon, idx } = resolved;
+        const toggleRes = applyAutofireToggleAndGate({ weapon, idx, manual, weapons });
+        if (!toggleRes.canProceed) continue;
 
-      if (!canPlayerFireWeapon({ weapon, idx, now })) return;
+        if (!canPlayerFireWeapon({ weapon, idx, now, port })) continue;
 
-      spendPlayerWeaponEnergy(weapon);
-      weaponLastFire[idx] = now;
-      playerFireWeapon({ weapon, now });
+        spendPlayerWeaponEnergy(weapon);
+        weaponLastFire[idx] = now;
+        port.weaponLastFire = now;
+        playerFireWeapon({ weapon, port, now });
+      }
     }
 
     function cyclePlayerWeapon() {
