@@ -346,6 +346,8 @@
     let enemyDefeats = 0;
     let enemyFireCooldown = 1;
     const enemyChaseSpeed = 260;
+    const playerBulletSpread = 0.04;
+    const enemyBulletSpread = 0.06;
     let isGameWon = false;
 
     const statsEl = document.getElementById("stats");
@@ -399,9 +401,15 @@
       list.push(bullet);
     }
 
+    function applyHorizontalSpread(direction, spreadRadians) {
+      const spreadAngle = THREE.MathUtils.randFloatSpread(spreadRadians);
+      return direction.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), spreadAngle).normalize();
+    }
+
     function firePlayerBullet() {
       const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(ship.quaternion).normalize();
-      createBullet(ship, direction, playerBulletMaterial, 1700, 2.7, playerBullets);
+      const spreadDirection = applyHorizontalSpread(direction, playerBulletSpread);
+      createBullet(ship, spreadDirection, playerBulletMaterial, 1700, 2.7, playerBullets);
     }
 
     function tryFirePlayerBullet() {
@@ -419,7 +427,8 @@
       if (direction.lengthSq() === 0) {
         return;
       }
-      createBullet(enemy, direction, enemyBulletMaterial, 900, 4, enemyBullets);
+      const spreadDirection = applyHorizontalSpread(direction, enemyBulletSpread);
+      createBullet(enemy, spreadDirection, enemyBulletMaterial, 900, 4, enemyBullets);
     }
 
     function setKeyState(event, state) {
