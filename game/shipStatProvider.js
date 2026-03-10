@@ -648,6 +648,24 @@ function applyActiveShip(state) {
   const overrides = inst.shipStats || {};
   const stats = { ...base, ...overrides };
 
+  if (Array.isArray(stats.weaponGunCoords)) {
+    stats.weaponGunCoords = stats.weaponGunCoords.map((coord) => ({ ...coord }));
+  }
+
+  const equippedByPort = new Map(
+    (Array.isArray(inst.equippedWeapons) ? inst.equippedWeapons : []).map((entry) => [
+      Number(entry?.portIndex),
+      String(entry?.name || entry?.id || "").trim(),
+    ])
+  );
+  if (Array.isArray(stats.weaponGunCoords) && equippedByPort.size > 0) {
+    stats.weaponGunCoords = stats.weaponGunCoords.map((coord, index) => {
+      const equippedName = equippedByPort.get(index);
+      if (!equippedName) return coord;
+      return { ...coord, weaponEquipped: equippedName };
+    });
+  }
+
   // normalize
   stats.shield = Number(stats.shield) || 0;
   stats.hull = Number(stats.hull) || 0;
