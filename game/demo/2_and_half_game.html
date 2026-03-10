@@ -235,8 +235,10 @@
     scene.add(boundary);
 
     function getPlayerModelPath() {
-      const isGithubUrl = window.location.hostname.includes("github");
-      return isGithubUrl ? "spaceFighter/assets/PerseusV3.glb" : "/assets/PerseusV3.glb";
+      const isGithubUrl = window.location.hostname.includes("github.io");
+      return isGithubUrl
+        ? "/spaceFighter/assets/PerseusV3.glb"
+        : "/assets/PerseusV3.glb";
     }
 
     function createSpaceshipModel() {
