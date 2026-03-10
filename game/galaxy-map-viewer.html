@@ -61,11 +61,16 @@
 <script>
 (() => {
   const baseUrl = window.BASE_URL || window.location.origin + "/";
-  // the json is in baseUrl + "game/galaxy-map.json
-  console.log("Base URL:", baseUrl);
-  // candidate http://127.0.0.1:8080/game/galaxy-map.json
-  // candidate http://valeriocietto.github.io/spaceFighter/game/galaxy-map.json
+  const computedBasePath = typeof window.BASE_PATH === "string"
+    ? window.BASE_PATH
+    : (window.location.hostname.includes("github.io") ? "/spaceFighter" : "");
+  const normalizedBasePath = computedBasePath.endsWith("/")
+    ? computedBasePath.slice(0, -1)
+    : computedBasePath;
+
+  // Prefer BASE_PATH-aware URL first, then keep legacy fallbacks.
   const galaxyUrlCandidates = [
+    `${window.location.origin}${normalizedBasePath}/game/galaxy-map.json`,
     new URL("game/galaxy-map.json", baseUrl).toString(),
     "https://valeriocietto.github.io/spaceFighter/game/galaxy-map.json",
   ];
