@@ -17,6 +17,8 @@
         {
           "name": "Alpha Centauri Station",
           "image": "human_space_station_advanced.png",
+          "shipyard":"human",
+          "outfits":"legal",
           "position_x": 2300,
           "position_y": 4500,
           "station_radius": 100,
@@ -43,6 +45,8 @@
         {
           "name": "Arachne Station",
           "image": "jared_space_station_advanced.png",
+          "shipyard":"jared",
+          "outfits":"legal",
           "position_x": 2300,
           "position_y": 4500,
           "station_radius": 100,
@@ -57,6 +61,17 @@
       "description": "Arnack is a dangerous system controlled by the Jared faction.",
       "serviceLevel": 1,
       "threatLevel": 4,
+      "stations": [
+        {
+          "name": "AHR AHR facilities",
+          "image": "jared_space_station_advanced.png",
+          "outfits":"illegal",
+          "position_x": 2300,
+          "position_y": 4500,
+          "station_radius": 100,
+          "station_rot_speed": -0.01
+        }
+      ],
       "enemies": [
         {
           "type": "jared_capital",
@@ -73,6 +88,17 @@
       "description": "Aslan is a Jared system known for its treacherous asteroid belts and hidden pirate bases.",
       "serviceLevel": 2,
       "threatLevel": 2,
+      "stations": [
+        {
+          "name": "Brothers of the mine rejoice",
+          "image": "jared_space_station_advanced.png",
+          "outfits":"illegal",
+          "position_x": 2300,
+          "position_y": 4500,
+          "station_radius": 100,
+          "station_rot_speed": -0.01
+        }
+      ],
       "enemies": [
         {
           "type": "jared_basic",
@@ -89,6 +115,17 @@
       "description": "Dwarf's End is a remote and hazardous system known for its dense asteroid fields and hidden pirate outposts.",
       "serviceLevel": 1,
       "threatLevel": 1,
+      "stations": [
+        {
+          "name": "Brothers of the mine rejoice",
+          "image": "jared_space_station_advanced.png",
+          "outfits":"legal",
+          "position_x": 2300,
+          "position_y": 4500,
+          "station_radius": 100,
+          "station_rot_speed": -0.01
+        }
+      ],
       "enemies": [
         {
           "type": "technician_basic",
@@ -105,6 +142,28 @@
       "description": "Eos is a Human system near the battlefront.",
       "serviceLevel": 4,
       "threatLevel": 2,
+      "stations": [
+        {
+          "name": "Battle Frontier",
+          "image": "jared_space_station_advanced.png",
+          "shipyard":"jared",
+          "outfits":"legal",
+          "position_x": 2300,
+          "position_y": 4500,
+          "station_radius": 100,
+          "station_rot_speed": 0.01
+        },
+        {
+          "name": "Eos Colony",
+          "image": "human_space_station_advanced.png",
+          "shipyard":"human",
+          "outfits":"legal",
+          "position_x": 2300,
+          "position_y": 4500,
+          "station_radius": 150,
+          "station_rot_speed": -0.01
+        }
+      ],
       "enemies": [
         {
           "type": "human_basic",
