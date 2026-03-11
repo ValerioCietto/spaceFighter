@@ -573,9 +573,6 @@
         weaponManager.attemptPlayerFire(manual);
       }
 
-      function cycleWeapon() {
-        weaponManager.cyclePlayerWeapon();
-      }
 
       function updateLockButtonVisual() {
         if (!lockButton) return;
@@ -2236,8 +2233,9 @@
             lineToTarget = !lineToTarget;
             updateLockButtonVisual();
           },
-          cycleWeapon,
-          (idx) => { weaponManager.setCurrentWeaponIndex(idx); },
+          () => {
+            console.log("Outfit activation input received.");
+          },
           touchButtons
         );
 
