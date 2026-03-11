@@ -37,7 +37,7 @@
                 CPU: 5,
                 shipCenter: { x: 0.5, y: 0.5 },
                 engineCoords: [{ x: 0, y: -5 }],
-                weaponGunCoords: [{type: "gun", x: 18, y: 0, equippedWeapon: "pea_shooter" }],
+                weaponGunCoords: [{type: "gun", x: 18, y: 0, weaponEquipped: "pea_shooter" }],
               },
       
               outfits: [
@@ -678,17 +678,21 @@
                 })
                 .map((weapon) => {
                   if (typeof weapon === "string") {
+                    const code = weapon.trim();
                     return {
-                      id: weapon.trim(),
-                      name: weapon.trim(),
+                      id: code,
+                      code,
+                      name: code,
                       cost: 0,
                     };
                   }
 
+                  const normalizedCode = String(weapon.code || weapon.id || "").trim() || String(weapon.name || "").trim();
                   return {
                     ...weapon,
-                    id: String(weapon.id || "").trim() || String(weapon.name || "").trim(),
-                    name: String(weapon.name || "").trim() || String(weapon.id || "").trim(),
+                    id: normalizedCode,
+                    code: normalizedCode,
+                    name: String(weapon.name || "").trim() || normalizedCode,
                     cost: Number.isFinite(Number(weapon.cost)) ? Number(weapon.cost) : 0,
                   };
                 })

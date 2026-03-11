@@ -88,6 +88,7 @@ async function renderStationWeaponShop({ rootEl, state, onBuy, onToast }) {
       playerState.money = curMoney - weapon.cost;
       inventory.push({
         id: weapon.id,
+        code: weapon.code,
         name: weapon.name,
         cost: weapon.cost,
         purchasedAt: Date.now(),
@@ -244,10 +245,11 @@ async function loadNormalizedWeapons() {
 function normalizeWeapon(raw, index) {
   const safeRaw = raw || {};
   const baseName = String(safeRaw.name || `Weapon ${index + 1}`);
-  const id = String(safeRaw.id || slugify(baseName) || `weapon_${index}`);
+  const code = String(safeRaw.code || safeRaw.id || slugify(baseName) || `weapon_${index}`);
 
   return {
-    id,
+    id: code,
+    code,
     name: baseName,
     cost: clampNumber(safeRaw.cost, 0, Number.MAX_SAFE_INTEGER, 0),
     description: String(safeRaw.description || "No description available."),
