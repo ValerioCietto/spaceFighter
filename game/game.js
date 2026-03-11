@@ -498,7 +498,6 @@
         };
 
         state.enemies.push(enemy);
-        console.log(state.enemies);
       }
 
       let enemyIdSeq = 0;
