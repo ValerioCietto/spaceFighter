@@ -229,6 +229,40 @@ function bindCurrentShipWeaponEquipActionsOnce(state) {
   bodyEl.__invCurrentWeaponEquipBound = true;
 
   bodyEl.addEventListener("click", (e) => {
+    const unequipBtn = e.target.closest("[data-unequip-weapon-port-index]");
+    if (unequipBtn) {
+      const portIndex = Number(unequipBtn.getAttribute("data-unequip-weapon-port-index"));
+      if (!Number.isInteger(portIndex) || portIndex < 0) return;
+
+      const p = state?.player;
+      const ownedShips = Array.isArray(p?.ownedSpaceships) ? p.ownedSpaceships : [];
+      const activeId = p?.currentSpaceshipId ?? p?.activeShipId ?? 0;
+      const activeShip = ownedShips.find((s) => s.id === activeId);
+      if (!activeShip) return;
+
+      const inventory = Array.isArray(p?.ownedWeapons) ? p.ownedWeapons : [];
+      const equippedWeapon = inventory.find(
+        (weapon) => Number(weapon?.equippedOnShipId) === Number(activeShip.id) && Number(weapon?.equippedPortIndex) === portIndex
+      );
+      if (!equippedWeapon) return;
+
+      equippedWeapon.equippedOnShipId = null;
+      equippedWeapon.equippedPortIndex = null;
+
+      const shipPorts = Array.isArray(activeShip?.shipStats?.weaponGunCoords) ? activeShip.shipStats.weaponGunCoords : [];
+      const targetPort = shipPorts[portIndex];
+      if (targetPort) {
+        targetPort.weaponEquipped = null;
+      }
+
+      const equippedWeapons = Array.isArray(activeShip.equippedWeapons) ? activeShip.equippedWeapons : [];
+      activeShip.equippedWeapons = equippedWeapons.filter((slot) => Number(slot?.portIndex) !== portIndex);
+
+      if (typeof saveState === "function") saveState(state);
+      renderInventory(state);
+      return;
+    }
+
     const btn = e.target.closest("[data-equip-weapon-port-index]");
     if (!btn) return;
 
@@ -263,7 +297,7 @@ function bindCurrentShipWeaponEquipActionsOnce(state) {
     const shipPorts = Array.isArray(activeShip?.shipStats?.weaponGunCoords) ? activeShip.shipStats.weaponGunCoords : [];
     const targetPort = shipPorts[portIndex];
     if (targetPort) {
-      targetPort.weaponEquipped = String(nextWeapon?.name || nextWeapon?.id || "").trim();
+      targetPort.weaponEquipped = String(nextWeapon?.code || "").trim();
     }
 
     const withoutPort = equippedWeapons.filter((slot) => Number(slot?.portIndex) !== portIndex);
@@ -423,7 +457,10 @@ function renderInventoryTabContent(state, tab, panelEl) {
                         y:${formatStatValue(Number(coord?.y ?? 0))}
                         ${equipped ? `· <strong>${escapeHtml(equipped.name || equipped.id || "Weapon")}</strong>` : ""}
                       </span>
-                      <button type="button" data-equip-weapon-port-index="${idx}">equip</button>
+                      <div style="display:flex;gap:6px;">
+                        <button type="button" data-equip-weapon-port-index="${idx}">equip</button>
+                        ${equipped ? `<button type="button" data-unequip-weapon-port-index="${idx}">unequip</button>` : ""}
+                      </div>
                     </li>
                   `;
                   })
