@@ -239,7 +239,7 @@
 
     function resolvePortWeapon(weapons, port) {
       if (!port) return null;
-      const equippedName = String(port.weaponEquipped || port.equippedWeapon || "").trim();
+      const equippedName = String(port.weaponEquipped || "").trim();
       if (!equippedName) return null;
       const equippedKey = equippedName.toLowerCase();
       const weapon = weapons.find((candidate) => {

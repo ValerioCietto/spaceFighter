@@ -216,7 +216,7 @@ function onBoughtSpaceship({ state, shipStats, templateName }) {
   const ports = Array.isArray(shipStats?.weaponGunCoords)
     ? shipStats.weaponGunCoords.map((coord) => ({
         ...coord,
-        weaponEquipped: "PEA Shooter",
+        weaponEquipped: "pea_shooter",
       }))
     : [];
 
@@ -228,12 +228,6 @@ function onBoughtSpaceship({ state, shipStats, templateName }) {
       ...shipStats,
       weaponGunCoords: ports,
     },
-    equippedWeapons: ports.map((coord, portIndex) => ({
-      id: "pea_shooter",
-      name: "PEA Shooter",
-      portIndex,
-      portType: String(coord?.type || "gun"),
-    })),
     outfits: [],
     weapons: {
       gunPorts: [],
