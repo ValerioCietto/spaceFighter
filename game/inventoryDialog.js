@@ -255,8 +255,6 @@ function bindCurrentShipWeaponEquipActionsOnce(state) {
         targetPort.weaponEquipped = null;
       }
 
-      const equippedWeapons = Array.isArray(activeShip.equippedWeapons) ? activeShip.equippedWeapons : [];
-      activeShip.equippedWeapons = equippedWeapons.filter((slot) => Number(slot?.portIndex) !== portIndex);
 
       if (typeof saveState === "function") saveState(state);
       renderInventory(state);
@@ -282,7 +280,6 @@ function bindCurrentShipWeaponEquipActionsOnce(state) {
       return;
     }
 
-    const equippedWeapons = Array.isArray(activeShip.equippedWeapons) ? activeShip.equippedWeapons : [];
     const prevEquippedInInventory = inventory.find(
       (weapon) => Number(weapon?.equippedOnShipId) === Number(activeShip.id) && Number(weapon?.equippedPortIndex) === portIndex
     );
@@ -299,15 +296,6 @@ function bindCurrentShipWeaponEquipActionsOnce(state) {
     if (targetPort) {
       targetPort.weaponEquipped = String(nextWeapon?.code || "").trim();
     }
-
-    const withoutPort = equippedWeapons.filter((slot) => Number(slot?.portIndex) !== portIndex);
-    withoutPort.push({
-      id: String(nextWeapon?.id ?? ""),
-      name: String(nextWeapon?.name ?? "Unknown weapon"),
-      portIndex,
-      portType: String((activeShip.shipStats?.weaponGunCoords || [])[portIndex]?.type || "gun"),
-    });
-    activeShip.equippedWeapons = withoutPort;
 
     if (typeof saveState === "function") saveState(state);
     renderInventory(state);
@@ -405,12 +393,6 @@ function renderInventoryTabContent(state, tab, panelEl) {
     const outfits = Array.isArray(activeShip.outfits) ? activeShip.outfits : [];
     const shieldDiameter = Number(activeShipStats.shieldDiameterPx || 96);
     const portCoords = Array.isArray(activeShipStats.weaponGunCoords) ? activeShipStats.weaponGunCoords : [];
-    const equippedByPort = new Map(
-      (Array.isArray(activeShip.equippedWeapons) ? activeShip.equippedWeapons : []).map((entry) => [
-        Number(entry?.portIndex),
-        entry,
-      ])
-    );
 
     panelEl.innerHTML = `
       <h3 style="display:flex;align-items:center;gap:8px;">
@@ -448,18 +430,18 @@ function renderInventoryTabContent(state, tab, panelEl) {
             portCoords.length
               ? `<ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;">${portCoords
                   .map((coord, idx) => {
-                    const equipped = equippedByPort.get(idx);
+                    const equippedCode = String(coord?.weaponEquipped || "").trim();
                     return `
                     <li style="display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:6px 8px;">
                       <span>
                         Port ${idx + 1} (${escapeHtml(coord?.type || "gun")})
                         · x:${formatStatValue(Number(coord?.x ?? 0))}
                         y:${formatStatValue(Number(coord?.y ?? 0))}
-                        ${equipped ? `· <strong>${escapeHtml(equipped.name || equipped.id || "Weapon")}</strong>` : ""}
+                        ${equippedCode ? `· <strong>${escapeHtml(equippedCode)}</strong>` : ""}
                       </span>
                       <div style="display:flex;gap:6px;">
                         <button type="button" data-equip-weapon-port-index="${idx}">equip</button>
-                        ${equipped ? `<button type="button" data-unequip-weapon-port-index="${idx}">unequip</button>` : ""}
+                        ${equippedCode ? `<button type="button" data-unequip-weapon-port-index="${idx}">unequip</button>` : ""}
                       </div>
                     </li>
                   `;
