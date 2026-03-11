@@ -55,7 +55,6 @@ async function loadWeaponsFromJson() {
 let weapons = [];
 let EnemyWeaponPool = [];
 
-let currentWeaponIndex = 0;
 let weaponLastFire = []; // sized after load
 
 function pickEnemyWeapon() {
@@ -75,7 +74,6 @@ async function initWeapons() {
   EnemyWeaponPool = loaded.enemyWeaponPool;
 
   weaponLastFire = new Array(weapons.length).fill(0);
-  currentWeaponIndex = 0;
 
   if (!weapons.length) throw new Error("No weapons loaded from JSON.");
 }
