@@ -30,6 +30,11 @@
     applyDamageToPlayer,
   }) {
     let weaponLastFire = [];
+    const WEAPON_LOG_PREFIX = "[WeaponFire]";
+
+    function logWeaponFlow(event, payload = {}) {
+      console.log(`${WEAPON_LOG_PREFIX} ${event}`, payload);
+    }
 
     function ensureRuntimeState() {
       const weapons = getWeapons();
@@ -55,8 +60,20 @@
 
     function applyAutofireToggleAndGate({ weapon, idx, manual, weapons }) {
       if (!manual) {
-        if (!weapon?.autofire_toggle) return { canProceed: false };
-        if (!weapons[idx]?.autofireToggled) return { canProceed: false };
+        if (!weapon?.autofire_toggle) {
+          logWeaponFlow("skip:autofire-disabled", {
+            weapon: weapon?.name || weapon?.code || idx,
+            manual,
+          });
+          return { canProceed: false };
+        }
+        if (!weapons[idx]?.autofireToggled) {
+          logWeaponFlow("skip:autofire-not-toggled", {
+            weapon: weapon?.name || weapon?.code || idx,
+            manual,
+          });
+          return { canProceed: false };
+        }
       }
 
       if (manual && weapon?.autofire_toggle && weapons[idx].autofireToggled) {
@@ -154,6 +171,14 @@
       const beamAspect = weapon.aspect || "laser";
       const beamProjectiles = Math.max(1, Number(weapon.projectiles) || 1);
 
+      logWeaponFlow("player:beam-fired", {
+        weapon: weapon?.name || weapon?.code || "unknown",
+        targetType: beamTarget.kind,
+        targetX: beamTarget.entity.x,
+        targetY: beamTarget.entity.y,
+        projectiles: beamProjectiles,
+      });
+
       for (let i = 0; i < beamProjectiles; i++) {
         if (beamTarget.kind === "enemy") {
           applyDamageToEnemy(beamTarget.entity, { damage: beamDamage, damageEnergy: beamDamageEnergy });
@@ -196,6 +221,17 @@
       const p = rotatePoint(firePort.x, firePort.y, state.player.angle);
       const muzzleX = state.player.x + p.x;
       const muzzleY = state.player.y + p.y;
+
+      logWeaponFlow("player:projectile-fired", {
+        weapon: weapon?.name || weapon?.code || "unknown",
+        portType: firePort.type,
+        portOffset: { x: firePort.x, y: firePort.y },
+        muzzle: { x: muzzleX, y: muzzleY },
+        baseAngle,
+        spreadDeg: weapon.spread || 0,
+        projectiles: count,
+      });
+
       for (let i = 0; i < count; i++) {
         const offset = spreadRad > 0 ? (-spreadRad + Math.random() * (2 * spreadRad)) : 0;
         const angle = baseAngle + offset;
@@ -294,6 +330,11 @@
       if (dist > (w.engage_range || 0)) return false;
 
       if (isBeamWeapon(w)) {
+        logWeaponFlow("enemy:beam-fired", {
+          enemyId: enemy.id,
+          weapon: w?.name || w?.code || "unknown",
+          distanceToPlayer: dist,
+        });
         enemyFireBeam(enemy, w);
         return true;
       }
@@ -303,6 +344,13 @@
       const muzzleDistance = 18;
 
       const count = w.projectiles || 1;
+
+      logWeaponFlow("enemy:projectile-fired", {
+        enemyId: enemy.id,
+        weapon: w?.name || w?.code || "unknown",
+        distanceToPlayer: dist,
+        projectiles: count,
+      });
 
       for (let i = 0; i < count; i++) {
         const offset = spreadRad > 0
@@ -369,6 +417,12 @@
       const now = performance.now();
       const ports = getPlayerWeaponPorts();
 
+      logWeaponFlow("attempt:start", {
+        manual,
+        ports: ports.length,
+        weaponCount: weapons.length,
+      });
+
       for (const port of ports) {
         const resolved = resolvePortWeapon(weapons, port);
         if (!resolved) continue;
@@ -377,11 +431,24 @@
         const toggleRes = applyAutofireToggleAndGate({ weapon, idx, manual, weapons });
         if (!toggleRes.canProceed) continue;
 
-        if (!canPlayerFireWeapon({ weapon, idx, now, port })) continue;
+        if (!canPlayerFireWeapon({ weapon, idx, now, port })) {
+          logWeaponFlow("skip:cooldown-or-energy", {
+            weapon: weapon?.name || weapon?.code || idx,
+            energy: Number(state?.player?.shipStats?.energy) || 0,
+            energyCost: Math.max(0, Number(weapon?.energy_cost) || 0),
+            manual,
+          });
+          continue;
+        }
 
         spendPlayerWeaponEnergy(weapon);
         weaponLastFire[idx] = now;
         port.weaponLastFire = now;
+        logWeaponFlow("state:weapon-fired", {
+          weapon: weapon?.name || weapon?.code || idx,
+          manual,
+          remainingEnergy: Number(state?.player?.shipStats?.energy) || 0,
+        });
         playerFireWeapon({ weapon, port, now });
       }
     }
