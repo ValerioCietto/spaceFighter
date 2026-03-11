@@ -29,7 +29,6 @@
     applyDamageToTarget,
     applyDamageToPlayer,
   }) {
-    let currentWeaponIndex = 0;
     let weaponLastFire = [];
 
     function ensureRuntimeState() {
@@ -38,15 +37,20 @@
       if (weaponLastFire.length !== weapons.length) {
         weaponLastFire = new Array(weapons.length).fill(0);
       }
-      if (!Number.isFinite(currentWeaponIndex) || currentWeaponIndex < 0) {
-        currentWeaponIndex = 0;
-      }
-      if (weapons.length > 0) {
-        currentWeaponIndex = currentWeaponIndex % weapons.length;
-      } else {
-        currentWeaponIndex = 0;
-      }
       return weapons;
+    }
+
+    function getEffectiveWeaponForPort(weapon, port) {
+      const portType = String(port?.type || "").trim().toLowerCase();
+      if (portType === "turret") {
+        return {
+          ...weapon,
+          autofire_toggle: true,
+          auto_aim: 4.0,
+        };
+      }
+
+      return weapon;
     }
 
     function applyAutofireToggleAndGate({ weapon, idx, manual, weapons }) {
@@ -248,8 +252,11 @@
         return candidateName === equippedKey || candidateCode === equippedKey;
       });
       if (!weapon) return null;
+      if (weapon.spinal === true && String(port?.type || "").trim().toLowerCase() !== "spinal") {
+        return null;
+      }
       const idx = weapons.indexOf(weapon);
-      return { weapon, idx };
+      return { weapon: getEffectiveWeaponForPort(weapon, port), idx };
     }
 
     function enemyFireBeam(enemy, weapon) {
@@ -379,37 +386,9 @@
       }
     }
 
-    function cyclePlayerWeapon() {
-      const weapons = ensureRuntimeState();
-      if (!weapons.length) {
-        currentWeaponIndex = 0;
-        return;
-      }
-      currentWeaponIndex = (currentWeaponIndex + 1) % weapons.length;
-    }
-
-    function setCurrentWeaponIndex(idx) {
-      const weapons = ensureRuntimeState();
-      if (!weapons.length) {
-        currentWeaponIndex = 0;
-        return;
-      }
-      const numeric = Number(idx);
-      const normalized = Number.isFinite(numeric) ? Math.floor(numeric) : 0;
-      currentWeaponIndex = ((normalized % weapons.length) + weapons.length) % weapons.length;
-    }
-
-    function getCurrentWeaponIndex() {
-      ensureRuntimeState();
-      return currentWeaponIndex;
-    }
-
     return {
       attemptPlayerFire,
-      cyclePlayerWeapon,
       updateEnemiesFire,
-      setCurrentWeaponIndex,
-      getCurrentWeaponIndex,
       isBeamWeapon,
     };
   }

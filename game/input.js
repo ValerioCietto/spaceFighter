@@ -4,8 +4,7 @@ function setupInput(
   input,
   attemptFireWeapon,
   toggleLock,
-  cycleWeapon,
-  setWeaponIndex,
+  activateOutfit,
   touchButtons
 ) {
   // Keyboard input
@@ -39,20 +38,8 @@ function setupInput(
         e.preventDefault();
         toggleLock();
         break;
-      case "1":
-        setWeaponIndex(0);
-        break;
-      case "2":
-        setWeaponIndex(1);
-        break;
-      case "3":
-        setWeaponIndex(2);
-        break;
-      case "4":
-        setWeaponIndex(3);
-        break;
       case "Shift":
-        console.log("outfit_key");
+        if (typeof activateOutfit === "function") activateOutfit();
         break;
     }
   });
@@ -107,7 +94,7 @@ function setupInput(
         return;
       }
       if (action === "weapon-cycle") {
-        cycleWeapon();
+        if (typeof activateOutfit === "function") activateOutfit();
         return;
       }
       if (action === "left") input.left = true;
