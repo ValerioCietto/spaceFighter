@@ -9,6 +9,7 @@
         {
           "name": "Sol Station",
           "image": "human_space_station_capital1.png",
+          "outfits":"legal",
           "position_x": 3300,
           "position_y": 4500,
           "station_radius": 200,
@@ -83,7 +84,7 @@
       "stations": [
         {
           "name": "Arachne Station",
-          "image": "jared_space_station_advanced.png",
+          "image": "jared_space_station_capital.png",
           "shipyard":"jared",
           "outfits":"legal",
           "position_x": 2300,
@@ -103,7 +104,7 @@
       "stations": [
         {
           "name": "AHR AHR facilities",
-          "image": "jared_space_station_advanced.png",
+          "image": "jared_space_station_basic.png",
           "outfits":"illegal",
           "position_x": 2300,
           "position_y": 4500,
@@ -130,7 +131,7 @@
       "stations": [
         {
           "name": "Brothers of the mine rejoice",
-          "image": "jared_space_station_advanced.png",
+          "image": "jared_space_station_basic.png",
           "outfits":"illegal",
           "position_x": 2300,
           "position_y": 4500,
@@ -156,8 +157,8 @@
       "threatLevel": 1,
       "stations": [
         {
-          "name": "Brothers of the mine rejoice",
-          "image": "jared_space_station_advanced.png",
+          "name": "Dwarf's End Station",
+          "image": "human_space_station_basic1.png",
           "outfits":"legal",
           "position_x": 2300,
           "position_y": 4500,
@@ -184,7 +185,7 @@
       "stations": [
         {
           "name": "Battle Frontier",
-          "image": "jared_space_station_advanced.png",
+          "image": "human_space_station_advanced.png",
           "shipyard":"jared",
           "outfits":"legal",
           "position_x": 2300,
@@ -225,6 +226,17 @@
       "description": "Fandango is a system known for its bustling trade routes and occasional pirate activity.",
       "serviceLevel": 2,
       "threatLevel": 2,
+      "stations": [
+        {
+          "name": "Dancing Queens Station",
+          "image": "human_space_station_basic1.png",
+          "outfits":"legal",
+          "position_x": 2300,
+          "position_y": 4500,
+          "station_radius": 100,
+          "station_rot_speed": -0.01
+        }
+      ],
       "enemies": [
         {
           "type": "human_basic",
@@ -247,6 +259,18 @@
       "description":"",
       "serviceLevel": 2,
       "threatLevel": 1,
+      "stations": [
+        {
+          "name": "Far Space 1 Station",
+          "image": "technician_space_station_basic1.png",
+          "shipyard":"technician",
+          "outfits":"legal",
+          "position_x": 2300,
+          "position_y": 4500,
+          "station_radius": 100,
+          "station_rot_speed": -0.01
+        }
+      ],
       "enemies": [
         {
           "type": "technician_basic",
@@ -263,6 +287,17 @@
       "description":"",
       "serviceLevel": 1,
       "threatLevel": 1,
+      "stations": [
+        {
+          "name": "Far Space 2 Station",
+          "image": "technician_space_station_basic1.png",
+          "outfits":"legal",
+          "position_x": 2300,
+          "position_y": 4500,
+          "station_radius": 100,
+          "station_rot_speed": -0.01
+        }
+      ],
       "enemies": [
         {
           "type": "technician_basic",
@@ -279,6 +314,17 @@
       "description":"",
       "serviceLevel": 1,
       "threatLevel": 1,
+      "stations": [
+        {
+          "name": "Far Space 3 Station",
+          "image": "technician_space_station_basic1.png",
+          "outfits":"legal",
+          "position_x": 2300,
+          "position_y": 4500,
+          "station_radius": 100,
+          "station_rot_speed": -0.01
+        }
+      ],
       "enemies": [
         {
           "type": "technician_basic",
@@ -295,6 +341,7 @@
       "description":"",
       "serviceLevel": 1,
       "threatLevel": 5,
+      "stations":[],
       "enemies": [
         {
           "type": "human_elite",
@@ -323,6 +370,18 @@
       "description":"",
       "serviceLevel": 3,
       "threatLevel": 1,
+      "stations": [
+        {
+          "name": "Greenfield Station",
+          "image": "human_space_station_advanced.png",
+          "shipyard":"human-elite",
+          "outfits":"legal",
+          "position_x": 2300,
+          "position_y": 4500,
+          "station_radius": 100,
+          "station_rot_speed": -0.01
+        }
+      ],
       "enemies":[{
           "type": "human_basic",
           "faction": "pirate",
@@ -337,6 +396,17 @@
       "description":"",
       "serviceLevel": 1,
       "threatLevel": 4,
+      "stations": [
+        {
+          "name": "Dare's End",
+          "image": "human_space_station_basic1.png",
+          "outfits":"illegal",
+          "position_x": 2300,
+          "position_y": 4500,
+          "station_radius": 100,
+          "station_rot_speed": -0.01
+        }
+      ],
       "enemies":[{
           "type": "human_capital",
           "faction": "pirate",
@@ -351,6 +421,18 @@
       "description":"",
       "serviceLevel": 2,
       "threatLevel": 2,
+      "stations": [
+        {
+          "name": "Technician's Cave",
+          "image": "technician_space_station_capital.png",
+          "shipyard":"technician-elite",
+          "outfits":"legal",
+          "position_x": 2300,
+          "position_y": 4500,
+          "station_radius": 100,
+          "station_rot_speed": -0.01
+        }
+      ],
       "enemies":[{
         "type": "jared_basic",
         "faction": "pirate",
@@ -365,6 +447,17 @@
       "description":"",
       "serviceLevel": 1,
       "threatLevel": 2,
+      "stations": [
+        {
+          "name": "Technician's Cave",
+          "image": "technician_space_station_advanced.png",
+          "outfits":"legal",
+          "position_x": 2300,
+          "position_y": 4500,
+          "station_radius": 100,
+          "station_rot_speed": -0.01
+        }
+      ],
       "enemies":[{
         "type": "jared_basic",
         "faction": "pirate",
@@ -378,6 +471,18 @@
       "name": "Lx 3",
       "description":"",
       "serviceLevel": 1,
+       "stations": [
+        {
+          "name": "Singularity Station",
+          "image": "technician_space_station_advanced.png",
+          "shipyard":"technician-singularity",
+          "outfits":"legal",
+          "position_x": 2300,
+          "position_y": 4500,
+          "station_radius": 100,
+          "station_rot_speed": -0.01
+        }
+      ],
       "enemies":[{
         "type": "jared_basic",
         "faction": "pirate",
@@ -395,6 +500,7 @@
         {
           "name": "Nemo Station",
           "image": "human_space_station_basic1.png",
+          "outfits":"legal",
           "position_x": 2300,
           "position_y": 4500,
           "station_radius": 100,
@@ -414,6 +520,18 @@
       "name": "Nimrod",
       "serviceLevel": 2,
       "threatLevel": 2,
+      "stations": [
+        {
+          "name": "Nemo Station",
+          "image": "jared_space_station_advanced.png",
+          "shipyard":"jared-elite",
+          "outfits":"legal",
+          "position_x": 2300,
+          "position_y": 4500,
+          "station_radius": 100,
+          "station_rot_speed": 0.01
+        }
+      ],
       "enemies":[{
         "type": "jared_basic",
         "faction": "pirate",
@@ -427,6 +545,7 @@
       "name": "Nisil",
       "serviceLevel": 1,
       "threatLevel": 0,
+      "stations":[],
       "enemies":[],
       "x": 1136.68,
       "y": -110.63
@@ -435,6 +554,18 @@
       "name": "Numbus",
       "serviceLevel": 3,
       "threatLevel": 2,
+      "stations": [
+        {
+          "name": "Numbus Station",
+          "image": "human_space_station_advanced.png",
+          "shipyard":"human-elite",
+          "outfits":"legal",
+          "position_x": 2300,
+          "position_y": 4500,
+          "station_radius": 100,
+          "station_rot_speed": -0.01
+        }
+      ],
       "enemies":[{
         "type": "technician_elite",
         "faction": "pirate",
@@ -447,6 +578,18 @@
     {
       "name": "Nyx Fall",
       "serviceLevel": 4,
+      "stations": [
+        {
+          "name": "Nyx Fall Station",
+          "image": "jared_space_station_advanced.png",
+          "shipyard":"jared-elite",
+          "outfits":"legal",
+          "position_x": 2300,
+          "position_y": 4500,
+          "station_radius": 100,
+          "station_rot_speed": 0.01
+        }
+      ],
       "enemies":[{
         "type": "jared_elite",
         "faction": "pirate",
