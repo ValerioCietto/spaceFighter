@@ -228,7 +228,7 @@ function bindCurrentShipWeaponEquipActionsOnce(state) {
   if (!bodyEl || bodyEl.__invCurrentWeaponEquipBound) return;
   bodyEl.__invCurrentWeaponEquipBound = true;
 
-  bodyEl.addEventListener("click", (e) => {
+  bodyEl.addEventListener("click", async (e) => {
     const unequipBtn = e.target.closest("[data-unequip-weapon-port-index]");
     if (unequipBtn) {
       const portIndex = Number(unequipBtn.getAttribute("data-unequip-weapon-port-index"));
@@ -274,25 +274,55 @@ function bindCurrentShipWeaponEquipActionsOnce(state) {
     if (!activeShip) return;
 
     const inventory = Array.isArray(p?.ownedWeapons) ? p.ownedWeapons : [];
-    const nextWeapon = inventory.find((weapon) => !weapon?.equippedOnShipId);
-    if (!nextWeapon) {
-      alert("No unequipped weapon available in inventory.");
+    const shipPorts = Array.isArray(activeShip?.shipStats?.weaponGunCoords) ? activeShip.shipStats.weaponGunCoords : [];
+    const targetPort = shipPorts[portIndex];
+    if (!targetPort) return;
+
+    const portType = String(targetPort?.type || "gun").trim().toLowerCase();
+    const isSpinalPort = portType === "spinal";
+    const weaponSpinalMap = await getWeaponSpinalMap();
+
+    const isWeaponCompatibleWithPort = (weapon) => {
+      const weaponIsSpinal = Boolean(weapon?.spinal ?? weaponSpinalMap[String(weapon?.code || weapon?.id || "")] ?? false);
+      return isSpinalPort ? weaponIsSpinal : !weaponIsSpinal;
+    };
+
+    const compatibleWeaponIndices = inventory
+      .map((weapon, idx) => ({ weapon, idx }))
+      .filter(({ weapon }) => isWeaponCompatibleWithPort(weapon));
+
+    if (!compatibleWeaponIndices.length) {
+      alert(isSpinalPort ? "No spinal weapon available in inventory." : "No compatible weapon available in inventory.");
       return;
     }
 
     const prevEquippedInInventory = inventory.find(
       (weapon) => Number(weapon?.equippedOnShipId) === Number(activeShip.id) && Number(weapon?.equippedPortIndex) === portIndex
     );
+
+    const compatibleCargo = compatibleWeaponIndices.filter(({ weapon }) => !weapon?.equippedOnShipId);
+    const cyclePool = prevEquippedInInventory
+      ? [prevEquippedInInventory, ...compatibleCargo.map(({ weapon }) => weapon)]
+      : compatibleCargo.map(({ weapon }) => weapon);
+
+    if (!cyclePool.length) {
+      alert(isSpinalPort ? "No spinal weapon available in cargo." : "No compatible weapon available in cargo.");
+      return;
+    }
+
+    const currentWeaponCode = String(targetPort?.weaponEquipped || "").trim();
+    const currentPoolIndex = cyclePool.findIndex((weapon) => String(weapon?.code || "").trim() === currentWeaponCode);
+    const nextWeapon = cyclePool[(currentPoolIndex + 1) % cyclePool.length];
+
     if (prevEquippedInInventory) {
       prevEquippedInInventory.equippedOnShipId = null;
       prevEquippedInInventory.equippedPortIndex = null;
     }
 
+    if (!nextWeapon) return;
+
     nextWeapon.equippedOnShipId = activeShip.id;
     nextWeapon.equippedPortIndex = portIndex;
-
-    const shipPorts = Array.isArray(activeShip?.shipStats?.weaponGunCoords) ? activeShip.shipStats.weaponGunCoords : [];
-    const targetPort = shipPorts[portIndex];
     if (targetPort) {
       targetPort.weaponEquipped = String(nextWeapon?.code || "").trim();
     }
@@ -300,6 +330,29 @@ function bindCurrentShipWeaponEquipActionsOnce(state) {
     if (typeof saveState === "function") saveState(state);
     renderInventory(state);
   });
+}
+
+async function getWeaponSpinalMap() {
+  if (window.__inventoryWeaponSpinalMap) return window.__inventoryWeaponSpinalMap;
+
+  try {
+    const response = await fetch("weapons.json", { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const payload = await response.json();
+    const weapons = Array.isArray(payload?.weapons) ? payload.weapons : [];
+
+    window.__inventoryWeaponSpinalMap = weapons.reduce((acc, weapon) => {
+      const code = String(weapon?.code || weapon?.id || "").trim();
+      if (code) acc[code] = Boolean(weapon?.spinal);
+      return acc;
+    }, {});
+  } catch (err) {
+    console.warn("[inventory] Failed to load weapons spinal metadata", err);
+    window.__inventoryWeaponSpinalMap = {};
+  }
+
+  return window.__inventoryWeaponSpinalMap;
 }
 
 
