@@ -228,7 +228,39 @@ function bindCurrentShipWeaponEquipActionsOnce(state) {
   if (!bodyEl || bodyEl.__invCurrentWeaponEquipBound) return;
   bodyEl.__invCurrentWeaponEquipBound = true;
 
-  bodyEl.addEventListener("click", (e) => {
+  bodyEl.addEventListener("click", async (e) => {
+    const unequipBtn = e.target.closest("[data-unequip-weapon-port-index]");
+    if (unequipBtn) {
+      const portIndex = Number(unequipBtn.getAttribute("data-unequip-weapon-port-index"));
+      if (!Number.isInteger(portIndex) || portIndex < 0) return;
+
+      const p = state?.player;
+      const ownedShips = Array.isArray(p?.ownedSpaceships) ? p.ownedSpaceships : [];
+      const activeId = p?.currentSpaceshipId ?? p?.activeShipId ?? 0;
+      const activeShip = ownedShips.find((s) => s.id === activeId);
+      if (!activeShip) return;
+
+      const inventory = Array.isArray(p?.ownedWeapons) ? p.ownedWeapons : [];
+      const equippedWeapon = inventory.find(
+        (weapon) => Number(weapon?.equippedOnShipId) === Number(activeShip.id) && Number(weapon?.equippedPortIndex) === portIndex
+      );
+      if (!equippedWeapon) return;
+
+      equippedWeapon.equippedOnShipId = null;
+      equippedWeapon.equippedPortIndex = null;
+
+      const shipPorts = Array.isArray(activeShip?.shipStats?.weaponGunCoords) ? activeShip.shipStats.weaponGunCoords : [];
+      const targetPort = shipPorts[portIndex];
+      if (targetPort) {
+        targetPort.weaponEquipped = null;
+      }
+
+
+      if (typeof saveState === "function") saveState(state);
+      renderInventory(state);
+      return;
+    }
+
     const btn = e.target.closest("[data-equip-weapon-port-index]");
     if (!btn) return;
 
@@ -242,42 +274,85 @@ function bindCurrentShipWeaponEquipActionsOnce(state) {
     if (!activeShip) return;
 
     const inventory = Array.isArray(p?.ownedWeapons) ? p.ownedWeapons : [];
-    const nextWeapon = inventory.find((weapon) => !weapon?.equippedOnShipId);
-    if (!nextWeapon) {
-      alert("No unequipped weapon available in inventory.");
+    const shipPorts = Array.isArray(activeShip?.shipStats?.weaponGunCoords) ? activeShip.shipStats.weaponGunCoords : [];
+    const targetPort = shipPorts[portIndex];
+    if (!targetPort) return;
+
+    const portType = String(targetPort?.type || "gun").trim().toLowerCase();
+    const isSpinalPort = portType === "spinal";
+    const weaponSpinalMap = await getWeaponSpinalMap();
+
+    const isWeaponCompatibleWithPort = (weapon) => {
+      const weaponIsSpinal = Boolean(weapon?.spinal ?? weaponSpinalMap[String(weapon?.code || weapon?.id || "")] ?? false);
+      return isSpinalPort ? weaponIsSpinal : !weaponIsSpinal;
+    };
+
+    const compatibleWeaponIndices = inventory
+      .map((weapon, idx) => ({ weapon, idx }))
+      .filter(({ weapon }) => isWeaponCompatibleWithPort(weapon));
+
+    if (!compatibleWeaponIndices.length) {
+      alert(isSpinalPort ? "No spinal weapon available in inventory." : "No compatible weapon available in inventory.");
       return;
     }
 
-    const equippedWeapons = Array.isArray(activeShip.equippedWeapons) ? activeShip.equippedWeapons : [];
     const prevEquippedInInventory = inventory.find(
       (weapon) => Number(weapon?.equippedOnShipId) === Number(activeShip.id) && Number(weapon?.equippedPortIndex) === portIndex
     );
+
+    const compatibleCargo = compatibleWeaponIndices.filter(({ weapon }) => !weapon?.equippedOnShipId);
+    const cyclePool = prevEquippedInInventory
+      ? [prevEquippedInInventory, ...compatibleCargo.map(({ weapon }) => weapon)]
+      : compatibleCargo.map(({ weapon }) => weapon);
+
+    if (!cyclePool.length) {
+      alert(isSpinalPort ? "No spinal weapon available in cargo." : "No compatible weapon available in cargo.");
+      return;
+    }
+
+    const currentWeaponCode = String(targetPort?.weaponEquipped || "").trim();
+    const currentPoolIndex = cyclePool.findIndex((weapon) => String(weapon?.code || "").trim() === currentWeaponCode);
+    const nextWeapon = cyclePool[(currentPoolIndex + 1) % cyclePool.length];
+
     if (prevEquippedInInventory) {
       prevEquippedInInventory.equippedOnShipId = null;
       prevEquippedInInventory.equippedPortIndex = null;
     }
 
+    if (!nextWeapon) return;
+
     nextWeapon.equippedOnShipId = activeShip.id;
     nextWeapon.equippedPortIndex = portIndex;
-
-    const shipPorts = Array.isArray(activeShip?.shipStats?.weaponGunCoords) ? activeShip.shipStats.weaponGunCoords : [];
-    const targetPort = shipPorts[portIndex];
     if (targetPort) {
-      targetPort.weaponEquipped = String(nextWeapon?.name || nextWeapon?.id || "").trim();
+      targetPort.weaponEquipped = String(nextWeapon?.code || "").trim();
     }
-
-    const withoutPort = equippedWeapons.filter((slot) => Number(slot?.portIndex) !== portIndex);
-    withoutPort.push({
-      id: String(nextWeapon?.id ?? ""),
-      name: String(nextWeapon?.name ?? "Unknown weapon"),
-      portIndex,
-      portType: String((activeShip.shipStats?.weaponGunCoords || [])[portIndex]?.type || "gun"),
-    });
-    activeShip.equippedWeapons = withoutPort;
 
     if (typeof saveState === "function") saveState(state);
     renderInventory(state);
   });
+}
+
+async function getWeaponSpinalMap() {
+  if (window.__inventoryWeaponSpinalMap) return window.__inventoryWeaponSpinalMap;
+
+  try {
+    const response = await fetch("weapons.json", { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const payload = await response.json();
+    const weapons = Array.isArray(payload?.weapons) ? payload.weapons : [];
+
+    window.__inventoryWeaponSpinalMap = weapons.reduce((acc, weapon) => {
+      const code = String(weapon?.code || weapon?.id || "").trim();
+      if (code) acc[code] = Boolean(weapon?.spinal);
+      return acc;
+    }, {});
+  } catch (err) {
+    console.warn("[inventory] Failed to load weapons spinal metadata", err);
+    window.__inventoryWeaponSpinalMap = {};
+  }
+
+  return window.__inventoryWeaponSpinalMap;
 }
 
 
@@ -371,12 +446,6 @@ function renderInventoryTabContent(state, tab, panelEl) {
     const outfits = Array.isArray(activeShip.outfits) ? activeShip.outfits : [];
     const shieldDiameter = Number(activeShipStats.shieldDiameterPx || 96);
     const portCoords = Array.isArray(activeShipStats.weaponGunCoords) ? activeShipStats.weaponGunCoords : [];
-    const equippedByPort = new Map(
-      (Array.isArray(activeShip.equippedWeapons) ? activeShip.equippedWeapons : []).map((entry) => [
-        Number(entry?.portIndex),
-        entry,
-      ])
-    );
 
     panelEl.innerHTML = `
       <h3 style="display:flex;align-items:center;gap:8px;">
@@ -414,16 +483,19 @@ function renderInventoryTabContent(state, tab, panelEl) {
             portCoords.length
               ? `<ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;">${portCoords
                   .map((coord, idx) => {
-                    const equipped = equippedByPort.get(idx);
+                    const equippedCode = String(coord?.weaponEquipped || "").trim();
                     return `
                     <li style="display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:6px 8px;">
                       <span>
                         Port ${idx + 1} (${escapeHtml(coord?.type || "gun")})
                         · x:${formatStatValue(Number(coord?.x ?? 0))}
                         y:${formatStatValue(Number(coord?.y ?? 0))}
-                        ${equipped ? `· <strong>${escapeHtml(equipped.name || equipped.id || "Weapon")}</strong>` : ""}
+                        ${equippedCode ? `· <strong>${escapeHtml(equippedCode)}</strong>` : ""}
                       </span>
-                      <button type="button" data-equip-weapon-port-index="${idx}">equip</button>
+                      <div style="display:flex;gap:6px;">
+                        <button type="button" data-equip-weapon-port-index="${idx}">equip</button>
+                        ${equippedCode ? `<button type="button" data-unequip-weapon-port-index="${idx}">unequip</button>` : ""}
+                      </div>
                     </li>
                   `;
                   })

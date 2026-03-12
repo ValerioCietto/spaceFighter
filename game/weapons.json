@@ -122,7 +122,8 @@
       "energy_cost": 4,
       "engage_range": 1500,
       "autofire_toggle": true,
-      "description": "Emitter Laser Deinoblaster Enhanced Saturized Tantatam. Weapon used in capital defense and planet destroyers."
+      "description": "Emitter Laser Deinoblaster Enhanced Saturized Tantatam. Weapon used in capital defense and planet destroyers.",
+      "spinal": true
     },
     {
       "code": "drakefire_turret",
@@ -271,7 +272,8 @@
       "energy_cost": 15,
       "engage_range": 4000,
       "autofire_toggle": true,
-      "description": "A 5 shot hurricane speed hellish minigun. If you loved Wyrmfire, you will want nothing else rather than Dragonfire."
+      "description": "A 5 shot hurricane speed hellish minigun. If you loved Wyrmfire, you will want nothing else rather than Dragonfire.",
+      "spinal": true
     },
     {
       "code": "ring",
@@ -305,7 +307,8 @@
       "delay_ms": 2000,
       "energy_cost": 15,
       "engage_range": 8000,
-      "description": "High end sniper shotgun. The fast traveling projectiles can destroy targets even at 5000-8000 range."
+      "description": "High end sniper shotgun. The fast traveling projectiles can destroy targets even at 5000-8000 range.",
+      "spinal": true
     },
     {
       "code": "loitering_missile_barrage",
@@ -324,7 +327,8 @@
       "engage_range": 4000,
       "turning_speed_deg": 150,
       "homing": true,
-      "description": "Hit pursuing enemies in the back while fleeing."
+      "description": "Hit pursuing enemies in the back while fleeing.",
+      "spinal": true
     },
     {
       "code": "shotgun_missile_barrage",
