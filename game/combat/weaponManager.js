@@ -29,8 +29,12 @@
     applyDamageToTarget,
     applyDamageToPlayer,
   }) {
-    let currentWeaponIndex = 0;
     let weaponLastFire = [];
+    const WEAPON_LOG_PREFIX = "[WeaponFire]";
+
+    function logWeaponFlow(event, payload = {}) {
+      console.log(`${WEAPON_LOG_PREFIX} ${event}`, payload);
+    }
 
     function ensureRuntimeState() {
       const weapons = getWeapons();
@@ -38,21 +42,38 @@
       if (weaponLastFire.length !== weapons.length) {
         weaponLastFire = new Array(weapons.length).fill(0);
       }
-      if (!Number.isFinite(currentWeaponIndex) || currentWeaponIndex < 0) {
-        currentWeaponIndex = 0;
-      }
-      if (weapons.length > 0) {
-        currentWeaponIndex = currentWeaponIndex % weapons.length;
-      } else {
-        currentWeaponIndex = 0;
-      }
       return weapons;
+    }
+
+    function getEffectiveWeaponForPort(weapon, port) {
+      const portType = String(port?.type || "").trim().toLowerCase();
+      if (portType === "turret") {
+        return {
+          ...weapon,
+          autofire_toggle: true,
+          auto_aim: 4.0,
+        };
+      }
+
+      return weapon;
     }
 
     function applyAutofireToggleAndGate({ weapon, idx, manual, weapons }) {
       if (!manual) {
-        if (!weapon?.autofire_toggle) return { canProceed: false };
-        if (!weapons[idx]?.autofireToggled) return { canProceed: false };
+        if (!weapon?.autofire_toggle) {
+          logWeaponFlow("skip:autofire-disabled", {
+            weapon: weapon?.name || weapon?.code || idx,
+            manual,
+          });
+          return { canProceed: false };
+        }
+        if (!weapons[idx]?.autofireToggled) {
+          logWeaponFlow("skip:autofire-not-toggled", {
+            weapon: weapon?.name || weapon?.code || idx,
+            manual,
+          });
+          return { canProceed: false };
+        }
       }
 
       if (manual && weapon?.autofire_toggle && weapons[idx].autofireToggled) {
@@ -150,6 +171,14 @@
       const beamAspect = weapon.aspect || "laser";
       const beamProjectiles = Math.max(1, Number(weapon.projectiles) || 1);
 
+      logWeaponFlow("player:beam-fired", {
+        weapon: weapon?.name || weapon?.code || "unknown",
+        targetType: beamTarget.kind,
+        targetX: beamTarget.entity.x,
+        targetY: beamTarget.entity.y,
+        projectiles: beamProjectiles,
+      });
+
       for (let i = 0; i < beamProjectiles; i++) {
         if (beamTarget.kind === "enemy") {
           applyDamageToEnemy(beamTarget.entity, { damage: beamDamage, damageEnergy: beamDamageEnergy });
@@ -192,6 +221,17 @@
       const p = rotatePoint(firePort.x, firePort.y, state.player.angle);
       const muzzleX = state.player.x + p.x;
       const muzzleY = state.player.y + p.y;
+
+      logWeaponFlow("player:projectile-fired", {
+        weapon: weapon?.name || weapon?.code || "unknown",
+        portType: firePort.type,
+        portOffset: { x: firePort.x, y: firePort.y },
+        muzzle: { x: muzzleX, y: muzzleY },
+        baseAngle,
+        spreadDeg: weapon.spread || 0,
+        projectiles: count,
+      });
+
       for (let i = 0; i < count; i++) {
         const offset = spreadRad > 0 ? (-spreadRad + Math.random() * (2 * spreadRad)) : 0;
         const angle = baseAngle + offset;
@@ -239,8 +279,7 @@
 
     function resolvePortWeapon(weapons, port) {
       if (!port) return null;
-      // correct attribute is weaponEquipped
-      const equippedName = String(port.weaponEquipped || port.equippedWeapon || "").trim();
+      const equippedName = String(port.weaponEquipped || "").trim();
       if (!equippedName) return null;
       const equippedKey = equippedName.toLowerCase();
       const weapon = weapons.find((candidate) => {
@@ -249,8 +288,11 @@
         return candidateName === equippedKey || candidateCode === equippedKey;
       });
       if (!weapon) return null;
+      if (weapon.spinal === true && String(port?.type || "").trim().toLowerCase() !== "spinal") {
+        return null;
+      }
       const idx = weapons.indexOf(weapon);
-      return { weapon, idx };
+      return { weapon: getEffectiveWeaponForPort(weapon, port), idx };
     }
 
     function enemyFireBeam(enemy, weapon) {
@@ -288,6 +330,11 @@
       if (dist > (w.engage_range || 0)) return false;
 
       if (isBeamWeapon(w)) {
+        logWeaponFlow("enemy:beam-fired", {
+          enemyId: enemy.id,
+          weapon: w?.name || w?.code || "unknown",
+          distanceToPlayer: dist,
+        });
         enemyFireBeam(enemy, w);
         return true;
       }
@@ -297,6 +344,13 @@
       const muzzleDistance = 18;
 
       const count = w.projectiles || 1;
+
+      logWeaponFlow("enemy:projectile-fired", {
+        enemyId: enemy.id,
+        weapon: w?.name || w?.code || "unknown",
+        distanceToPlayer: dist,
+        projectiles: count,
+      });
 
       for (let i = 0; i < count; i++) {
         const offset = spreadRad > 0
@@ -364,6 +418,12 @@
       const now = performance.now();
       const ports = getPlayerWeaponPorts();
 
+      logWeaponFlow("attempt:start", {
+        manual,
+        ports: ports.length,
+        weaponCount: weapons.length,
+      });
+
       for (const port of ports) {
         console.log("Checking port:", port);
         const resolved = resolvePortWeapon(weapons, port);
@@ -373,46 +433,31 @@
         const toggleRes = applyAutofireToggleAndGate({ weapon, idx, manual, weapons });
         if (!toggleRes.canProceed) continue;
 
-        if (!canPlayerFireWeapon({ weapon, idx, now, port })) continue;
+        if (!canPlayerFireWeapon({ weapon, idx, now, port })) {
+          logWeaponFlow("skip:cooldown-or-energy", {
+            weapon: weapon?.name || weapon?.code || idx,
+            energy: Number(state?.player?.shipStats?.energy) || 0,
+            energyCost: Math.max(0, Number(weapon?.energy_cost) || 0),
+            manual,
+          });
+          continue;
+        }
 
         spendPlayerWeaponEnergy(weapon);
         weaponLastFire[idx] = now;
         port.weaponLastFire = now;
+        logWeaponFlow("state:weapon-fired", {
+          weapon: weapon?.name || weapon?.code || idx,
+          manual,
+          remainingEnergy: Number(state?.player?.shipStats?.energy) || 0,
+        });
         playerFireWeapon({ weapon, port, now });
       }
     }
 
-    function cyclePlayerWeapon() {
-      const weapons = ensureRuntimeState();
-      if (!weapons.length) {
-        currentWeaponIndex = 0;
-        return;
-      }
-      currentWeaponIndex = (currentWeaponIndex + 1) % weapons.length;
-    }
-
-    function setCurrentWeaponIndex(idx) {
-      const weapons = ensureRuntimeState();
-      if (!weapons.length) {
-        currentWeaponIndex = 0;
-        return;
-      }
-      const numeric = Number(idx);
-      const normalized = Number.isFinite(numeric) ? Math.floor(numeric) : 0;
-      currentWeaponIndex = ((normalized % weapons.length) + weapons.length) % weapons.length;
-    }
-
-    function getCurrentWeaponIndex() {
-      ensureRuntimeState();
-      return currentWeaponIndex;
-    }
-
     return {
       attemptPlayerFire,
-      cyclePlayerWeapon,
       updateEnemiesFire,
-      setCurrentWeaponIndex,
-      getCurrentWeaponIndex,
       isBeamWeapon,
     };
   }
