@@ -31,6 +31,92 @@
         "money": 3200,
         "spaceship": "human_mercury"
       }
+    },
+    {
+      "id": "story-arc-alpha-hidden-gate",
+      "kind": "story",
+      "title": "Gate in the Centauri Shadows",
+      "description": "Locate the hidden gate in Alpha Centauri by approaching it closely, then report your findings to Alpha Centauri station.",
+      "system": "Alpha Centauri"
+    },
+    {
+      "id": "story-arc-taurus-zeus",
+      "kind": "story",
+      "title": "Taurus Horns: Fall of Zeus",
+      "description": "Hunt down and destroy the capital ship Zeus in Taurus Horns. Military channels open after victory.",
+      "system": "Taurus Horns",
+      "rewards": {
+        "money": 100000,
+        "outfit": "Military Station Access"
+      }
+    },
+    {
+      "id": "story-arc-military-chaos-matrix",
+      "kind": "story",
+      "title": "Chaos Gate Clearance",
+      "description": "At a military station, purchase a Jared Chaos Gate Matrix to unlock chaos gate traversal, then proceed to Nyx Fall.",
+      "system": "Nyx Fall",
+      "rewards": {
+        "outfit": "Jared Chaos Gate Matrix"
+      }
+    },
+    {
+      "id": "story-arc-alpha-pirate-raid",
+      "kind": "story",
+      "title": "Raid Over Alpha Centauri",
+      "description": "Defeat a pirate raid in Alpha Centauri and extract intel: Jared outfits are being sold in the Nemo system.",
+      "system": "Alpha Centauri"
+    },
+    {
+      "id": "story-arc-nemo-jared-outfits",
+      "kind": "story",
+      "title": "Nemo Exchange",
+      "description": "Travel to Nemo, equip Jared outfits, and attempt the hidden jump route from Alpha Centauri.",
+      "system": "Nemo",
+      "rewards": {
+        "outfit": "Jared Outfits"
+      }
+    },
+    {
+      "id": "story-arc-smugglers-den-relic",
+      "kind": "story",
+      "title": "Relic of Cooperation",
+      "description": "In Smuggler's Den, investigate a relic starship to uncover the truth: Jareds and humans were meant to cooperate.",
+      "system": "Smuggler's Den"
+    },
+    {
+      "id": "story-arc-tortuga-turtuk-map",
+      "kind": "story",
+      "title": "Cartographer of Tortuga",
+      "description": "Find the Turtuk star map on Tortuga and secure stealth outfits needed for deep infiltration.",
+      "system": "Tortuga",
+      "rewards": {
+        "outfit": "Stealth Outfits"
+      }
+    },
+    {
+      "id": "story-arc-turtuk-lx1",
+      "kind": "story",
+      "title": "Edge of Mutual Destruction",
+      "description": "In Turtuk, learn Jareds and humans are near total war. Head north to LX1 to contact technician specialists.",
+      "system": "Turtuk"
+    },
+    {
+      "id": "story-arc-warfield-escort",
+      "kind": "story",
+      "title": "Warfield Singularity Escort",
+      "description": "Escort a technician singularity vessel through Warfield and witness the scale of sector-wide devastation.",
+      "system": "Warfield"
+    },
+    {
+      "id": "story-arc-gargantua-revelation",
+      "kind": "story",
+      "title": "Echoes of Ancestral Humanity",
+      "description": "At Gargantua, protect the technician singularity pilot during weapon recharge. You learn technicians are ancestral humans and unlock technician ship purchases at LX1 and Far Space 1.",
+      "system": "Gargantua",
+      "rewards": {
+        "outfit": "Technician Ship Purchase Access"
+      }
     }
   ]
 }
