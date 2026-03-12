@@ -103,7 +103,7 @@
       const DEFAULT_STATION_RADIUS = 80;
       const DEFAULT_STATION_ROT_SPEED = Math.PI / 32; // rad/sec
 
-      const STATION_ASSET = window.BASE_PATH + "/assets/human_space_station_basic1.png";
+      const STATION_ASSET = window.BASE_PATH + "/assets/jared_advanced_space_station.png";
       const stationImg = new Image();
       stationImg.src = STATION_ASSET;
 

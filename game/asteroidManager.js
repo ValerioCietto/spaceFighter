@@ -14,10 +14,10 @@
     }
 
     const asteroidMaterials = [
-      { key: "basic", image: "asteroid_basic.png", weight: 60, rewardMin: 10, rewardMax: 80, hpMin: 8, hpMax: 24 },
-      { key: "silver", image: "asteroid_silver.png", weight: 24, rewardMin: 90, rewardMax: 250, hpMin: 18, hpMax: 48 },
-      { key: "gold", image: "asteroid_gold.png", weight: 12, rewardMin: 260, rewardMax: 650, hpMin: 32, hpMax: 72 },
-      { key: "uranium", image: "asteroid_uranium.png", weight: 4, rewardMin: 700, rewardMax: 1000, hpMin: 45, hpMax: 120 },
+      { key: "basic", image: "asteroid_basic1.png", weight: 60, rewardMin: 10, rewardMax: 80, hpMin: 8, hpMax: 24 },
+      { key: "silver", image: "asteroid_silver1.png", weight: 24, rewardMin: 90, rewardMax: 250, hpMin: 18, hpMax: 48 },
+      { key: "gold", image: "asteroid_gold1.png", weight: 12, rewardMin: 260, rewardMax: 650, hpMin: 32, hpMax: 72 },
+      { key: "uranium", image: "asteroid_uranium1.png", weight: 4, rewardMin: 700, rewardMax: 1000, hpMin: 45, hpMax: 120 },
     ];
 
     const asteroidConfig = {

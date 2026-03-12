@@ -15,8 +15,8 @@ const SystemInfo = {
             name: "Brrrr Station",
             position_x: 3450,
             position_y: 2800,
-            station_radius: 80,
-            station_rot_speed: Math.PI / 32
+            station_radius: 500,
+            station_rot_speed: -Math.PI / 32
         }
     ],
     hyperspace_gates: [   
