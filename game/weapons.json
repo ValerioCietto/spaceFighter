@@ -2,8 +2,8 @@
   "weapons": [
     {
       "code": "mining_torch",
-      "name": "",
-      "image": "pea_shooter.png",
+      "name": "Mining torch",
+      "image": "mining_torch.png",
       "cost": 50,
       "damage": 10,
       "base_speed": 250,

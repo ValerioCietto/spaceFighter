@@ -1,6 +1,45 @@
 {
   "systems": [
     {
+      "name": "Glacius",
+      "description":"",
+      "serviceLevel": 1,
+      "threatLevel": 0,
+      "stations": [
+        {
+          "name": "Sol Station",
+          "image": "human_space_station_capital1.png",
+          "position_x": 3300,
+          "position_y": 4500,
+          "station_radius": 200,
+          "station_rot_speed": 0.01
+        }
+      ],
+      "enemies":[{
+          "type": "jared_elite",
+          "faction": "pirate",
+          "spawn_rate": 1,
+          "max_count": 3,
+          "behavior": "idle"
+      },
+    {
+          "type": "human_blockade",
+          "faction": "pirate",
+          "spawn_rate": 1,
+          "max_count": 1,
+          "behavior": "turret"
+      },
+        {
+          "type": "technician_elite",
+          "faction": "pirate",
+          "spawn_rate": 1,
+          "max_count": 5,
+          "behavior": "turret"
+      }],
+      "x": -406.94,
+      "y": 657.72
+    },
+    {
       "name": "Alpha Centauri",
       "description": "Alpha Centauri, is the second star system of Humanity.",
       "serviceLevel": 4,
@@ -280,45 +319,6 @@
       "y": 316.87
     },
     {
-      "name": "Glacius",
-      "description":"",
-      "serviceLevel": 1,
-      "threatLevel": 0,
-      "stations": [
-        {
-          "name": "Brrr Station",
-          "image": "human_space_station_basic1.png",
-          "position_x": 2300,
-          "position_y": 4500,
-          "station_radius": 100,
-          "station_rot_speed": 0.01
-        }
-      ],
-      "enemies":[{
-          "type": "jared_elite",
-          "faction": "pirate",
-          "spawn_rate": 1,
-          "max_count": 3,
-          "behavior": "idle"
-      },
-    {
-          "type": "human_blockade",
-          "faction": "pirate",
-          "spawn_rate": 1,
-          "max_count": 1,
-          "behavior": "turret"
-      },
-        {
-          "type": "technician_elite",
-          "faction": "pirate",
-          "spawn_rate": 1,
-          "max_count": 5,
-          "behavior": "turret"
-      }],
-      "x": -406.94,
-      "y": 657.72
-    },
-    {
       "name": "Greenfield",
       "description":"",
       "serviceLevel": 3,
@@ -391,6 +391,16 @@
       "name": "Nemo",
       "serviceLevel": 1,
       "threatLevel": 2,
+      "stations": [
+        {
+          "name": "Nemo Station",
+          "image": "human_space_station_basic1.png",
+          "position_x": 2300,
+          "position_y": 4500,
+          "station_radius": 100,
+          "station_rot_speed": 0.01
+        }
+      ],
       "enemies":[{
         "type": "human_basic",
         "faction": "pirate",

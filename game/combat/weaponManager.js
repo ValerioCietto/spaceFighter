@@ -239,6 +239,7 @@
 
     function resolvePortWeapon(weapons, port) {
       if (!port) return null;
+      // correct attribute is weaponEquipped
       const equippedName = String(port.weaponEquipped || port.equippedWeapon || "").trim();
       if (!equippedName) return null;
       const equippedKey = equippedName.toLowerCase();
@@ -358,14 +359,16 @@
     }
 
     function attemptPlayerFire(manual = false) {
+      console.log("Attempting player fire. Manual:", manual);
       const weapons = ensureRuntimeState();
       const now = performance.now();
       const ports = getPlayerWeaponPorts();
 
       for (const port of ports) {
+        console.log("Checking port:", port);
         const resolved = resolvePortWeapon(weapons, port);
         if (!resolved) continue;
-
+        console.log("Resolved weapon for port:", resolved);
         const { weapon, idx } = resolved;
         const toggleRes = applyAutofireToggleAndGate({ weapon, idx, manual, weapons });
         if (!toggleRes.canProceed) continue;
