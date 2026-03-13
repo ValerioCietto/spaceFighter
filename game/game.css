@@ -414,6 +414,7 @@ body {
 .station-overlay.open {
   opacity: 1;
   pointer-events: auto;
+  touch-action: auto;
 }
 
 .station-dialog {
@@ -424,6 +425,7 @@ body {
   border-radius: 8px;
   display: flex;
   flex-direction: column;
+  touch-action: auto;
 }
 
 .station-dialog-header {
@@ -438,6 +440,12 @@ body {
 .station-dialog-body {
   flex: 1;
   overflow: hidden;
+  touch-action: pan-y;
+}
+
+#station-content {
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 
 .outfits-shop-iframe {
@@ -741,6 +749,8 @@ body {
   flex: 1 1 auto;
   overflow-y: auto;
   padding-right: 6px;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* your existing shop css + small tweaks */
@@ -789,6 +799,8 @@ body {
   flex: 1 1 auto;
   overflow-y: auto;
   padding-right: 6px;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 
 .outfit-shop-toolbar{
