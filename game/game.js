@@ -13,6 +13,7 @@
           currentSpaceshipId: 0,
       
           shipName: "human_starfighter",
+          outfitKeyEffect: "", // what happens when pressing the outfit action button, e.g. "boost" for a speed boost outfit, "teleport" for a teleport outfit, etc. 
           
           ownedSpaceships: [
             // spaceships the player has bought and can select in the inventory screen or station shipyard Equip Ship sub tab.
@@ -2195,6 +2196,74 @@
         requestAnimationFrame(loop);
       }
 
+      function activateOutfit() {
+        // teleport the player
+        const effect = state.player?.outfitKeyEffect || "";
+        console.log("Activating outfit with effect:", effect);
+        const overrideEffect = "assassinTeleport";
+        
+        
+        switch (overrideEffect){
+            case "teleportForward":
+              const TELEPORT_DISTANCE = 100;
+              const angle = state.player.angle;
+              const dx = Math.cos(angle) * TELEPORT_DISTANCE;
+              const dy = Math.sin(angle) * TELEPORT_DISTANCE;
+              state.player.x += dx;
+              state.player.y += dy;
+              saveState();
+              break;
+            case "randomTeleport":
+              const MAX_RADIUS = 2000;
+              const MIN_RADIUS = 500;
+              const SYSTEM_SIZE = SystemInfo.size || 10000;
+              let newX, newY, dist;
+              do {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = MIN_RADIUS + Math.random() * (MAX_RADIUS - MIN_RADIUS);
+                newX = state.player.x + Math.cos(angle) * radius;
+                newY = state.player.y + Math.sin(angle) * radius;
+                dist = Math.hypot(newX - state.player.x, newY - state.player.y);
+              }
+              while (dist < MIN_RADIUS || dist > MAX_RADIUS || newX < 0 || newX > SYSTEM_SIZE || newY < 0 || newY > SYSTEM_SIZE);
+              state.player.x = newX;
+              state.player.y = newY;
+
+              saveState();
+              break;
+            case "assassinTeleport":
+              if(state.enemies && state.enemies.length > 0){
+                let nearestEnemy = null;
+                let nearestDist = Infinity;
+                for(const enemy of state.enemies){
+                  const dx = enemy.x - state.player.x;
+                  const dy = enemy.y - state.player.y;
+                  const dist = Math.hypot(dx, dy);
+                  if (dist < nearestDist) {
+                    nearestDist = dist;
+                    nearestEnemy = enemy;
+                  }
+                }
+                if (nearestEnemy) {
+                  // change the player angle to face the enemy
+
+                  const TELEPORT_DISTANCE = 300;
+                  const angle = nearestEnemy.angle + Math.PI; // opposite direction
+                  state.player.x = nearestEnemy.x + Math.cos(angle) * TELEPORT_DISTANCE;
+                  state.player.y = nearestEnemy.y + Math.sin(angle) * TELEPORT_DISTANCE;
+                  // stop the player vx and vy to avoid weird teleports
+                  state.player.vx = 0;
+                  state.player.vy = 0;
+                  const angleToEnemy = Math.atan2(nearestEnemy.y - state.player.y, nearestEnemy.x - state.player.x);
+                  state.player.angle = angleToEnemy;
+                  saveState();
+                }
+              }
+            break; 
+              
+        }
+      }
+
       async function init() {
         resize();
         initStarfield();
@@ -2233,7 +2302,7 @@
             updateLockButtonVisual();
           },
           () => {
-            console.log("Outfit activation input received.");
+            activateOutfit();
           },
           touchButtons
         );

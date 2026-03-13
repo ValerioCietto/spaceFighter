@@ -1,6 +1,29 @@
 {
   "outfits": [
     {
+      "id": "um_teleport_forward_1",
+      "name": "Teleport Utility Module",
+      "outfitType": "utility_mods",
+      "species": "human",
+      "cost": 1000,
+      "type": "activeAbility",
+      "teleportForward": 100,
+      "energyCost": 10,
+      "cooldown": 1000
+    },
+    {
+      "id": "um_reverse_thrust_enabler_1",
+      "name": "Reverse Thrust Enabler",
+      "outfitType": "utility_mods",
+      "species": "human",
+      "cost": 1000,
+      "type": "passiveAbility",
+      "CPU": -1,
+      "reverseThrust": true,
+      "energyCost": 10,
+      "cooldown": 1000
+    },
+    {
       "id": "um_turning_5",
       "name": "Turning Enhancer Mk1",
       "outfitType": "utility_mods",
