@@ -162,13 +162,13 @@
 
         const hpRatio = Math.max(0, Math.min(1, asteroid.hp / (asteroid.maxHp || 1)));
         ctx.beginPath();
-        ctx.strokeStyle = "rgba(255,255,255,0.25)";
+        ctx.strokeStyle = "rgba(180,180,180,0.25)";
         ctx.lineWidth = 2;
         ctx.arc(0, 0, asteroid.radius + 5, 0, Math.PI * 2);
         ctx.stroke();
 
         ctx.beginPath();
-        ctx.strokeStyle = "rgba(125,235,125,0.9)";
+        ctx.strokeStyle = "rgba(180,180,180,0.95)";
         ctx.lineWidth = 3;
         ctx.arc(0, 0, asteroid.radius + 5, -Math.PI / 2, -Math.PI / 2 + hpRatio * Math.PI * 2);
         ctx.stroke();
