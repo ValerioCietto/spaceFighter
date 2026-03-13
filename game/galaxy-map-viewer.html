@@ -56,6 +56,8 @@
     <h2 id="systemInfoName"></h2>
     <span id="systemThreatBadge" class="threat-badge"></span>
     <p id="systemInfoDesc"></p>
+    <p id="systemInfoStations"></p>
+    <p id="systemInfoEnemies"></p>
   </section>
 
 <script>
@@ -83,6 +85,8 @@
   const systemInfoNameEl = document.getElementById("systemInfoName");
   const systemThreatBadgeEl = document.getElementById("systemThreatBadge");
   const systemInfoDescEl = document.getElementById("systemInfoDesc");
+  const systemInfoStationsEl = document.getElementById("systemInfoStations");
+  const systemInfoEnemiesEl = document.getElementById("systemInfoEnemies");
 
   const cam = { x: 0, y: 0, z: 1 }; // world offset + zoom
   const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
@@ -327,6 +331,25 @@
 
     const description = String(system.description || "").trim();
     systemInfoDescEl.textContent = description || threat.guidance;
+
+    const stationNames = Array.isArray(system.stations)
+      ? system.stations
+          .map((station) => String(station?.name || "").trim())
+          .filter(Boolean)
+      : [];
+    systemInfoStationsEl.textContent = stationNames.length
+      ? `Stations: ${stationNames.join(", ")}`
+      : "Stations: none";
+
+    const enemyTypes = Array.isArray(system.enemies)
+      ? system.enemies
+          .map((enemy) => String(enemy?.type || "").trim())
+          .filter(Boolean)
+      : [];
+    systemInfoEnemiesEl.textContent = enemyTypes.length
+      ? `Enemies: ${enemyTypes.join(", ")}`
+      : "Enemies: none";
+
     systemInfoEl.hidden = false;
   }
 
@@ -541,6 +564,7 @@
         name: String(s.name),
         description: String(s.description || ""),
         serviceLevel: clamp(Number(s.serviceLevel ?? 3), 1, 5),
+        stations: Array.isArray(s.stations) ? s.stations : [],
         enemies: Array.isArray(s.enemies) ? s.enemies : [],
         maxEnemies: Number(s.maxEnemies),
         x: Number(s.x ?? 0),
@@ -554,6 +578,7 @@
           name: String(s.name),
           description: String(s.description || ""),
           serviceLevel: clamp(Number(s.serviceLevel ?? 3), 1, 5),
+          stations: Array.isArray(s.stations) ? s.stations : [],
           enemies: Array.isArray(s.enemies) ? s.enemies : [],
           maxEnemies: Number(s.maxEnemies),
           x: Number(s.x ?? 0),
