@@ -93,6 +93,9 @@ function loadGatesFromGalaxyMap(){
                 });
 
                 SystemInfo.hyperspace_gates = gates;
+                SystemInfo.stations = Array.isArray(currentSystem.stations)
+                    ? currentSystem.stations.map(station => ({ ...station }))
+                    : [];
                 // print gate positions
                 gates.forEach(gate => {
                     console.log(`Gate ${gate.name}: x=${gate.position_x}, y=${gate.position_y}`);
@@ -103,6 +106,7 @@ function loadGatesFromGalaxyMap(){
             } else {
                 console.warn(`Current system ${systemName} not found in galaxy map systems data`);
                 SystemInfo.hyperspace_gates = [];
+                SystemInfo.stations = [];
             }
         })
         .catch(err => {

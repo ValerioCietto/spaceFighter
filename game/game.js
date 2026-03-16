@@ -104,9 +104,54 @@
       const DEFAULT_STATION_RADIUS = 80;
       const DEFAULT_STATION_ROT_SPEED = Math.PI / 32; // rad/sec
 
-      const STATION_ASSET = window.BASE_PATH + "/assets/jared_advanced_space_station.png";
-      const stationImg = new Image();
-      stationImg.src = STATION_ASSET;
+      const DEFAULT_STATION_ASSET = window.BASE_PATH + "/assets/jared_advanced_space_station.png";
+      const STATION_IMAGE_ALIASES = {
+        "human_space_station_advanced.png": "human_space_station_advanced1.png",
+        "jared_space_station_basic.png": "jareds/jared_space_station.png",
+        "jared_space_station_capital.png": "jared_advanced_space_station.png",
+        "jared_space_station_advanced.png": "jared_advanced_space_station.png",
+        "technician_space_station_basic1.png": "technician_space_station.png",
+        "technician_space_station_capital.png": "technician_space_station_big1.png",
+        "technician_space_station_advanced.png": "technician_space_station_big.png",
+      };
+      const stationImageCache = new Map();
+
+      function getStationImageCandidates(station) {
+        const imageName = String(station?.image || "").trim();
+        const candidates = [];
+
+        if (imageName) {
+          candidates.push(`${window.BASE_PATH}/assets/${imageName}`);
+          const aliasName = STATION_IMAGE_ALIASES[imageName];
+          if (aliasName && aliasName !== imageName) {
+            candidates.push(`${window.BASE_PATH}/assets/${aliasName}`);
+          }
+        }
+
+        candidates.push(DEFAULT_STATION_ASSET);
+        return [...new Set(candidates)];
+      }
+
+      function getStationImage(station) {
+        const cacheKey = String(station?.image || "__default__").trim() || "__default__";
+        if (stationImageCache.has(cacheKey)) {
+          return stationImageCache.get(cacheKey);
+        }
+
+        const img = new Image();
+        const candidates = getStationImageCandidates(station);
+        let candidateIndex = 0;
+
+        const tryNextCandidate = () => {
+          if (candidateIndex >= candidates.length) return;
+          img.src = candidates[candidateIndex++];
+        };
+
+        img.onerror = tryNextCandidate;
+        tryNextCandidate();
+        stationImageCache.set(cacheKey, img);
+        return img;
+      }
 
       const FRICTION = 70;
       const MONEY_PER_TARGET = 1000;
@@ -1490,7 +1535,8 @@
         ctx.save();
         ctx.translate(screenX, screenY);
         ctx.rotate(stationAngle);
-      
+
+        const stationImg = getStationImage(station);
         if (stationImg.complete && stationImg.naturalWidth > 0) {
           // Draw centered; size based on your existing station radius
           const size = stationRadius * 2;
