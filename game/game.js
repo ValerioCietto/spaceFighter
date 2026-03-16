@@ -105,15 +105,6 @@
       const DEFAULT_STATION_ROT_SPEED = Math.PI / 32; // rad/sec
 
       const DEFAULT_STATION_ASSET = window.BASE_PATH + "/assets/jared_advanced_space_station.png";
-      const STATION_IMAGE_ALIASES = {
-        "human_space_station_advanced.png": "human_space_station_advanced1.png",
-        "jared_space_station_basic.png": "jareds/jared_space_station.png",
-        "jared_space_station_capital.png": "jared_advanced_space_station.png",
-        "jared_space_station_advanced.png": "jared_advanced_space_station.png",
-        "technician_space_station_basic1.png": "technician_space_station.png",
-        "technician_space_station_capital.png": "technician_space_station_big1.png",
-        "technician_space_station_advanced.png": "technician_space_station_big.png",
-      };
       const stationImageCache = new Map();
 
       function getStationImageCandidates(station) {
@@ -122,10 +113,6 @@
 
         if (imageName) {
           candidates.push(`${window.BASE_PATH}/assets/${imageName}`);
-          const aliasName = STATION_IMAGE_ALIASES[imageName];
-          if (aliasName && aliasName !== imageName) {
-            candidates.push(`${window.BASE_PATH}/assets/${aliasName}`);
-          }
         }
 
         candidates.push(DEFAULT_STATION_ASSET);
