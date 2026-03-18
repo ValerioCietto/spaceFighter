@@ -8,10 +8,19 @@
  * @param {(shipKey: string, stats: any) => void} opts.onBuy - called when purchase succeeds
  * @param {(msg: string) => void} [opts.onToast] - optional UI feedback
  */
-function renderStationShipShop({ rootEl, state, onBuy, onToast }) {
+function renderStationShipShop({ rootEl, state, onBuy, onToast, shopType = "human" }) {
   if (!rootEl) return;
-
-  const forSaleKeys = Object.keys(SHIPS).filter((k) => k.startsWith("human_"));
+  let forSaleKeys = {};
+  if(shopType === "human"){
+      forSaleKeys = Object.keys(SHIPS).filter((k) => k.startsWith("human_"));
+  }else if(shopType === "jared"){
+      forSaleKeys = Object.keys(SHIPS).filter((k) => k.startsWith("jared_"));
+  }else if (shopType === "technician"){
+      forSaleKeys = Object.keys(SHIPS).filter((k) => k.startsWith("technician_"));
+  }else{
+    // all
+    forSaleKeys = Object.keys(SHIPS)
+  }
 
   const money = Number(state?.player?.money ?? 0);
   const baseUrl =
