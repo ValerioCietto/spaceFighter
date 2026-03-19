@@ -146,7 +146,7 @@
       const ctx = canvas.getContext("2d");
 
       const minimapCanvas = document.getElementById("minimap-canvas");
-      const minimapCtx = minimapCanvas.getContext("2d");
+      const minimapContainer = document.getElementById("minimap");
 
       const speedValueEl = document.getElementById("speed-value");
       const posValueEl = document.getElementById("pos-value");
@@ -432,8 +432,14 @@
       let width = 0;
       let height = 0;
 
-      let minimapSize = 0;
-      let minimapScale = 0;
+      const minimapDrawer = createMinimapDrawer({
+        canvas: minimapCanvas,
+        containerEl: minimapContainer,
+        systemInfo: SystemInfo,
+        state,
+        getTarget: () => target,
+        starDiameter: STAR_DIAMETER,
+      });
 
       const input = {
         left: false,
@@ -644,17 +650,7 @@
         canvas.height = height * dpr;
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        const minimapContainer = document.getElementById("minimap");
-        minimapSize = Math.min(
-          minimapContainer.clientWidth,
-          minimapContainer.clientHeight
-        );
-
-        minimapCanvas.width = minimapSize * dpr;
-        minimapCanvas.height = minimapSize * dpr;
-        minimapCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-        minimapScale = (minimapSize * 0.8) / SystemInfo.size;
+        minimapDrawer.resize({ devicePixelRatio: dpr });
       }
 
       window.addEventListener("resize", resize);
@@ -1972,106 +1968,6 @@
         ctx.restore();
 
       }
-
-
-      function drawMinimap() {
-        const w = minimapSize;
-        const h = minimapSize;
-
-        minimapCtx.clearRect(0, 0, w, h);
-
-        minimapCtx.save();
-        minimapCtx.translate(w / 2, h / 2);
-
-        const hexRadius = (SystemInfo.size / 2) * minimapScale;
-        minimapCtx.beginPath();
-        for (let i = 0; i < 6; i++) {
-          const a = (Math.PI / 3) * i - Math.PI / 2;
-          const x = hexRadius * Math.cos(a);
-          const y = hexRadius * Math.sin(a);
-          if (i === 0) minimapCtx.moveTo(x, y);
-          else minimapCtx.lineTo(x, y);
-        }
-        minimapCtx.closePath();
-        minimapCtx.strokeStyle = "rgba(255,255,255,0.4)";
-        minimapCtx.lineWidth = 1;
-        minimapCtx.stroke();
-
-        const starRadius = (STAR_DIAMETER / 2) * minimapScale;
-        minimapCtx.beginPath();
-        minimapCtx.arc(0, 0, starRadius, 0, Math.PI * 2);
-        const grd = minimapCtx.createRadialGradient(0, 0, 0, 0, 0, starRadius);
-        grd.addColorStop(0, "#ffffff");
-        grd.addColorStop(1, "rgba(255,255,255,0.1)");
-        minimapCtx.fillStyle = grd;
-        minimapCtx.fill();
-
-        // Station as small grey dot
-        const station = getPrimaryStation();
-        if (station) {
-          const stationX = Number(station.position_x);
-          const stationY = Number(station.position_y);
-          if (Number.isFinite(stationX) && Number.isFinite(stationY)) {
-            const stx = (stationX - SystemInfo.size / 2) * minimapScale;
-            const sty = (stationY - SystemInfo.size / 2) * minimapScale;
-            minimapCtx.beginPath();
-            minimapCtx.arc(stx, sty, 3, 0, Math.PI * 2);
-            minimapCtx.fillStyle = "#bbbbbb";
-            minimapCtx.fill();
-          }
-        }
-
-        if (target) {
-          const tx = (target.x - SystemInfo.size / 2) * minimapScale;
-          const ty = (target.y - SystemInfo.size / 2) * minimapScale;
-          minimapCtx.beginPath();
-          minimapCtx.arc(tx, ty, 1.5, 0, Math.PI * 2);
-          minimapCtx.fillStyle = "#ff5252";
-          minimapCtx.fill();
-        }
-
-        if(state.enemies && state.enemies.length > 0){
-          // draw the enemies in minimap
-          state.enemies.forEach(enemy => {
-            const ex = (enemy.x - SystemInfo.size / 2) * minimapScale;
-            const ey = (enemy.y - SystemInfo.size / 2) * minimapScale;
-            minimapCtx.beginPath();
-            minimapCtx.arc(ex, ey, 2.5, 0, Math.PI * 2);
-            minimapCtx.fillStyle = "#ff5252";
-            minimapCtx.fill();
-          });
-        }
-
-        if(SystemInfo.hyperspace_gates && SystemInfo.hyperspace_gates.length > 0){
-          SystemInfo.hyperspace_gates.forEach(gate => {
-            const gate_x = (gate.position_x - SystemInfo.size / 2) * minimapScale;
-            const gate_y = (gate.position_y - SystemInfo.size / 2) * minimapScale;
-            minimapCtx.beginPath();
-            minimapCtx.arc(gate_x, gate_y, 2.5, 0, Math.PI * 2);
-            minimapCtx.fillStyle = "#52f9ff";
-            minimapCtx.fill();
-          });
-        }
-
-        const sx = (state.player.x - SystemInfo.size / 2) * minimapScale;
-        const sy = (state.player.y - SystemInfo.size / 2) * minimapScale;
-
-        minimapCtx.save();
-        minimapCtx.translate(sx, sy);
-        minimapCtx.rotate(state.player.angle);
-
-        minimapCtx.beginPath();
-        minimapCtx.moveTo(6, 0);
-        minimapCtx.lineTo(-4, -3);
-        minimapCtx.lineTo(-4, 3);
-        minimapCtx.closePath();
-        minimapCtx.fillStyle = "#4fc3f7";
-        minimapCtx.fill();
-
-        minimapCtx.restore();
-        minimapCtx.restore();
-      }
-
       const baseAssetPath = location.hostname === "127.0.0.1" || location.hostname === "localhost"
         ? "/assets"
         : "/spaceFighter/assets";
@@ -2216,7 +2112,7 @@
           drawBeamEffects();
           drawEnemies();
           drawShip();
-          drawMinimap();
+          minimapDrawer.draw();
 
           if (hyperSpaceManager.getFadeAlpha() > 0) {
             ctx.save();
