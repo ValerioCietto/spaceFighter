@@ -1,63 +1,79 @@
-# Starfighter — Ship List (30 Total)
+# Ship List Used In Game
 
-## Humans (10)
+This document lists the ships that are actually wired into gameplay today.
 
-### Capital (1)
-- **Zeus** — Capital Ship, Drone Swarm, Lightning
+Source of truth:
+- `game/shipStatProvider.js` for live ship stats, station shipyards, and enemy spawns
+- `game/stationShipShop.js` for what each faction shipyard sells
 
-### Dreadnoughts (2)
-- **Ares** — Spinal Weapon Destroyer Dreadnought
-- **Apollo** — Drone Carrier / Fabricator Dreadnought
+`shops/common/ships.json` contains a larger 30-ship design catalog, but many of those ships are not currently connected to the playable game loop.
 
-### Fighters (5)
-- **Hermes** — Interceptor  
-- **Athena** — Tactical Fighter  
-- **Perseus** — Sniper Fighter  
-- **Icarus** — High-speed Scout  
-- **Theseus** — Endurance Fighter
+## Humans
 
-### Cargo (2)
-- **Demeter** — Heavy Hauler  
-- **Hestia** — Light Transport
+### Sold in human shipyards
+- `human_perseus` - Perseus
+- `human_demeter` - Demeter
+- `human_mercury` - Mercury
+- `human_icarus` - Icarus
+- `human_hermes` - Hermes
+- `human_gunship` - Gunship
+- `human_artemis` - Artemis
+- `human_athena` - Athena
+- `human_ares` - Ares
+- `human_zeus` - Zeus
 
+### Used by human enemies
+- `human_perseus`
+- `human_mercury`
+- `human_icarus`
+- `human_hermes`
+- `human_gunship`
+- `human_artemis`
+- `human_ares`
+- `human_zeus`
 
-## Jared (10)
+## Jared
 
-### Capital (1)
-- **Sun Tzu** — Capital Ship, Stealth Drone Carrier
+### Sold in Jared shipyards
+- `jared_zuque` - Zuque
+- `jared_three_eyes` - Three Eyes
+- `jared_three_eyes_spike_hybrid` - Three Eyes Spike Hybrid
+- `jared_berseker` - Berseker
+- `jared_jeweled` - Jeweled
+- `jared_queen` - Queen
 
-### Dreadnoughts (2)
-- **Qilin** — Heavy Spinal Dreadnought  
-- **Baihu** — Rapid-fire Dreadnought
+### Used by Jared enemies
+- `jared_zuque`
+- `jared_berseker`
+- `jared_jeweled`
+- `jared_queen`
 
-### Fighters (5)
-- **Longma** — Assault Fighter  
-- **Huli Jing** — Agile Fast-attack  
-- **Zhuque** — Rapid Blaster  
-- **Taotie** — Burst Fighter  
-- **Xuanwu** — Armored Regen Fighter
+## Technicians
 
-### Cargo (2)
-- **Fenghuang** — Elite Courier  
-- **Kui Ox** — Mining Cargo
+### Sold in technician shipyards
+- `technician_spike_razor` - Spike Razor
+- `technician_spike_razor_upgraded` - Spike Razor Upgraded
+- `technician_motherlode` - Motherlode
+- `technician_hard_shell_v1` - Hard Shell V1
+- `technician_singularity` - Singularity
 
+### Used by technician enemies
+- `technician_spike_razor`
+- `technician_spike_razor_upgraded`
+- `technician_motherlode`
+- `technician_hard_shell_v1`
+- `technician_singularity`
 
-## Technicians (10)
+## Summary
 
-### Capital (1)
-- **A-1** — Capital Ship, Fighter Carrier
+- Runtime ship roster in use: 21 ships
+- Human ships in use: 10
+- Jared ships in use: 6
+- Technician ships in use: 5
 
-### Dreadnoughts (2)
-- **D-1** — Turret Spinal Weapon Dreadnought  
-- **D-2** — Suppression Dreadnought
+## Not Currently Wired From The 30-Ship Design Doc
 
-### Fighters (5)
-- **F-1** — Stealth Fighter  
-- **F-2** — EMP Disruptor  
-- **F-3** — Stasis Immobilizer  
-- **F-4** — Drone Swarm Fighter  
-- **F-5** — Teleport Skirmisher
-
-### Cargo (2)
-- **C-1** — Modular Freight Unit  
-- **C-2** — Shielded Industrial Carrier
+Examples that appear in `shops/common/ships.json` but are not currently present in `game/shipStatProvider.js`:
+- Human: `apollo`, `theseus`, `hestia`
+- Jared: `sun_tzu`, `qilin`, `baihu`, `longma`, `huli_jing`, `taotie`, `xuanwu`, `fenghuang`, `kui_ox`
+- Technicians: `a_1`, `d_1`, `d_2`, `f_1`, `f_2`, `f_3`, `f_4`, `f_5`, `c_1`, `c_2`
