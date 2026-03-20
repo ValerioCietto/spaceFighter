@@ -12,6 +12,7 @@ Source of truth:
 
 ### Sold in human shipyards
 - `human_perseus` - Perseus
+- `human_star_bargette` - Star Bargette
 - `human_demeter` - Demeter
 - `human_mercury` - Mercury
 - `human_icarus` - Icarus
@@ -39,6 +40,11 @@ Source of truth:
 - `jared_three_eyes` - Three Eyes
 - `jared_three_eyes_spike_hybrid` - Three Eyes Spike Hybrid
 - `jared_berseker` - Berseker
+- `jared_reaver` - Reaver
+- `jared_gold_guard` - Gold Guard
+- `jared_warrior_gold` - Gold Warrior
+- `jared_warrior_assassin` - Warrior Assassin
+- `jared_devil_forge` - Devil Forge
 - `jared_jeweled` - Jeweled
 - `jared_queen` - Queen
 
