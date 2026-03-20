@@ -4,7 +4,7 @@ This document explains every file currently under `/game`, what it is used for, 
 
 ## High-level structure
 
-- **Core gameplay**: [`game.html`](./game.html), [`game.js`](./game.js), [`game.css`](./game.css), input/render/combat helpers.
+- **Core gameplay**: [`game.html`](./game.html), [`game.js`](./game.js), [`../css/game.css`](../css/game.css), input/render/combat helpers.
 - **Station + shop UIs**: station manager/shop scripts, shop HTML pages, related CSS/JSON data.
 - **Galaxy tools**: galaxy map runtime, viewer, and editor pages with shared JSON data.
 - **Data files**: weapons, outfits, hull mods, and galaxy map JSON.
@@ -20,9 +20,9 @@ This document explains every file currently under `/game`, what it is used for, 
 | File | Purpose | Links / Related files |
 |---|---|---|
 | [`const.js`](./const.js) | Defines base path constants for runtime asset loading in browser environments (local vs GitHub Pages). | Used by runtime pages like [`game.html`](./game.html), [`galaxy-map.html`](./galaxy-map.html), and scripts that fetch JSON assets. |
-| [`game.html`](./game.html) | Main game entry page. Loads the core game runtime and UI assets. | Uses [`game.js`](./game.js), [`game.css`](./game.css), and gameplay helpers such as [`input.js`](./input.js), [`weapon_system.js`](./weapon_system.js). |
+| [`game.html`](./game.html) | Main game entry page. Loads the core game runtime and UI assets. | Uses [`game.js`](./game.js), [`../css/game.css`](../css/game.css), and gameplay helpers such as [`input.js`](./input.js), [`weapon_system.js`](./weapon_system.js). |
 | [`game.js`](./game.js) | Main gameplay loop/state orchestration: player ship flow, combat/state updates, high-level integration of modules. | Integrates [`input.js`](./input.js), [`shipStatProvider.js`](./shipStatProvider.js), [`missionGenerator.js`](./missionGenerator.js), [`weapon_system.js`](./weapon_system.js), [`starDrawer.js`](./starDrawer.js), and data JSONs. |
-| [`game.css`](./game.css) | Core game HUD and page styling for the main game experience. | Paired with [`game.html`](./game.html). |
+| [`../css/game.css`](../css/game.css) | Core game HUD and page styling for the main game experience. | Paired with [`game.html`](./game.html). |
 | [`input.js`](./input.js) | Keyboard/controller input setup and binding helpers for gameplay interaction. | Called from [`game.js`](./game.js). |
 | [`weapon_system.js`](./weapon_system.js) | Weapon behavior and loading helpers (including remote/local weapons JSON handling). | Reads [`weapons.json`](./weapons.json), used by [`game.js`](./game.js). |
 | [`shipStatProvider.js`](./shipStatProvider.js) | Provides ship/enemy stat templates and related computed values. | Consumed by [`game.js`](./game.js); conceptually tied to [`hull_mods.json`](./hull_mods.json) and outfit data. |
@@ -30,9 +30,9 @@ This document explains every file currently under `/game`, what it is used for, 
 | [`systemInfo.js`](./systemInfo.js) | Shared system metadata structure/constants used by gameplay and map views. | Related to [`galaxy-map.json`](./galaxy-map.json), [`missionGenerator.js`](./missionGenerator.js). |
 | [`starDrawer.js`](./starDrawer.js) | Canvas starfield/background rendering utility. | Used by [`game.js`](./game.js) and/or demo pages. |
 | [`inventoryDialog.js`](./inventoryDialog.js) | Inventory UI rendering logic (dialog/list rendering and interactions). | Tied to runtime state from [`game.js`](./game.js) and shop/outfit data. |
-| [`station-manager.js`](./station-manager.js) | Station scene and docking management logic. | Pairs with [`station.css`](./station.css), [`stationShipShop.js`](./stationShipShop.js), and station/shop HTML pages. |
+| [`station-manager.js`](./station-manager.js) | Station scene and docking management logic. | Pairs with [`../css/station.css`](../css/station.css), [`stationShipShop.js`](./stationShipShop.js), and station/shop HTML pages. |
 | [`stationShipShop.js`](./stationShipShop.js) | Station ship shop rendering + purchase action wiring. | Used by station/game UIs; connected to [`spaceship-shop.html`](./spaceship-shop.html) and station flow in [`station-manager.js`](./station-manager.js). |
-| [`station.css`](./station.css) | Station-specific UI styling (docking/shop overlays and related components). | Used by station pages/scripts such as [`station-manager.js`](./station-manager.js). |
+| [`../css/station.css`](../css/station.css) | Station-specific UI styling (docking/shop overlays and related components). | Used by station pages/scripts such as [`station-manager.js`](./station-manager.js). |
 | [`spaceship-shop.html`](./spaceship-shop.html) | Standalone spaceship shop page. | Uses station/shop scripts such as [`stationShipShop.js`](./stationShipShop.js) and style files. |
 | [`outfits-shop.html`](./outfits-shop.html) | Standalone outfit shop page/UI shell. | Uses outfit data from [`software_outfits.json`](./software_outfits.json), [`outfit_cloacking.json`](./outfit_cloacking.json). |
 | [`galaxy-map.html`](./galaxy-map.html) | In-game galaxy map view page. | Reads [`galaxy-map.json`](./galaxy-map.json), related to [`systemInfo.js`](./systemInfo.js). |
@@ -65,7 +65,7 @@ These are sandbox/demo pages used to test specific visual systems, factions, sho
 | [`demo/demo-hyperspace.html`](./demo/demo-hyperspace.html) | Hyperspace transition/visual behavior demo. | Related to map/system context in [`../systemInfo.js`](./systemInfo.js). |
 | [`demo/interstellarGate.html`](./demo/interstellarGate.html) | Interstellar gate concept/demo page. | Related to hyperspace/map demos and [`../galaxy-map.json`](./galaxy-map.json). |
 | [`demo/demo-planets.html`](./demo/demo-planets.html) | Planet rendering/scene demo. | Related to star/background rendering via [`../starDrawer.js`](./starDrawer.js). |
-| [`demo/demo-stations.html`](./demo/demo-stations.html) | Station presentation/interaction demo. | Related to [`../station-manager.js`](./station-manager.js), [`../station.css`](./station.css). |
+| [`demo/demo-stations.html`](./demo/demo-stations.html) | Station presentation/interaction demo. | Related to [`../station-manager.js`](./station-manager.js), [`../css/station.css`](../css/station.css). |
 | [`demo/demo-detailed-station.html`](./demo/demo-detailed-station.html) | More detailed station layout/interaction demo. | Companion to [`demo-stations.html`](./demo/demo-stations.html). |
 | [`demo/demo-technicians.html`](./demo/demo-technicians.html) | Technicians-themed demo scene. | Related to [`demo-technicians-capital.html`](./demo/demo-technicians-capital.html), [`demo-technicians-outfits`](./demo/demo-technicians-outfits). |
 | [`demo/demo-technicians-capital.html`](./demo/demo-technicians-capital.html) | Technicians capital ship/station variant demo. | Companion to [`demo-technicians.html`](./demo/demo-technicians.html). |
@@ -86,7 +86,7 @@ These are sandbox/demo pages used to test specific visual systems, factions, sho
 ```mermaid
 flowchart TD
     GH[game.html] --> GJ[game.js]
-    GH --> GC[game.css]
+    GH --> GC[css/game.css]
     GJ --> IN[input.js]
     GJ --> WS[weapon_system.js]
     GJ --> SP[shipStatProvider.js]
@@ -102,7 +102,7 @@ flowchart TD
     ID --> OCJSON[outfit_cloacking.json]
 
     SM --> SSC[stationShipShop.js]
-    SM --> STC[station.css]
+    SM --> STC[css/station.css]
 
     GMH[galaxy-map.html] --> GMJSON[galaxy-map.json]
     GMV[galaxy-map-viewer.html] --> GMJSON
