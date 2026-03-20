@@ -41,9 +41,9 @@ Projectile damage reduces asteroid HP; destroyed asteroids are removed and pay c
 
 ## Visuals
 Asteroids render with existing assets:
-- `assets/asteroid_basic.png`
-- `assets/asteroid_silver.png`
-- `assets/asteroid_gold.png`
-- `assets/asteroid_uranium.png`
+- `assets/asteroids/asteroid_basic1.png`
+- `assets/asteroids/asteroid_silver1.png`
+- `assets/asteroids/asteroid_gold1.png`
+- `assets/asteroids/asteroid_uranium1.png`
 
 A health ring is rendered around each asteroid.
