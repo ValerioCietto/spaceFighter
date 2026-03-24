@@ -6,6 +6,7 @@
           y: SystemInfo.size / 2,
           vx: 0,
           vy: 0,
+          reverse_mode: false,
           angle: -Math.PI / 2,
           money: 0,
           systemName: "Glacius",
@@ -1112,6 +1113,7 @@
       let speed = Math.hypot(state.player.vx, state.player.vy);
 
       if (input.thrust) {
+        state.player.reverse_mode = false;
         const ax = Math.cos(state.player.angle) * state.player.shipStats.acceleration;
         const ay = Math.sin(state.player.angle) * state.player.shipStats.acceleration;
         state.player.vx += ax * dt;
@@ -1127,10 +1129,34 @@
       }
 
       // brake
-      if (input.brake && speed > 0) {
-        const decel = state.player.shipStats.acceleration * dt;
-        speed = Math.max(0, speed - decel);
-        applySpeedToVelocity(speed);
+      if (input.brake) {
+        if (speed > 0) {
+          const decel = state.player.shipStats.acceleration * dt;
+          speed = Math.max(0, speed - decel);
+          applySpeedToVelocity(speed);
+        }
+
+        if (speed <= 0.001) {
+          state.player.reverse_mode = true;
+        }
+
+        if (state.player.reverse_mode) {
+          const reverseAccel = state.player.shipStats.acceleration * 0.5;
+          const ax = -Math.cos(state.player.angle) * reverseAccel;
+          const ay = -Math.sin(state.player.angle) * reverseAccel;
+          state.player.vx += ax * dt;
+          state.player.vy += ay * dt;
+
+          const reverseMaxSpeed = state.player.shipStats.speed * 0.5;
+          const reverseSpeed = Math.hypot(state.player.vx, state.player.vy);
+          if (reverseSpeed > reverseMaxSpeed) {
+            const factor = reverseMaxSpeed / reverseSpeed;
+            state.player.vx *= factor;
+            state.player.vy *= factor;
+          }
+        }
+      } else {
+        state.player.reverse_mode = false;
       }
     }
 
