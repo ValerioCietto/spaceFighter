@@ -300,10 +300,16 @@ function bindCurrentShipWeaponEquipActionsOnce(state) {
       (weapon) => Number(weapon?.equippedOnShipId) === Number(activeShip.id) && Number(weapon?.equippedPortIndex) === portIndex
     );
 
-    const compatibleCargo = compatibleWeaponIndices.filter(({ weapon }) => !weapon?.equippedOnShipId);
-    const cyclePool = prevEquippedInInventory
-      ? [prevEquippedInInventory, ...compatibleCargo.map(({ weapon }) => weapon)]
-      : compatibleCargo.map(({ weapon }) => weapon);
+    const cyclePool = compatibleWeaponIndices
+      .filter(({ weapon }) => {
+        const equippedShipId = Number(weapon?.equippedOnShipId);
+        const equippedPortIndex = Number(weapon?.equippedPortIndex);
+        const isInCargo = !weapon?.equippedOnShipId;
+        const isEquippedOnTargetPort =
+          equippedShipId === Number(activeShip.id) && equippedPortIndex === portIndex;
+        return isInCargo || isEquippedOnTargetPort;
+      })
+      .map(({ weapon }) => weapon);
 
     if (!cyclePool.length) {
       alert(isSpinalPort ? "No spinal weapon available in cargo." : "No compatible weapon available in cargo.");
