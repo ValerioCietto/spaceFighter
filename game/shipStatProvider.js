@@ -348,6 +348,8 @@ const SHIPS = {
   },
 
   // Jared
+
+  // starter
   jared_zuque: {
     cost: 9400,
     shield: 70,
@@ -366,7 +368,28 @@ const SHIPS = {
     CPU:9,
     shipCenter: { x: 0.5, y: 0.52 },
     engineCoords: [{ x: 0.18, y: 0.50 }],
-    weaponGunCoords: [{ x: 0.82, y: 0.50 }],
+    weaponGunCoords: [{ type:"gun", x: 0.82, y: 0.50 }],
+  },
+
+  jared_reaver: {
+    cost: 24000,
+    shield: 110, 
+    hull: 120,
+    speed: 165,
+    acceleration: 110,
+    turningSpeedRad: (Math.PI * 1.35) * 1.2,
+    engineFlareType: "triangular",
+    engineFlareWidth: 16,
+    engineFlareLength: 50,
+    image: "jareds/jared_reaver.png",
+    shieldDiameterPx: 50,
+    firerateMult:1.2,
+    energyMax: 100,
+    energyRegen: 20,
+    CPU:24,
+    shipCenter: { x: 0.5, y: 0.5 },
+    engineCoords: [{ x: 0.20, y: 0.50 }],
+    weaponGunCoords: [{type:"gun", x: 0.83, y: 0.46 }, {type:"gun", x: 0.83, y: 0.54 }],
   },
 
   jared_three_eyes: {
@@ -381,7 +404,7 @@ const SHIPS = {
     engineFlareLength: 50,
     image: "jareds/jared_three_eyes.png",
     shieldDiameterPx: 45,
-    firetateMult:1.2,
+    firerateMult:1.2,
     energyMax: 140,
     energyRegen: 12,
     CPU:12,
