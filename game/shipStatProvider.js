@@ -128,7 +128,6 @@ const SHIPS = {
     shipCenter: { x: 0.5, y: 0.5 },
     engineCoords: [{ x: 0, y: -5 }],
     weaponGunCoords: [{type: "gun", x: 0, y: 0 }],
-    outfitSpace: 10,
   },
 
   human_demeter: {
@@ -151,7 +150,6 @@ const SHIPS = {
     shipCenter: { x: 0.5, y: 0.50 },
     engineCoords: [{ x: -15, y: -5 },{ x: 15, y: -5 }],
     weaponGunCoords: [{type: "turret", x: 0, y: 0 }],
-    outfitSpace: 30,
   },
 
   human_mercury: {
@@ -174,7 +172,6 @@ const SHIPS = {
     shipCenter: { x: 0.5, y: 0.5 },
     engineCoords: [{ x: 0, y: 0 }],
     weaponGunCoords: [{type: "gun", x: 0, y: 0 }],
-    outfitSpace: 8,
   },
 
   human_icarus: {
@@ -198,7 +195,6 @@ const SHIPS = {
     shipCenter: { x: 0.5, y: 0.5 },
     engineCoords: [{ x: 0, y: 0 }],
     weaponGunCoords: [{type: "gun", x: 0, y: -3 },{type: "gun", x: 0, y: 3 }],
-    outfitSpace: 15,
   },
 
   human_hermes: {
@@ -222,7 +218,6 @@ const SHIPS = {
     shipCenter: { x: 0.5, y: 0.5 }, // normalized (0..1) relative to sprite
     engineCoords: [ { x: 0, y: 0 }],
     weaponGunCoords: [{type: "gun", x: 0, y: -10 },{type: "gun", x: 0, y: 10 }],
-    outfitSpace: 25,
   },
 
   human_gunship: {
@@ -246,7 +241,6 @@ const SHIPS = {
     shipCenter: { x: 0.5, y: 0.5 },
     engineCoords: [{ x: -14, y: -20 }, { x: 0, y: -12 }, { x: 14, y: -20 }],
     weaponGunCoords: [{type: "gun", x: 0, y: -15 },{type: "gun", x: 0, y: 0 }, {type: "gun", x: 0, y: 15 }],
-    outfitSpace: 40,
   },
 
   human_artemis: {
@@ -270,7 +264,6 @@ const SHIPS = {
     shipCenter: { x: 0.5, y: 0.5 }, // normalized (0..1) relative to sprite
     engineCoords: [{ x: 0, y: 20 }],
     weaponGunCoords: [{type: "gun", x: 10, y: 0 },{type: "gun", x: 14, y: 0 }, {type: "gun", x: 18, y: 0 }],
-    outfitSpace: 60,
   },
 
   // bulky tank  
@@ -295,7 +288,6 @@ const SHIPS = {
     shipCenter: { x: 0.5, y: 0.5 }, // normalized (0..1) relative to sprite
     engineCoords: [{ x: 0, y: 20 }],
     weaponGunCoords: [{type: "turret", x: 20, y: 0 },{type: "turret", x: 15, y: 0 }, {type: "turret", x:-15, y: 0 }, {type: "turret", x: 20, y: 0 }],
-    outfitSpace: 130,
   },
 
   human_ares: {
@@ -319,7 +311,6 @@ const SHIPS = {
     shipCenter: { x: 0.5, y: 0.5 },
     engineCoords: [{ x: -21, y: 6 }, { x: 21, y: 6 }],
     weaponGunCoords: [{type: "gun", x: 0, y: -18 }, {type: "gun", x: 0, y: 18 }, {type: "turret", x: 0, y:-18}, {type: "turret", x: 0, y:18 }, {type: "spinal", x: 10, y:0}],
-    outfitSpace: 110,
   },
 
   // has 4 gun weapon slots and 3 turret slots
@@ -344,7 +335,6 @@ const SHIPS = {
     shipCenter: { x: 0.5, y: 0.5 },
     engineCoords: [{ x: -30, y: 30 }, { x: 30, y: 30 },{ x: -15, y: 20 }, { x: 15, y: 20 }],
     weaponGunCoords: [{type: "gun", x: 18, y: -15 }, {type: "gun", x: 18, y: 15 }, {type: "gun", x: 22, y: -8 }, {type: "gun", x: 22, y: 8 }, {type: "turret", x: 0, y:-20}, {type: "turret", x: 0, y:0 }, {type: "turret", x: 0, y:20 }, {type: "spinal", x: -10, y:0}],
-    outfitSpace: 150,
   },
 
   // Jared

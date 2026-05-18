@@ -24,14 +24,14 @@ Speed and reliability are the most prized values that reflects on their ships.
 Having fun with friends is the most important thing for theJared, and they are always looking for new friends to share their adventures with.`,
       specialties: { Armor:1, Shields:3, Regen:4, Damage:1, Firerate:4, Tactics:2 }
     },
-    {
+ /*   {
       id: 'Technicians',
       name: 'Technicians',
       img: baseURL + 'squid-advanced-smaller.png',
       desc: `Technicians are squid like creatures which either live in a protective suit that allows to walk on land or purely virtual entities with avatar robotic bodies. Virtual entities are the most courageous and pilot most of the fighter ships, organic ones are more cunning and prefer the thick shells of Capital, Dreadnoughts or cargo ships.
 In Squid society, only the smartest idea is the one worth of fighting for and with this principle, the ships are designed.`,
       specialties: { Armor:4, Shields:1, Regen:2, Damage:3, Firerate:2, Tactics:4 }
-    }
+    }*/
   ];
 
   // ---- Helpers ----
